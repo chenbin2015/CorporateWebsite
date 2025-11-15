@@ -1,0 +1,11 @@
+rootProject.name = 'corporate-platform'
+
+include(
+        'common',
+        'security',
+        'repository',
+        'service',
+        'infrastructure',
+        'admin-api'
+)
+

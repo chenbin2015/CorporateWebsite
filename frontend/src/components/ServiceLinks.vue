@@ -107,4 +107,3 @@ const { title, items } = toRefs(props)
   }
 }
 </style>
-
