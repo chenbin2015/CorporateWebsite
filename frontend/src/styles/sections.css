@@ -1,0 +1,34 @@
+.page-stack {
+  display: grid;
+  gap: 2.8rem;
+}
+
+.page-stack > * {
+  width: 100%;
+}
+
+.home-page {
+  display: grid;
+  gap: 2.4rem;
+}
+
+.home-page__row {
+  display: grid;
+  gap: 2.4rem;
+}
+
+.home-page__row--split {
+  grid-template-columns: 2fr 1fr;
+}
+
+.home-page__row--triple {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 74rem) {
+  .home-page__row--split,
+  .home-page__row--triple {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+

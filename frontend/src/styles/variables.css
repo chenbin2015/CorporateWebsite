@@ -1,0 +1,20 @@
+:root {
+  color-scheme: light;
+  --color-primary: #2563eb;
+  --color-primary-muted: #eff6ff;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-border: #e2e8f0;
+  --color-surface: #f8fafc;
+  --color-surface-contrast: #ffffff;
+
+  --shadow-soft: 0 0.5rem 1.5rem rgba(15, 23, 42, 0.08);
+
+  --radius-sm: 0.4rem;
+  --radius-md: 0.8rem;
+  --radius-lg: 1.2rem;
+
+  --header-height: 4.8rem;
+  --footer-height: 3.6rem;
+}
+
