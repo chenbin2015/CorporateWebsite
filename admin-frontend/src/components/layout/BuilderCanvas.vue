@@ -1,4 +1,5 @@
 <script setup>
+import { Delete } from '@element-plus/icons-vue'
 import { resolveBuilderComponent } from '@/components/builder/runtime/componentRegistry'
 
 const props = defineProps({
@@ -12,7 +13,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['select'])
+const emit = defineEmits(['select', 'delete'])
 
 const handleSelect = (id) => {
   emit('select', id)
@@ -44,7 +45,19 @@ const handleSelect = (id) => {
                 <p class="item-label">{{ item.label }}</p>
                 <span class="item-source">{{ item.source }}</span>
               </div>
-              <el-tag size="small" type="primary">{{ item.key }}</el-tag>
+              <div class="item-actions">
+                <el-tag size="small" type="primary">{{ item.key }}</el-tag>
+                <el-button
+                  v-if="props.selectedId === item.id"
+                  text
+                  size="small"
+                  type="danger"
+                  class="delete-btn"
+                  @click.stop="emit('delete', item.id)"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </div>
             </header>
             <component :is="resolveBuilderComponent(item.key)" v-bind="item.props" />
           </article>
@@ -57,8 +70,13 @@ const handleSelect = (id) => {
 
 <style scoped>
 .builder-canvas {
-  min-height: 100%;
+  /* 中间画布区域高度与左侧保持一致，超出部分内部滚动 */
+  max-height: calc(100vh - 280px);
   border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .canvas-header {
@@ -76,7 +94,8 @@ const handleSelect = (id) => {
 }
 
 .canvas-frame {
-  min-height: 28rem;
+  flex: 1;
+  min-height: 0;
   border-radius: var(--radius-lg);
   border: 1px dashed rgba(15, 23, 42, 0.2);
   background: radial-gradient(circle at top, rgba(99, 102, 241, 0.08), transparent 40%),
@@ -113,6 +132,21 @@ const handleSelect = (id) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.delete-btn {
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.delete-btn:hover {
+  opacity: 1;
 }
 
 .item-label {

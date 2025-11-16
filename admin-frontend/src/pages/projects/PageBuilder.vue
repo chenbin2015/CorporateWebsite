@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { ElMessageBox } from 'element-plus'
 
 import BuilderCanvas from '@/components/layout/BuilderCanvas.vue'
 import BuilderInspector from '@/components/layout/BuilderInspector.vue'
@@ -55,6 +56,31 @@ const handleResetProps = () => {
     props: JSON.parse(JSON.stringify(selectedSchema.value.defaults ?? {})),
   }
 }
+
+const handleDelete = async (id) => {
+  const targetId = id || selectedId.value
+  if (!targetId) return
+  
+  const targetItem = canvasItems.value.find((item) => item.id === targetId)
+  if (!targetItem) return
+
+  try {
+    await ElMessageBox.confirm(`确定要删除组件 "${targetItem.label}" 吗？`, '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    
+    const index = canvasItems.value.findIndex((item) => item.id === targetId)
+    if (index === -1) return
+    canvasItems.value.splice(index, 1)
+    if (selectedId.value === targetId) {
+      selectedId.value = null
+    }
+  } catch {
+    // 用户取消删除
+  }
+}
 </script>
 
 <template>
@@ -72,12 +98,13 @@ const handleResetProps = () => {
 
     <div class="builder">
       <BuilderSidebar :categories="componentPalette" @insert="handleInsert" />
-      <BuilderCanvas :items="canvasItems" :selected-id="selectedId" @select="handleSelect" />
+      <BuilderCanvas :items="canvasItems" :selected-id="selectedId" @select="handleSelect" @delete="handleDelete" />
       <BuilderInspector
         :selected-item="selectedItem"
         :schema="selectedSchema"
         @update-props="handleUpdateProps"
         @reset="handleResetProps"
+        @delete="handleDelete"
       />
     </div>
   </div>
@@ -85,8 +112,11 @@ const handleResetProps = () => {
 
 <style scoped>
 .builder-wrapper {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
+  height: 100vh;
+  min-height: 0;
 }
 
 .builder-header {
@@ -120,6 +150,15 @@ const handleResetProps = () => {
   display: grid;
   grid-template-columns: 16rem 1fr 16rem;
   gap: 1rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  align-items: stretch;
+}
+
+.builder > * {
+  min-height: 0;
+  height: 100%;
 }
 
 @media (max-width: 80rem) {

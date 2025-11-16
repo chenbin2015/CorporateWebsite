@@ -32,6 +32,15 @@ import AppSidebar from '@/components/navigation/AppSidebar.vue'
   flex: 1;
   padding: 1.5rem;
   background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.layout__content > * {
+  flex: 1;
+  min-height: 0;
 }
 
 @media (max-width: 62rem) {

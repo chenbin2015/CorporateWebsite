@@ -32,7 +32,7 @@ const handleInsert = (component) => {
         <el-tag size="small" type="info">{{ categories.reduce((sum, cat) => sum + cat.items.length, 0) }}</el-tag>
       </div>
     </template>
-    <el-scrollbar height="420px">
+    <el-scrollbar class="sidebar-scrollbar">
       <el-collapse accordion>
         <el-collapse-item v-for="category in categories" :key="category.value" :name="category.value">
           <template #title>
@@ -72,7 +72,27 @@ const handleInsert = (component) => {
 
 <style scoped>
 .builder-panel {
-  min-height: 100%;
+  max-height: calc(100vh - 280px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.builder-panel :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.sidebar-scrollbar {
+  flex: 1;
+  height: 100%;
+}
+
+.sidebar-scrollbar :deep(.el-scrollbar__wrap) {
+  height: 100%;
 }
 
 .panel-header {

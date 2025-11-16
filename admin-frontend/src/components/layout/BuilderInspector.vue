@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { Delete, RefreshRight } from '@element-plus/icons-vue'
 
 const props = defineProps({
   selectedItem: {
@@ -12,7 +13,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update-props', 'reset'])
+const emit = defineEmits(['update-props', 'reset', 'delete'])
 
 const title = computed(() => props.selectedItem?.label ?? '未选择组件')
 
@@ -29,9 +30,6 @@ const handleInput = (prop, value) => {
           <p class="eyebrow">属性配置</p>
           <h4>{{ title }}</h4>
         </div>
-        <el-button text size="small" :disabled="!schema" @click="emit('reset')">
-          重置
-        </el-button>
       </div>
     </template>
     <template v-if="schema && selectedItem">
@@ -58,6 +56,16 @@ const handleInput = (prop, value) => {
           />
         </el-form-item>
       </el-form>
+      <div class="panel-actions">
+        <el-button type="danger" size="small" :disabled="!selectedItem" @click="emit('delete')">
+          <el-icon><Delete /></el-icon>
+          删除组件
+        </el-button>
+        <el-button size="small" :disabled="!schema" @click="emit('reset')">
+          <el-icon><RefreshRight /></el-icon>
+          重置属性
+        </el-button>
+      </div>
     </template>
     <el-empty v-else description="请选择画布中的组件以配置属性" />
   </el-card>
@@ -72,6 +80,15 @@ const handleInput = (prop, value) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--el-border-color-lighter);
+  justify-content: flex-end;
 }
 
 .eyebrow {
