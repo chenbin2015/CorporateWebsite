@@ -16,9 +16,12 @@ request.interceptors.request.use((config) => {
 request.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    const message = error.response?.data?.message ?? error.message
-    console.error('[API ERROR]', message)
-    return Promise.reject(error)
+    const message = error.response?.data?.message 
+      || error.response?.data?.error 
+      || error.message 
+      || '请求失败'
+    console.error('[API ERROR]', error.response?.data || error.message)
+    return Promise.reject(new Error(message))
   },
 )
 

@@ -14,11 +14,33 @@ const handleLogout = () => {
 <template>
   <header class="app-header">
     <div class="app-header__left">
-      <slot name="title">管理平台</slot>
+      <slot name="title">
+        <div class="header-title">
+          <h2>管理平台</h2>
+          <p>低代码搭建 · 权限一体化</p>
+        </div>
+      </slot>
     </div>
     <div class="app-header__right">
-      <span class="app-header__user">{{ userStore.displayName }}</span>
-      <button type="button" class="link" @click="handleLogout">退出</button>
+      <el-button type="primary" text circle>
+        <el-icon><BellFilled /></el-icon>
+      </el-button>
+      <el-divider direction="vertical" />
+      <el-dropdown trigger="click">
+        <span class="user-entry">
+          <el-avatar size="small">
+            <el-icon><UserFilled /></el-icon>
+          </el-avatar>
+          <span>{{ userStore.displayName }}</span>
+          <el-icon><ArrowDown /></el-icon>
+        </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item>个人中心</el-dropdown-item>
+            <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
   </header>
 </template>
@@ -31,10 +53,21 @@ const handleLogout = () => {
   justify-content: space-between;
   padding: 0 1.5rem;
   border-bottom: 0.1rem solid var(--color-border);
-  background: var(--color-surface-contrast);
+  background: rgba(248, 250, 252, 0.92);
+  backdrop-filter: blur(6px);
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+.header-title h2 {
+  margin: 0;
+}
+
+.header-title p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
 }
 
 .app-header__right {
@@ -43,14 +76,10 @@ const handleLogout = () => {
   gap: 1rem;
 }
 
-.app-header__user {
-  font-weight: 600;
-}
-
-.link {
-  background: none;
-  border: none;
-  color: var(--color-primary);
+.user-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   cursor: pointer;
 }
 </style>

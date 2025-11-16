@@ -8,71 +8,131 @@ import { projectRoutes } from '@/router/modules/projects'
 const route = useRoute()
 const router = useRouter()
 
-const items = computed(() => [...dashboardRoutes, ...projectRoutes].filter((item) => !item.meta?.hidden))
-
-const isActive = (item) => {
-  return route.name === item.name
+const iconMap = {
+  home: 'HomeFilled',
+  folder: 'FolderOpened',
+  edit: 'Edit',
+  default: 'Menu',
 }
 
-const navigate = (item) => {
-  router.push({ name: item.name })
+const resolveIcon = (key) => iconMap[key] ?? iconMap.default
+
+const sections = computed(() => {
+  const dashboard = dashboardRoutes.filter((item) => !item.meta?.hidden)
+  const projects = projectRoutes.filter((item) => !item.meta?.hidden && item.name !== 'pageBuilder')
+
+  return [
+    ...dashboard.map((route) => ({
+      type: 'item',
+      route,
+    })),
+    {
+      type: 'group',
+      label: '项目管理',
+      icon: 'folder',
+      children: [
+        { name: 'projects', label: '项目列表', icon: 'folder' },
+        { name: 'projectCreate', label: '添加项目', icon: 'edit' },
+      ],
+    },
+  ]
+})
+
+const handleSelect = (index) => {
+  router.push({ name: index })
 }
 </script>
 
 <template>
   <aside class="sidebar">
-    <div class="sidebar__logo">Admin Console</div>
-    <nav class="sidebar__nav">
-      <button
-        v-for="item in items"
-        :key="item.name"
-        type="button"
-        :class="['sidebar__nav-item', { 'sidebar__nav-item--active': isActive(item) }]"
-        @click="navigate(item)"
-      >
-        <span>{{ item.meta?.title ?? item.name }}</span>
-      </button>
-    </nav>
+    <div class="sidebar__logo">
+      <el-icon><Grid /></el-icon>
+      <div>
+        <p>Low-code Builder</p>
+        <small>管理控制台</small>
+      </div>
+    </div>
+    <el-menu
+      class="sidebar__menu"
+      :default-active="route.name"
+      background-color="transparent"
+      text-color="rgba(255,255,255,0.7)"
+      active-text-color="#fff"
+      @select="handleSelect"
+    >
+      <template v-for="section in sections" :key="section.label ?? section.route?.name">
+        <el-menu-item
+          v-if="section.type === 'item'"
+          :index="section.route.name"
+        >
+          <el-icon>
+            <component :is="resolveIcon(section.route.meta?.icon)" />
+          </el-icon>
+          <span>{{ section.route.meta?.title ?? section.route.name }}</span>
+        </el-menu-item>
+        <el-sub-menu v-else :index="section.label">
+          <template #title>
+            <el-icon>
+              <component :is="resolveIcon(section.icon)" />
+            </el-icon>
+            <span>{{ section.label }}</span>
+          </template>
+          <el-menu-item v-for="child in section.children" :key="child.name" :index="child.name">
+            <el-icon>
+              <component :is="resolveIcon(child.icon)" />
+            </el-icon>
+            <span>{{ child.label }}</span>
+          </el-menu-item>
+        </el-sub-menu>
+      </template>
+    </el-menu>
   </aside>
 </template>
 
 <style scoped>
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--color-secondary);
+  background: linear-gradient(180deg, #0f172a 0%, #111827 50%, #0f172a 100%);
   color: #fff;
   height: 100vh;
   position: sticky;
   top: 0;
   display: flex;
   flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sidebar__logo {
-  padding: 1.2rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
-
-.sidebar__nav {
   display: flex;
-  flex-direction: column;
-  padding: 0 0.6rem;
-  gap: 0.4rem;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.sidebar__nav-item {
-  border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.75);
-  padding: 0.8rem 1rem;
-  border-radius: var(--radius-md);
-  text-align: left;
+.sidebar__logo p {
+  font-weight: 600;
+  margin: 0;
 }
 
-.sidebar__nav-item--active {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+.sidebar__logo small {
+  opacity: 0.7;
+}
+
+.sidebar__menu {
+  border-right: none;
+  flex: 1;
+  padding: 1rem 0.6rem;
+}
+
+:deep(.el-menu-item) {
+  border-radius: 0.8rem;
+  margin: 0.2rem 0.4rem;
+}
+
+:deep(.el-menu-item.is-active) {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 </style>
 

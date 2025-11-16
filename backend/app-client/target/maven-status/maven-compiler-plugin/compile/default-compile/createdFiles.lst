@@ -1,0 +1,6 @@
+com\company\platform\client\auth\dto\LoginResponse.class
+com\company\platform\client\auth\dto\LoginRequest.class
+com\company\platform\client\security\JwtTokenProvider.class
+com\company\platform\client\auth\dto\RegisterRequest.class
+com\company\platform\client\auth\AuthController.class
+com\company\platform\client\project\ProjectController.class

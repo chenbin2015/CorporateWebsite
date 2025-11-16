@@ -1,0 +1,4 @@
+com\company\platform\domain\project\model\Project.class
+com\company\platform\domain\project\repository\ProjectRepository.class
+com\company\platform\domain\user\model\User.class
+com\company\platform\domain\user\repository\UserRepository.class

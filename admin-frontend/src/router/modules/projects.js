@@ -9,6 +9,15 @@ export const projectRoutes = [
     },
   },
   {
+    path: 'projects/create',
+    name: 'projectCreate',
+    component: () => import('../../pages/projects/ProjectCreate.vue'),
+    meta: {
+      title: '添加项目',
+      icon: 'edit',
+    },
+  },
+  {
     path: 'projects/:projectId/pages/:pageId',
     name: 'pageBuilder',
     component: () => import('../../pages/projects/PageBuilder.vue'),

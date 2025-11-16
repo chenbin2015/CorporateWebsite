@@ -1,0 +1,4 @@
+com\company\platform\config\security\JwtAuthenticationFilter.class
+com\company\platform\config\security\UserDetailsServiceImpl.class
+com\company\platform\BootstrapApplication.class
+com\company\platform\config\security\SecurityConfig.class

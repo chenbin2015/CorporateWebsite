@@ -1,14 +1,60 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import BuilderCanvas from '@/components/layout/BuilderCanvas.vue'
 import BuilderInspector from '@/components/layout/BuilderInspector.vue'
 import BuilderSidebar from '@/components/layout/BuilderSidebar.vue'
+import { componentPalette } from '@/data/componentPalette'
+import { getComponentSchema } from '@/data/componentSchemas'
 
 const route = useRoute()
 const projectId = computed(() => route.params.projectId)
 const pageId = computed(() => route.params.pageId)
+
+const canvasItems = ref([])
+const selectedId = ref(null)
+
+const selectedItem = computed(() => canvasItems.value.find((item) => item.id === selectedId.value))
+const selectedSchema = computed(() => (selectedItem.value ? getComponentSchema(selectedItem.value.key) : null))
+
+const handleInsert = (component) => {
+  const schema = getComponentSchema(component.key)
+  const defaults = schema?.defaults ? JSON.parse(JSON.stringify(schema.defaults)) : {}
+  const instance = {
+    id: `${component.key}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    ...component,
+    props: defaults,
+  }
+  canvasItems.value.push(instance)
+  selectedId.value = instance.id
+}
+
+const handleSelect = (componentId) => {
+  selectedId.value = componentId
+}
+
+const handleUpdateProps = (updatedProps) => {
+  const index = canvasItems.value.findIndex((item) => item.id === selectedId.value)
+  if (index === -1) return
+  canvasItems.value[index] = {
+    ...canvasItems.value[index],
+    props: {
+      ...canvasItems.value[index].props,
+      ...updatedProps,
+    },
+  }
+}
+
+const handleResetProps = () => {
+  if (!selectedSchema.value) return
+  const index = canvasItems.value.findIndex((item) => item.id === selectedId.value)
+  if (index === -1) return
+  canvasItems.value[index] = {
+    ...canvasItems.value[index],
+    props: JSON.parse(JSON.stringify(selectedSchema.value.defaults ?? {})),
+  }
+}
 </script>
 
 <template>
@@ -25,9 +71,14 @@ const pageId = computed(() => route.params.pageId)
     </header>
 
     <div class="builder">
-      <BuilderSidebar />
-      <BuilderCanvas />
-      <BuilderInspector />
+      <BuilderSidebar :categories="componentPalette" @insert="handleInsert" />
+      <BuilderCanvas :items="canvasItems" :selected-id="selectedId" @select="handleSelect" />
+      <BuilderInspector
+        :selected-item="selectedItem"
+        :schema="selectedSchema"
+        @update-props="handleUpdateProps"
+        @reset="handleResetProps"
+      />
     </div>
   </div>
 </template>

@@ -1,0 +1,223 @@
+export const componentPalette = [
+  {
+    label: '框架 & 英雄区块',
+    value: 'hero',
+    items: [
+      {
+        key: 'HeroCarousel',
+        label: 'HeroCarousel',
+        desc: '首页焦点大图轮播',
+        source: 'frontend/src/components/HeroCarousel.vue',
+        icon: 'Tickets',
+      },
+      {
+        key: 'SectionHero',
+        label: 'SectionHero',
+        desc: '分区级英雄横幅',
+        source: 'frontend/src/components/sections/SectionHero.vue',
+        icon: 'Flag',
+      },
+      {
+        key: 'PageHero',
+        label: 'PageHero',
+        desc: '内页头图 + 描述',
+        source: 'frontend/src/components/PageHero.vue',
+        icon: 'Reading',
+      },
+    ],
+  },
+  {
+    label: '导航 & 结构',
+    value: 'navigation',
+    items: [
+      {
+        key: 'MainHeader',
+        label: 'MainHeader',
+        desc: '顶栏导航与语言切换',
+        source: 'frontend/src/components/MainHeader.vue',
+        icon: 'Menu',
+      },
+      {
+        key: 'TabsNav',
+        label: 'TabsNav',
+        desc: '横向标签导航',
+        source: 'frontend/src/components/sections/TabsNav.vue',
+        icon: 'Collection',
+      },
+      {
+        key: 'BreadcrumbHeader',
+        label: 'BreadcrumbHeader',
+        desc: '面包屑 + 标题说明',
+        source: 'frontend/src/components/sections/BreadcrumbHeader.vue',
+        icon: 'Suitcase',
+      },
+      {
+        key: 'TopLinksBar',
+        label: 'TopLinksBar',
+        desc: '顶部快速链接条',
+        source: 'frontend/src/components/TopLinksBar.vue',
+        icon: 'Link',
+      },
+    ],
+  },
+  {
+    label: '内容展示',
+    value: 'content',
+    items: [
+      {
+        key: 'InfoCardGrid',
+        label: 'InfoCardGrid',
+        desc: '多列信息卡片组',
+        source: 'frontend/src/components/InfoCardGrid.vue',
+        icon: 'Grid',
+      },
+      {
+        key: 'FocusGrid',
+        label: 'FocusGrid',
+        desc: '特色专题集合',
+        source: 'frontend/src/components/FocusGrid.vue',
+        icon: 'Histogram',
+      },
+      {
+        key: 'ContentSplit',
+        label: 'ContentSplit',
+        desc: '左右图文条幅',
+        source: 'frontend/src/components/sections/ContentSplit.vue',
+        icon: 'SetUp',
+      },
+      {
+        key: 'TextImageSection',
+        label: 'TextImageSection',
+        desc: '图文穿插段落',
+        source: 'frontend/src/components/TextImageSection.vue',
+        icon: 'PictureFilled',
+      },
+      {
+        key: 'CardGrid',
+        label: 'CardGrid',
+        desc: '基础卡片宫格',
+        source: 'frontend/src/components/sections/CardGrid.vue',
+        icon: 'Tickets',
+      },
+    ],
+  },
+  {
+    label: '数据 & 公告',
+    value: 'data',
+    items: [
+      {
+        key: 'DataTable',
+        label: 'DataTable',
+        desc: '可配置表格展示',
+        source: 'frontend/src/components/sections/DataTable.vue',
+        icon: 'List',
+      },
+      {
+        key: 'NoticeList',
+        label: 'NoticeList',
+        desc: '公告/动态列表',
+        source: 'frontend/src/components/sections/NoticeList.vue',
+        icon: 'Document',
+      },
+      {
+        key: 'StatisticsBar',
+        label: 'StatisticsBar',
+        desc: '关键指标统计条',
+        source: 'frontend/src/components/sections/StatisticsBar.vue',
+        icon: 'PieChart',
+      },
+      {
+        key: 'ProgressSteps',
+        label: 'ProgressSteps',
+        desc: '阶段进度展示',
+        source: 'frontend/src/components/sections/ProgressSteps.vue',
+        icon: 'Guide',
+      },
+      {
+        key: 'TimelineHorizontal',
+        label: 'TimelineHorizontal',
+        desc: '横向时间轴',
+        source: 'frontend/src/components/sections/TimelineHorizontal.vue',
+        icon: 'Aim',
+      },
+    ],
+  },
+  {
+    label: '互动 & 转化',
+    value: 'engagement',
+    items: [
+      {
+        key: 'CTABanner',
+        label: 'CTABanner',
+        desc: '行动召唤条',
+        source: 'frontend/src/components/sections/CTABanner.vue',
+        icon: 'Promotion',
+      },
+      {
+        key: 'SimpleForm',
+        label: 'SimpleForm',
+        desc: '简易反馈/报名表单',
+        source: 'frontend/src/components/sections/SimpleForm.vue',
+        icon: 'EditPen',
+      },
+      {
+        key: 'ContactCard',
+        label: 'ContactCard',
+        desc: '联系方式卡片',
+        source: 'frontend/src/components/sections/ContactCard.vue',
+        icon: 'Phone',
+      },
+      {
+        key: 'ServiceLinks',
+        label: 'ServiceLinks',
+        desc: '服务入口集合',
+        source: 'frontend/src/components/ServiceLinks.vue',
+        icon: 'Share',
+      },
+      {
+        key: 'PartnerLogoGrid',
+        label: 'PartnerLogoGrid',
+        desc: '合作伙伴展示',
+        source: 'frontend/src/components/sections/PartnerLogoGrid.vue',
+        icon: 'Briefcase',
+      },
+    ],
+  },
+  {
+    label: '媒体 & 故事',
+    value: 'media',
+    items: [
+      {
+        key: 'EventSpotlight',
+        label: 'EventSpotlight',
+        desc: '重点活动推介',
+        source: 'frontend/src/components/EventSpotlight.vue',
+        icon: 'Calendar',
+      },
+      {
+        key: 'ImageGallery',
+        label: 'ImageGallery',
+        desc: '瀑布流图集',
+        source: 'frontend/src/components/sections/ImageGallery.vue',
+        icon: 'Picture',
+      },
+      {
+        key: 'TestimonialList',
+        label: 'TestimonialList',
+        desc: '口碑/推荐语',
+        source: 'frontend/src/components/sections/TestimonialList.vue',
+        icon: 'ChatLineSquare',
+      },
+      {
+        key: 'AvatarCardGrid',
+        label: 'AvatarCardGrid',
+        desc: '人物/专家卡片',
+        source: 'frontend/src/components/sections/AvatarCardGrid.vue',
+        icon: 'UserFilled',
+      },
+    ],
+  },
+]
+
+export default componentPalette
+

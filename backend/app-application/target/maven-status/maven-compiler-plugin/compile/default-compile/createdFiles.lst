@@ -1,0 +1,4 @@
+com\company\platform\application\auth\AuthApplicationService.class
+com\company\platform\application\auth\command\LoginCommand.class
+com\company\platform\application\project\ProjectQueryService.class
+com\company\platform\application\auth\command\RegisterCommand.class
