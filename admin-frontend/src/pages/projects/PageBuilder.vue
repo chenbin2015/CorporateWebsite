@@ -32,7 +32,22 @@ const handleInsert = (component) => {
     ...component,
     props: defaults,
   }
-  canvasItems.value.push(instance)
+  
+  // 如果选中了某个组件，插入到该组件下方；否则插入到底部
+  if (selectedId.value) {
+    const selectedIndex = canvasItems.value.findIndex((item) => item.id === selectedId.value)
+    if (selectedIndex !== -1) {
+      // 插入到选中组件的下方
+      canvasItems.value.splice(selectedIndex + 1, 0, instance)
+    } else {
+      // 如果找不到选中的组件，插入到底部
+      canvasItems.value.push(instance)
+    }
+  } else {
+    // 没有选中组件，插入到底部
+    canvasItems.value.push(instance)
+  }
+  
   selectedId.value = instance.id
 }
 

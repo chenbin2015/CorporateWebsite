@@ -1,5 +1,6 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { Search, Plus } from '@element-plus/icons-vue'
 
 import { componentPalette } from '@/data/componentPalette'
 
@@ -12,12 +13,80 @@ const props = defineProps({
   },
 })
 
+const searchQuery = ref('')
+const activeNames = ref([])
+
 const categories = computed(() => (props.categories.length ? props.categories : DEFAULT_CATEGORIES))
+
+// 搜索过滤逻辑
+const filteredCategories = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return categories.value
+  }
+
+  const query = searchQuery.value.toLowerCase().trim()
+  
+  return categories.value
+    .map((category) => {
+      const filteredItems = category.items.filter((item) => {
+        // 搜索组件名称、描述、key
+        const label = (item.label || '').toLowerCase()
+        const desc = (item.desc || '').toLowerCase()
+        const key = (item.key || '').toLowerCase()
+        const categoryLabel = (category.label || '').toLowerCase()
+        
+        return (
+          label.includes(query) ||
+          desc.includes(query) ||
+          key.includes(query) ||
+          categoryLabel.includes(query)
+        )
+      })
+      
+      return filteredItems.length > 0
+        ? {
+            ...category,
+            items: filteredItems,
+          }
+        : null
+    })
+    .filter(Boolean)
+})
+
+const totalComponents = computed(() => {
+  return filteredCategories.value.reduce((sum, cat) => sum + cat.items.length, 0)
+})
+
+// 当有搜索关键词时，自动展开所有匹配的分类
+watch(
+  () => searchQuery.value,
+  (newQuery) => {
+    if (newQuery.trim()) {
+      // 有搜索关键词时，展开所有匹配的分类
+      activeNames.value = filteredCategories.value.map((cat) => cat.value)
+    }
+    // 清空搜索时，不清空 activeNames，让用户保持之前的选择
+  },
+)
+
+// 监听 filteredCategories 变化，确保搜索时展开所有分类
+watch(
+  () => filteredCategories.value,
+  (newCategories) => {
+    if (searchQuery.value.trim() && newCategories.length > 0) {
+      activeNames.value = newCategories.map((cat) => cat.value)
+    }
+  },
+)
 
 const emit = defineEmits(['insert'])
 
 const handleInsert = (component) => {
   emit('insert', component)
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
 }
 </script>
 
@@ -29,12 +98,24 @@ const handleInsert = (component) => {
           <p class="eyebrow">组件库</p>
           <h4>按分类快速查找</h4>
         </div>
-        <el-tag size="small" type="info">{{ categories.reduce((sum, cat) => sum + cat.items.length, 0) }}</el-tag>
+        <el-tag size="small" type="info">{{ totalComponents }}</el-tag>
       </div>
     </template>
+    <div class="search-container">
+      <el-input
+        v-model="searchQuery"
+        placeholder="搜索组件名称、描述..."
+        clearable
+        class="search-input"
+      >
+        <template #prefix>
+          <el-icon><Search /></el-icon>
+        </template>
+      </el-input>
+    </div>
     <el-scrollbar class="sidebar-scrollbar">
-      <el-collapse accordion>
-        <el-collapse-item v-for="category in categories" :key="category.value" :name="category.value">
+      <el-collapse v-model="activeNames" :accordion="!searchQuery.trim()">
+        <el-collapse-item v-for="category in filteredCategories" :key="category.value" :name="category.value">
           <template #title>
             <div class="collapse-title">
               <span>{{ category.label }}</span>
@@ -99,6 +180,19 @@ const handleInsert = (component) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.search-container {
+  padding: 0 1rem 0.8rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.search-input {
+  width: 100%;
+}
+
+.search-input :deep(.el-input__wrapper) {
+  border-radius: 0.6rem;
 }
 
 .eyebrow {
