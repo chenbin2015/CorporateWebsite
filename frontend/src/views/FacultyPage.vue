@@ -1,8 +1,8 @@
 <script setup>
-import SectionHero from '@/components/sections/SectionHero.vue'
-import StatisticsBar from '@/components/sections/StatisticsBar.vue'
-import ContentSplit from '@/components/sections/ContentSplit.vue'
-import CardGrid from '@/components/sections/CardGrid.vue'
+import SectionHero from '@shared/components/sections/SectionHero.vue'
+import StatisticsBar from '@shared/components/sections/StatisticsBar.vue'
+import ContentSplit from '@shared/components/sections/ContentSplit.vue'
+import CardGrid from '@shared/components/sections/CardGrid.vue'
 
 import { facultyHero, facultyHighlights, facultyStats, recruitmentContent } from '@/data/faculty'
 </script>

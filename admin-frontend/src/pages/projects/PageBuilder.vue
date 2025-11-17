@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 
 import BuilderCanvas from '@/components/layout/BuilderCanvas.vue'
@@ -11,6 +11,7 @@ import { getComponentSchema } from '@/data/componentSchemas'
 import { getPage, saveDraft, publishPage } from '@/services/modules/project'
 
 const route = useRoute()
+const router = useRouter()
 const projectId = computed(() => route.params.projectId)
 const pageId = computed(() => route.params.pageId)
 
@@ -164,9 +165,37 @@ const handlePublish = async () => {
   }
 }
 
-// 预览页面（暂时先提示）
+// 预览页面
 const handlePreview = () => {
-  ElMessage.info('预览功能开发中...')
+  if (!projectId.value || !pageId.value) {
+    ElMessage.warning('页面信息不完整')
+    return
+  }
+  
+  // 先保存草稿，确保预览的是最新数据
+  handleSaveDraft().then(() => {
+    // 在新窗口打开预览
+    const previewUrl = router.resolve({
+      name: 'pagePreview',
+      params: {
+        projectId: projectId.value,
+        pageId: pageId.value,
+      },
+    }).href
+    
+    window.open(previewUrl, '_blank')
+  }).catch(() => {
+    // 即使保存失败也打开预览（使用已保存的数据）
+    const previewUrl = router.resolve({
+      name: 'pagePreview',
+      params: {
+        projectId: projectId.value,
+        pageId: pageId.value,
+      },
+    }).href
+    
+    window.open(previewUrl, '_blank')
+  })
 }
 
 // 监听 canvasItems 变化，自动保存（防抖）

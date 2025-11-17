@@ -54,6 +54,15 @@ export const projectRoutes = [
     },
   },
   {
+    path: 'projects/:projectId/pages/:pageId/preview',
+    name: 'pagePreview',
+    component: () => import('../../pages/projects/PagePreview.vue'),
+    meta: {
+      title: '页面预览',
+      hidden: true,
+    },
+  },
+  {
     path: 'projects/:projectId/pages',
     name: 'pageList',
     component: () => import('../../pages/projects/PageList.vue'),

@@ -1,61 +1,78 @@
-import HeroCarouselPreview from './components/HeroCarouselPreview.vue'
-import SectionHeroPreview from './components/SectionHeroPreview.vue'
-import CTABannerPreview from './components/CTABannerPreview.vue'
-import PageHeroPreview from './components/PageHeroPreview.vue'
+// 使用共享组件
+import HeroCarousel from '@shared/components/HeroCarousel.vue'
+import NewsSection from '@shared/components/NewsSection.vue'
+import ServiceLinks from '@shared/components/ServiceLinks.vue'
+import EventSpotlight from '@shared/components/EventSpotlight.vue'
+import FocusGrid from '@shared/components/FocusGrid.vue'
+import PageHero from '@shared/components/PageHero.vue'
+import InfoCardGrid from '@shared/components/InfoCardGrid.vue'
+import TextImageSection from '@shared/components/TextImageSection.vue'
+import StatsHighlight from '@shared/components/StatsHighlight.vue'
+
+// Sections 组件
+import SectionHero from '@shared/components/sections/SectionHero.vue'
+import CTABanner from '@shared/components/sections/CTABanner.vue'
+import BreadcrumbHeader from '@shared/components/sections/BreadcrumbHeader.vue'
+import ContentSplit from '@shared/components/sections/ContentSplit.vue'
+import TabsNav from '@shared/components/sections/TabsNav.vue'
+import StatisticsBar from '@shared/components/sections/StatisticsBar.vue'
+import ProgressSteps from '@shared/components/sections/ProgressSteps.vue'
+import TimelineHorizontal from '@shared/components/sections/TimelineHorizontal.vue'
+import CardGrid from '@shared/components/sections/CardGrid.vue'
+import DataTable from '@shared/components/sections/DataTable.vue'
+import ContactCard from '@shared/components/sections/ContactCard.vue'
+import PartnerLogoGrid from '@shared/components/sections/PartnerLogoGrid.vue'
+import NoticeList from '@shared/components/sections/NoticeList.vue'
+import SimpleForm from '@shared/components/sections/SimpleForm.vue'
+import ImageGallery from '@shared/components/sections/ImageGallery.vue'
+import TestimonialList from '@shared/components/sections/TestimonialList.vue'
+import AvatarCardGrid from '@shared/components/sections/AvatarCardGrid.vue'
+import TimelineList from '@shared/components/sections/TimelineList.vue'
+import StepsList from '@shared/components/sections/StepsList.vue'
+import AccordionList from '@shared/components/sections/AccordionList.vue'
+import FilterBar from '@shared/components/sections/FilterBar.vue'
+import DemoPanel from '@shared/components/sections/DemoPanel.vue'
+import DownloadList from '@shared/components/sections/DownloadList.vue'
+
+// 暂时保留的预览组件（MainHeader 和 TopLinksBar 有 i18n 依赖，暂不迁移）
 import MainHeaderPreview from './components/MainHeaderPreview.vue'
-import TabsNavPreview from './components/TabsNavPreview.vue'
-import BreadcrumbHeaderPreview from './components/BreadcrumbHeaderPreview.vue'
 import TopLinksBarPreview from './components/TopLinksBarPreview.vue'
-import InfoCardGridPreview from './components/InfoCardGridPreview.vue'
-import DataTablePreview from './components/DataTablePreview.vue'
-import ServiceLinksPreview from './components/ServiceLinksPreview.vue'
-import ContactCardPreview from './components/ContactCardPreview.vue'
-import PartnerLogoGridPreview from './components/PartnerLogoGridPreview.vue'
-import EventSpotlightPreview from './components/EventSpotlightPreview.vue'
-import NoticeListPreview from './components/NoticeListPreview.vue'
-import SimpleFormPreview from './components/SimpleFormPreview.vue'
-import StatisticsBarPreview from './components/StatisticsBarPreview.vue'
-import ProgressStepsPreview from './components/ProgressStepsPreview.vue'
-import TimelineHorizontalPreview from './components/TimelineHorizontalPreview.vue'
-import ContentSplitPreview from './components/ContentSplitPreview.vue'
-import CardGridPreview from './components/CardGridPreview.vue'
-import FocusGridPreview from './components/FocusGridPreview.vue'
-import TextImageSectionPreview from './components/TextImageSectionPreview.vue'
-import ImageGalleryPreview from './components/ImageGalleryPreview.vue'
-import TestimonialListPreview from './components/TestimonialListPreview.vue'
-import AvatarCardGridPreview from './components/AvatarCardGridPreview.vue'
-import NewsSectionPreview from './components/NewsSectionPreview.vue'
 import FallbackPreview from './components/FallbackPreview.vue'
 
 export const componentRegistry = {
-  HeroCarousel: HeroCarouselPreview,
-  SectionHero: SectionHeroPreview,
-  CTABanner: CTABannerPreview,
-  PageHero: PageHeroPreview,
-  MainHeader: MainHeaderPreview,
-  TabsNav: TabsNavPreview,
-  BreadcrumbHeader: BreadcrumbHeaderPreview,
-  TopLinksBar: TopLinksBarPreview,
-  InfoCardGrid: InfoCardGridPreview,
-  DataTable: DataTablePreview,
-  ServiceLinks: ServiceLinksPreview,
-  ContactCard: ContactCardPreview,
-  PartnerLogoGrid: PartnerLogoGridPreview,
-  EventSpotlight: EventSpotlightPreview,
-  ImageGallery: ImageGalleryPreview,
-  TestimonialList: TestimonialListPreview,
-  AvatarCardGrid: AvatarCardGridPreview,
-  NoticeList: NoticeListPreview,
-  SimpleForm: SimpleFormPreview,
-  StatisticsBar: StatisticsBarPreview,
-  ProgressSteps: ProgressStepsPreview,
-  TimelineHorizontal: TimelineHorizontalPreview,
-  ContentSplit: ContentSplitPreview,
-  CardGrid: CardGridPreview,
-  FocusGrid: FocusGridPreview,
-  TextImageSection: TextImageSectionPreview,
-  NewsSection: NewsSectionPreview,
+  HeroCarousel: HeroCarousel,
+  SectionHero: SectionHero,
+  CTABanner: CTABanner,
+  PageHero: PageHero,
+  MainHeader: MainHeaderPreview, // 暂不迁移（i18n 依赖）
+  TabsNav: TabsNav,
+  BreadcrumbHeader: BreadcrumbHeader,
+  TopLinksBar: TopLinksBarPreview, // 暂不迁移（i18n 依赖）
+  InfoCardGrid: InfoCardGrid,
+  DataTable: DataTable,
+  ServiceLinks: ServiceLinks,
+  ContactCard: ContactCard,
+  PartnerLogoGrid: PartnerLogoGrid,
+  EventSpotlight: EventSpotlight,
+  ImageGallery: ImageGallery,
+  TestimonialList: TestimonialList,
+  AvatarCardGrid: AvatarCardGrid,
+  NoticeList: NoticeList,
+  SimpleForm: SimpleForm,
+  StatisticsBar: StatisticsBar,
+  ProgressSteps: ProgressSteps,
+  TimelineHorizontal: TimelineHorizontal,
+  ContentSplit: ContentSplit,
+  CardGrid: CardGrid,
+  FocusGrid: FocusGrid,
+  TextImageSection: TextImageSection,
+  NewsSection: NewsSection,
+  TimelineList: TimelineList,
+  StepsList: StepsList,
+  AccordionList: AccordionList,
+  FilterBar: FilterBar,
+  DemoPanel: DemoPanel,
+  DownloadList: DownloadList,
 }
 
 export const resolveBuilderComponent = (key) => componentRegistry[key] ?? FallbackPreview
-

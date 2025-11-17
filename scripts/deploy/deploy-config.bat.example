@@ -1,0 +1,17 @@
+@echo off
+REM 部署配置文件示例
+REM 复制此文件为 deploy-config.bat 并修改配置
+
+REM 数据库配置
+set DB_NAME=corporate_platform
+set DB_USER=root
+set DB_PASS=root123456
+set MYSQL_HOST=localhost
+set MYSQL_PORT=3306
+
+REM MySQL 路径（如果不在 PATH 中）
+REM set MYSQL_PATH="C:\Program Files\MySQL\MySQL Server 8.4\bin\mysql.exe"
+
+REM 是否清空现有数据后重新插入（true/false）
+REM set CLEAR_EXISTING=false
+

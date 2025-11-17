@@ -1,8 +1,8 @@
 <script setup>
-import SectionHero from '@/components/sections/SectionHero.vue'
-import CardGrid from '@/components/sections/CardGrid.vue'
-import ServiceLinks from '@/components/ServiceLinks.vue'
-import ContentSplit from '@/components/sections/ContentSplit.vue'
+import SectionHero from '@shared/components/sections/SectionHero.vue'
+import CardGrid from '@shared/components/sections/CardGrid.vue'
+import ServiceLinks from '@shared/components/ServiceLinks.vue'
+import ContentSplit from '@shared/components/sections/ContentSplit.vue'
 
 import { collegeClusters, collegeServices, collegesHero } from '@/data/colleges'
 </script>

@@ -1,8 +1,8 @@
 <script setup>
-import SectionHero from '@/components/sections/SectionHero.vue'
-import ServiceLinks from '@/components/ServiceLinks.vue'
-import StepsList from '@/components/sections/StepsList.vue'
-import CardGrid from '@/components/sections/CardGrid.vue'
+import SectionHero from '@shared/components/sections/SectionHero.vue'
+import ServiceLinks from '@shared/components/ServiceLinks.vue'
+import StepsList from '@shared/components/sections/StepsList.vue'
+import CardGrid from '@shared/components/sections/CardGrid.vue'
 
 import { admissionsHero, admissionsHighlights, admissionsServices, admissionsSteps } from '@/data/admissions'
 </script>

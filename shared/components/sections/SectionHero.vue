@@ -1,4 +1,9 @@
 <script setup>
+import { computed } from 'vue'
+
+// 支持两种 props 格式：
+// 1. { title, subtitle, description, background, overlayColor, actions } - 前端格式
+// 2. { title, tag, description } - Builder 格式（tag 映射到 subtitle）
 const props = defineProps({
   title: {
     type: String,
@@ -6,7 +11,11 @@ const props = defineProps({
   },
   subtitle: {
     type: String,
-    default: 'A campus where excellence meets opportunity.',
+    default: '',
+  },
+  tag: {
+    type: String,
+    default: '',
   },
   description: {
     type: String,
@@ -29,6 +38,9 @@ const props = defineProps({
     ],
   },
 })
+
+// 统一 subtitle：优先使用 subtitle，如果没有则使用 tag
+const displaySubtitle = computed(() => props.subtitle || props.tag || 'A campus where excellence meets opportunity.')
 </script>
 
 <template>
@@ -36,7 +48,7 @@ const props = defineProps({
     <img :src="props.background" :alt="props.title" class="section-hero__background" loading="lazy" />
     <div class="section-hero__overlay">
       <div class="section-hero__content">
-        <p class="section-hero__subtitle">{{ props.subtitle }}</p>
+        <p class="section-hero__subtitle">{{ displaySubtitle }}</p>
         <h1 class="section-hero__title">{{ props.title }}</h1>
         <p class="section-hero__description">
           {{ props.description }}

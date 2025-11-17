@@ -1,10 +1,10 @@
 <script setup>
-import SectionHero from '@/components/sections/SectionHero.vue'
-import StatisticsBar from '@/components/sections/StatisticsBar.vue'
-import ContentSplit from '@/components/sections/ContentSplit.vue'
-import CardGrid from '@/components/sections/CardGrid.vue'
-import TimelineList from '@/components/sections/TimelineList.vue'
-import FocusGrid from '@/components/FocusGrid.vue'
+import SectionHero from '@shared/components/sections/SectionHero.vue'
+import StatisticsBar from '@shared/components/sections/StatisticsBar.vue'
+import ContentSplit from '@shared/components/sections/ContentSplit.vue'
+import CardGrid from '@shared/components/sections/CardGrid.vue'
+import TimelineList from '@shared/components/sections/TimelineList.vue'
+import FocusGrid from '@shared/components/FocusGrid.vue'
 
 import { aboutHero, aboutHistory, aboutHighlights, aboutPillars, aboutStats } from '@/data/about'
 </script>

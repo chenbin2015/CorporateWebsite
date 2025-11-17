@@ -1,7 +1,7 @@
 <script setup>
-import SectionHero from '@/components/sections/SectionHero.vue'
-import ContentSplit from '@/components/sections/ContentSplit.vue'
-import CardGrid from '@/components/sections/CardGrid.vue'
+import SectionHero from '@shared/components/sections/SectionHero.vue'
+import ContentSplit from '@shared/components/sections/ContentSplit.vue'
+import CardGrid from '@shared/components/sections/CardGrid.vue'
 
 import { libraryCards, libraryHero, librarySplit } from '@/data/library'
 </script>

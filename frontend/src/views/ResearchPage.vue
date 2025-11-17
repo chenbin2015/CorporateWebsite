@@ -1,7 +1,7 @@
 <script setup>
-import SectionHero from '@/components/sections/SectionHero.vue'
-import CardGrid from '@/components/sections/CardGrid.vue'
-import FocusGrid from '@/components/FocusGrid.vue'
+import SectionHero from '@shared/components/sections/SectionHero.vue'
+import CardGrid from '@shared/components/sections/CardGrid.vue'
+import FocusGrid from '@shared/components/FocusGrid.vue'
 
 import { researchCards, researchFocus, researchHero } from '@/data/research'
 </script>

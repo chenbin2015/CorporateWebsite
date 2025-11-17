@@ -1,9 +1,9 @@
 <script setup>
-import HeroCarousel from '@/components/HeroCarousel.vue'
-import NewsSection from '@/components/NewsSection.vue'
-import ServiceLinks from '@/components/ServiceLinks.vue'
-import EventSpotlight from '@/components/EventSpotlight.vue'
-import FocusGrid from '@/components/FocusGrid.vue'
+import HeroCarousel from '@shared/components/HeroCarousel.vue'
+import NewsSection from '@shared/components/NewsSection.vue'
+import ServiceLinks from '@shared/components/ServiceLinks.vue'
+import EventSpotlight from '@shared/components/EventSpotlight.vue'
+import FocusGrid from '@shared/components/FocusGrid.vue'
 
 import { events, focusTopics, heroItems, newsColumns, serviceLinks } from '@/data/home'
 </script>

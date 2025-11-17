@@ -1,8 +1,8 @@
 <script setup>
-import SectionHero from '@/components/sections/SectionHero.vue'
-import CardGrid from '@/components/sections/CardGrid.vue'
-import ContentSplit from '@/components/sections/ContentSplit.vue'
-import StepsList from '@/components/sections/StepsList.vue'
+import SectionHero from '@shared/components/sections/SectionHero.vue'
+import CardGrid from '@shared/components/sections/CardGrid.vue'
+import ContentSplit from '@shared/components/sections/ContentSplit.vue'
+import StepsList from '@shared/components/sections/StepsList.vue'
 
 import { educationCards, educationHero, educationSplit, educationSteps } from '@/data/education'
 </script>

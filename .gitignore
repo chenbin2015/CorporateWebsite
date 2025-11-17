@@ -76,3 +76,6 @@ playwright-report/
 # yarn.lock
 # pnpm-lock.yaml
 
+# 部署配置文件（包含敏感信息）
+deploy-config.bat
+deploy-config.sh

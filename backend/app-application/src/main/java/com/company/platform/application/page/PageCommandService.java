@@ -7,7 +7,7 @@ import com.company.platform.application.page.command.UpdatePageCommand;
 import com.company.platform.domain.page.model.Page;
 import com.company.platform.domain.page.repository.PageRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation                                                                                                               .Transactional;
 
 import java.time.LocalDateTime;
 

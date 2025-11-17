@@ -1,39 +1,29 @@
 <script setup>
 import { computed } from 'vue'
 
-import { defaultPageHero } from '@/data/defaults'
-
-const props = withDefaults(
-  defineProps({
-    title: {
-      type: String,
-      default: '',
-    },
-    subtitle: {
-      type: String,
-      default: '',
-    },
-    description: {
-      type: String,
-      default: '',
-    },
-    background: {
-      type: String,
-      default: '',
-    },
-    actions: {
-      type: Array,
-      default: () => [],
-    },
-  }),
-  {
-    title: defaultPageHero.title,
-    subtitle: defaultPageHero.subtitle,
-    description: defaultPageHero.description,
-    background: defaultPageHero.background,
-    actions: () => [],
+const props = defineProps({
+  title: {
+    type: String,
+    default: '默认页面标题',
   },
-)
+  subtitle: {
+    type: String,
+    default: 'Default subtitle',
+  },
+  description: {
+    type: String,
+    default: '组件缺少 props 时的占位文本，用于设计稿验收。',
+  },
+  background: {
+    type: String,
+    default:
+      'linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.6) 100%), url(https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80)',
+  },
+  actions: {
+    type: Array,
+    default: () => [],
+  },
+})
 
 const style = computed(() => ({
   background:
