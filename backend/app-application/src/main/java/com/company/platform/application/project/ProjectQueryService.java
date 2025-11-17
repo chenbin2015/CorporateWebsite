@@ -18,6 +18,11 @@ public class ProjectQueryService {
     public List<Project> listProjects() {
         return projectRepository.findAll();
     }
+
+    public Project getProject(Long id) {
+        return projectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+    }
 }
 
 

@@ -1,6 +1,8 @@
+com\company\platform\infrastructure\page\database\PageMapper.class
 com\company\platform\infrastructure\project\database\MyBatisProjectRepository.class
 com\company\platform\infrastructure\user\database\model\UserDO.class
 com\company\platform\infrastructure\user\database\UserMapper.class
 com\company\platform\infrastructure\user\database\MyBatisUserRepository.class
 com\company\platform\infrastructure\config\MyBatisConfig.class
+com\company\platform\infrastructure\page\database\MyBatisPageRepository.class
 com\company\platform\infrastructure\project\database\ProjectMapper.class

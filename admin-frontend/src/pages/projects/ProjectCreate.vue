@@ -1,47 +1,126 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { createProject, updateProject, getProject } from '@/services/modules/project'
+
+const router = useRouter()
+const route = useRoute()
+const isEdit = ref(!!route.params.id)
+const loading = ref(false)
 
 const form = reactive({
   name: '',
   description: '',
-  owner: '',
 })
 
-const handleSubmit = () => {
-  ElMessage.success('模拟创建成功')
+const rules = {
+  name: [{ required: true, message: '请输入项目名称', trigger: 'blur' }],
 }
+
+const formRef = ref(null)
+
+const loadProject = async () => {
+  if (!isEdit.value || !route.params.id) return
+
+  loading.value = true
+  try {
+    const project = await getProject(route.params.id)
+    form.name = project.name || ''
+    form.description = project.description || ''
+  } catch (error) {
+    console.error('Failed to load project:', error)
+    ElMessage.error('加载项目信息失败')
+    router.back()
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleSubmit = async () => {
+  if (!formRef.value) return
+
+  await formRef.value.validate(async (valid) => {
+    if (!valid) return
+
+    loading.value = true
+    try {
+      if (isEdit.value && route.params.id) {
+        await updateProject(route.params.id, {
+          name: form.name,
+          description: form.description,
+        })
+        ElMessage.success('更新成功')
+      } else {
+        await createProject({
+          name: form.name,
+          description: form.description,
+        })
+        ElMessage.success('创建成功')
+      }
+      router.push({ name: 'projectList' })
+    } catch (error) {
+      console.error('Failed to save project:', error)
+      ElMessage.error(isEdit.value ? '更新失败' : '创建失败')
+    } finally {
+      loading.value = false
+    }
+  })
+}
+
+const handleCancel = () => {
+  router.back()
+}
+
+onMounted(() => {
+  // 如果是编辑模式，加载项目数据
+  if (isEdit.value) {
+    loadProject()
+  }
+})
 </script>
 
 <template>
-  <el-card class="create-card">
-    <template #header>
-      <div class="card-header">
-        <div>
-          <p class="eyebrow">项目管理</p>
-          <h2>创建新项目</h2>
+  <div class="project-form">
+    <el-card v-loading="loading" class="form-card">
+      <template #header>
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">项目管理</p>
+            <h2>{{ isEdit ? '编辑项目' : '创建新项目' }}</h2>
+          </div>
+          <div class="header-actions">
+            <el-button @click="handleCancel">取消</el-button>
+            <el-button type="primary" @click="handleSubmit">保存</el-button>
+          </div>
         </div>
-        <el-button type="primary" @click="handleSubmit">提交</el-button>
-      </div>
-    </template>
+      </template>
 
-    <el-form :model="form" label-width="6rem" class="create-form">
-      <el-form-item label="项目名称">
-        <el-input v-model="form.name" placeholder="输入项目名称" />
-      </el-form-item>
-      <el-form-item label="项目负责人">
-        <el-input v-model="form.owner" placeholder="输入负责人" />
-      </el-form-item>
-      <el-form-item label="项目描述">
-        <el-input v-model="form.description" type="textarea" rows="4" placeholder="介绍项目背景" />
-      </el-form-item>
-    </el-form>
-  </el-card>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="6rem" class="create-form">
+        <el-form-item label="项目名称" prop="name">
+          <el-input v-model="form.name" placeholder="输入项目名称" />
+        </el-form-item>
+        <el-form-item label="项目描述">
+          <el-input
+            v-model="form.description"
+            type="textarea"
+            :rows="4"
+            placeholder="介绍项目背景和目标"
+          />
+        </el-form-item>
+      </el-form>
+    </el-card>
+  </div>
 </template>
 
 <style scoped>
-.create-card {
-  max-width: 720px;
+.project-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-card {
+  min-height: 400px;
 }
 
 .card-header {
@@ -58,8 +137,17 @@ const handleSubmit = () => {
   color: var(--color-text-secondary);
 }
 
+.card-header h2 {
+  margin: 0.5rem 0 0;
+  font-size: 1.5rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .create-form {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 </style>
-

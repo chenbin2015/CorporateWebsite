@@ -4,17 +4,45 @@ const props = defineProps({
     type: String,
     default: '模块标题',
   },
-  description: {
+  subtitle: {
     type: String,
-    default: '这里是一段用于说明本模块内容的示例文案。',
+    default: '这里是一段用于说明模块的子标题。',
+  },
+  details: {
+    type: String,
+    default: '这里是一段用于展示模块详情的示例文案，用于更深入地说明该图文区域的内容。',
   },
   image: {
     type: String,
     default: 'https://picsum.photos/seed/textimage/800/600',
   },
-  highlights: {
-    type: Array,
-    default: () => ['亮点一：示例内容', '亮点二：示例内容', '亮点三：示例内容'],
+  imageHeight: {
+    type: String,
+    default: '18rem',
+  },
+  titleColor: {
+    type: String,
+    default: '#0f172a',
+  },
+  titleSize: {
+    type: String,
+    default: '1.6rem',
+  },
+  subtitleColor: {
+    type: String,
+    default: '#64748b',
+  },
+  subtitleSize: {
+    type: String,
+    default: '0.96rem',
+  },
+  detailsColor: {
+    type: String,
+    default: '#0f172a',
+  },
+  detailsSize: {
+    type: String,
+    default: '0.95rem',
   },
   reverse: {
     type: Boolean,
@@ -26,18 +54,25 @@ const props = defineProps({
 <template>
   <section :class="['text-image-preview', { 'text-image-preview--reverse': props.reverse }]">
     <div class="text-image-preview__media">
-      <img :src="props.image" :alt="props.title" loading="lazy" />
+      <img :src="props.image" :alt="props.title" loading="lazy" :style="{ minHeight: props.imageHeight }" />
     </div>
     <div class="text-image-preview__content">
-      <h3>{{ props.title }}</h3>
-      <p class="text-image-preview__description">
-        {{ props.description }}
+      <h3 :style="{ color: props.titleColor, fontSize: props.titleSize }">
+        {{ props.title }}
+      </h3>
+      <p
+        v-if="props.subtitle"
+        class="text-image-preview__subtitle"
+        :style="{ color: props.subtitleColor, fontSize: props.subtitleSize }"
+      >
+        {{ props.subtitle }}
       </p>
-      <ul class="text-image-preview__list">
-        <li v-for="item in props.highlights" :key="item">
-          {{ item }}
-        </li>
-      </ul>
+      <p
+        class="text-image-preview__details"
+        :style="{ color: props.detailsColor, fontSize: props.detailsSize }"
+      >
+        {{ props.details }}
+      </p>
     </div>
   </section>
 </template>
@@ -82,35 +117,17 @@ const props = defineProps({
   font-weight: 600;
 }
 
-.text-image-preview__description {
+.text-image-preview__subtitle {
   margin: 0;
   font-size: 0.95rem;
   color: #64748b;
 }
 
-.text-image-preview__list {
-  list-style: none;
-  padding: 0;
-  margin: 0.2rem 0 0;
-  display: grid;
-  gap: 0.4rem;
-}
-
-.text-image-preview__list li {
-  position: relative;
-  padding-left: 1.4rem;
-  font-size: 0.9rem;
-}
-
-.text-image-preview__list li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.55rem;
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 999px;
-  background: #2563eb;
+.text-image-preview__details {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #1f2933;
+  line-height: 1.7;
 }
 
 @media (max-width: 64rem) {

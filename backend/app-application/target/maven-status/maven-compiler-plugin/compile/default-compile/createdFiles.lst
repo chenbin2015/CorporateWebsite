@@ -1,4 +1,9 @@
 com\company\platform\application\auth\AuthApplicationService.class
+com\company\platform\application\page\PageCommandService.class
+com\company\platform\application\auth\command\RegisterCommand.class
+com\company\platform\application\page\command\PublishPageCommand.class
 com\company\platform\application\auth\command\LoginCommand.class
 com\company\platform\application\project\ProjectQueryService.class
-com\company\platform\application\auth\command\RegisterCommand.class
+com\company\platform\application\page\command\SaveDraftCommand.class
+com\company\platform\application\page\command\CreatePageCommand.class
+com\company\platform\application\page\PageQueryService.class

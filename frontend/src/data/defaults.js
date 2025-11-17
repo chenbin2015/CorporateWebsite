@@ -50,10 +50,17 @@ export const defaultPageHero = {
 
 export const defaultTextImage = {
   title: '默认版块标题',
-  description:
-    '请在接口返回的数据中提供 title、description、image、items 等字段，组件会自动渲染。当前显示为静态占位内容。',
+  subtitle: 'Default subtitle',
+  details:
+    '请在接口返回的数据中提供 title、subtitle、details、image 等字段，组件会自动渲染。当前显示为静态占位内容。',
   image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80',
-  highlights: ['默认亮点一', '默认亮点二', '默认亮点三'],
+  imageHeight: '18rem',
+  titleColor: '#0f172a',
+  titleSize: '1.8rem',
+  subtitleColor: '#64748b',
+  subtitleSize: '1rem',
+  detailsColor: '#0f172a',
+  detailsSize: '0.98rem',
 }
 
 export const defaultStats = [

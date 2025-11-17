@@ -7,7 +7,11 @@ const props = withDefaults(
       type: String,
       default: '',
     },
-    description: {
+    subtitle: {
+      type: String,
+      default: '',
+    },
+    details: {
       type: String,
       default: '',
     },
@@ -15,9 +19,33 @@ const props = withDefaults(
       type: String,
       default: '',
     },
-    highlights: {
-      type: Array,
-      default: () => [],
+    imageHeight: {
+      type: String,
+      default: '',
+    },
+    titleColor: {
+      type: String,
+      default: '',
+    },
+    titleSize: {
+      type: String,
+      default: '',
+    },
+    subtitleColor: {
+      type: String,
+      default: '',
+    },
+    subtitleSize: {
+      type: String,
+      default: '',
+    },
+    detailsColor: {
+      type: String,
+      default: '',
+    },
+    detailsSize: {
+      type: String,
+      default: '',
     },
     reverse: {
       type: Boolean,
@@ -26,9 +54,16 @@ const props = withDefaults(
   }),
   {
     title: defaultTextImage.title,
-    description: defaultTextImage.description,
+    subtitle: defaultTextImage.subtitle,
+    details: defaultTextImage.details,
     image: defaultTextImage.image,
-    highlights: () => defaultTextImage.highlights,
+    imageHeight: defaultTextImage.imageHeight,
+    titleColor: defaultTextImage.titleColor,
+    titleSize: defaultTextImage.titleSize,
+    subtitleColor: defaultTextImage.subtitleColor,
+    subtitleSize: defaultTextImage.subtitleSize,
+    detailsColor: defaultTextImage.detailsColor,
+    detailsSize: defaultTextImage.detailsSize,
   },
 )
 </script>
@@ -36,14 +71,25 @@ const props = withDefaults(
 <template>
   <section :class="['text-image', { 'text-image--reverse': props.reverse }]">
     <div class="text-image__media">
-      <img :src="props.image" :alt="props.title" />
+      <img :src="props.image" :alt="props.title" :style="{ minHeight: props.imageHeight }" />
     </div>
     <div class="text-image__content space-y-sm">
-      <h2>{{ props.title }}</h2>
-      <p>{{ props.description }}</p>
-      <ul class="text-image__list">
-        <li v-for="item in props.highlights" :key="item">{{ item }}</li>
-      </ul>
+      <h2 :style="{ color: props.titleColor, fontSize: props.titleSize }">
+        {{ props.title }}
+      </h2>
+      <p
+        v-if="props.subtitle"
+        class="text-image__subtitle"
+        :style="{ color: props.subtitleColor, fontSize: props.subtitleSize }"
+      >
+        {{ props.subtitle }}
+      </p>
+      <p
+        class="text-image__details"
+        :style="{ color: props.detailsColor, fontSize: props.detailsSize }"
+      >
+        {{ props.details }}
+      </p>
     </div>
   </section>
 </template>
@@ -77,28 +123,15 @@ const props = withDefaults(
   margin: 0;
 }
 
-.text-image__list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 0.6rem;
+.text-image__subtitle {
+  font-size: 0.98rem;
+  color: var(--color-text-secondary);
 }
 
-.text-image__list li {
-  position: relative;
-  padding-left: 1.4rem;
-}
-
-.text-image__list li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.6rem;
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 50%;
-  background: var(--color-primary);
+.text-image__details {
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--color-text-primary);
 }
 
 .text-image--reverse {

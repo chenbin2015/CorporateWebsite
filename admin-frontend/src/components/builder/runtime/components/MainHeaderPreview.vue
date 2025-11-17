@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 const props = defineProps({
   title: {
     type: String,
@@ -8,11 +9,33 @@ const props = defineProps({
     type: String,
     default: '智慧校园 · 数字化管理平台',
   },
+  // 首选数组对象形式：[{ label, href }]
+  // 兼容老的字符串数组：['关于学校', ...]
   menuItems: {
     type: Array,
-    default: () => ['关于学校', '院系设置', '师资队伍', '教育教学', '科学研究', '招生就业', '图书馆'],
+    default: () => [
+      { label: '关于学校', href: '/about' },
+      { label: '院系设置', href: '/colleges' },
+      { label: '师资队伍', href: '/faculty' },
+      { label: '教育教学', href: '/education' },
+      { label: '科学研究', href: '/research' },
+      { label: '招生就业', href: '/admissions' },
+      { label: '图书馆', href: '/library' },
+    ],
   },
 })
+
+const navItems = computed(() =>
+  (props.menuItems || []).map((item) => {
+    if (typeof item === 'string') {
+      return { label: item, href: '#' }
+    }
+    return {
+      label: item.label ?? '未命名',
+      href: item.href ?? '#',
+    }
+  }),
+)
 </script>
 
 <template>
@@ -26,13 +49,13 @@ const props = defineProps({
     </div>
     <nav class="header-preview__nav">
       <a
-        v-for="(item, index) in menuItems"
-        :key="item"
-        href="#"
+        v-for="(item, index) in navItems"
+        :key="item.label + index"
+        :href="item.href || '#'"
         class="nav-item"
         :class="{ 'nav-item--active': index === 0 }"
       >
-        {{ item }}
+        {{ item.label }}
       </a>
     </nav>
   </header>

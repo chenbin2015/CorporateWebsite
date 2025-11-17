@@ -266,29 +266,48 @@ export const componentSchemas = {
       description: '左右两栏内容布局展示',
       image: 'https://picsum.photos/seed/split/600/400',
       reversed: false,
-      bullets: [],
+      bullets: [
+        '要点一：示例内容',
+        '要点二：示例内容',
+        '要点三：示例内容',
+      ],
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
       { prop: 'description', label: '描述', type: 'textarea' },
       { prop: 'image', label: '图片URL', type: 'text' },
       { prop: 'reversed', label: '反转布局', type: 'boolean' },
+      { prop: 'bullets', label: '要点列表', type: 'bullets' },
     ],
   },
   TextImageSection: {
     defaults: {
       title: '图文模块',
-      description: '用于图文并茂展示某个专题内容。',
+      subtitle: '子标题示例',
+      details: '用于图文并茂展示某个专题内容的详细说明文案。',
       image: 'https://picsum.photos/seed/textimage/800/600',
-      highlights: ['亮点一：示例内容', '亮点二：示例内容', '亮点三：示例内容'],
+      imageHeight: '18rem',
+      titleColor: '#0f172a',
+      titleSize: '1.8rem',
+      subtitleColor: '#64748b',
+      subtitleSize: '1rem',
+      detailsColor: '#0f172a',
+      detailsSize: '0.98rem',
       reverse: false,
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
-      { prop: 'description', label: '描述', type: 'textarea' },
+      { prop: 'subtitle', label: '子标题', type: 'text' },
+      { prop: 'details', label: '详情内容', type: 'textarea' },
       { prop: 'image', label: '图片 URL', type: 'text' },
+      { prop: 'imageHeight', label: '图片高度（如 18rem / 320px）', type: 'text' },
+      { prop: 'titleColor', label: '标题颜色', type: 'color' },
+      { prop: 'titleSize', label: '标题字号', type: 'text', placeholder: '如 1.8rem / 24px' },
+      { prop: 'subtitleColor', label: '子标题颜色', type: 'color' },
+      { prop: 'subtitleSize', label: '子标题字号', type: 'text', placeholder: '如 1rem / 16px' },
+      { prop: 'detailsColor', label: '详情文字颜色', type: 'color' },
+      { prop: 'detailsSize', label: '详情字号', type: 'text', placeholder: '如 0.98rem / 15px' },
       { prop: 'reverse', label: '左右反转', type: 'boolean' },
-      // highlights 为数组，这里简单用默认值承载，后续如需更细粒度配置可扩展
     ],
   },
   CardGrid: {
@@ -302,6 +321,7 @@ export const componentSchemas = {
       { prop: 'title', label: '标题', type: 'text' },
       { prop: 'description', label: '描述', type: 'textarea' },
       { prop: 'columns', label: '列数', type: 'slider', min: 1, max: 6, step: 1 },
+      { prop: 'cards', label: '卡片列表', type: 'card-items' },
     ],
   },
   BreadcrumbHeader: {
@@ -317,6 +337,7 @@ export const componentSchemas = {
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
       { prop: 'description', label: '描述', type: 'textarea' },
+      { prop: 'items', label: '面包屑层级', type: 'breadcrumb-items' },
     ],
   },
   TopLinksBar: {
@@ -326,6 +347,7 @@ export const componentSchemas = {
       localeEn: 'EN',
     },
     fields: [
+      { prop: 'links', label: '快捷链接', type: 'quick-links' },
       { prop: 'localeCn', label: '中文标签', type: 'text' },
       { prop: 'localeEn', label: '英文标签', type: 'text' },
     ],
@@ -340,6 +362,7 @@ export const componentSchemas = {
       modelValue: 'overview',
     },
     fields: [
+      { prop: 'items', label: '标签项', type: 'tab-items' },
       { prop: 'modelValue', label: '当前选中值', type: 'text' },
     ],
   },
@@ -347,11 +370,41 @@ export const componentSchemas = {
     defaults: {
       title: '企业门户',
       subtitle: '智慧校园 · 数字化管理平台',
-      menuItems: ['关于学校', '院系设置', '师资队伍', '教育教学', '科学研究', '招生就业', '图书馆'],
+      menuItems: [
+        { label: '关于学校', href: '/about' },
+        { label: '院系设置', href: '/colleges' },
+        { label: '师资队伍', href: '/faculty' },
+        { label: '教育教学', href: '/education' },
+        { label: '科学研究', href: '/research' },
+        { label: '招生就业', href: '/admissions' },
+        { label: '图书馆', href: '/library' },
+      ],
     },
     fields: [
       { prop: 'title', label: '站点标题', type: 'text' },
       { prop: 'subtitle', label: '副标题', type: 'text' },
+      { prop: 'menuItems', label: '导航菜单', type: 'nav-items' },
+    ],
+  },
+  NewsSection: {
+    defaults: {
+      title: 'Latest News',
+      highlight: {
+        title: '默认新闻标题',
+        summary: '请在 props 中传入 highlight、items 数据，或绑定远程接口结果。',
+        date: '2025-01-01',
+        cover: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80',
+      },
+      items: [
+        { title: '默认新闻条目示例一', date: '01-01', href: '#' },
+        { title: '默认新闻条目示例二', date: '01-02', href: '#' },
+        { title: '默认新闻条目示例三', date: '01-03', href: '#' },
+      ],
+    },
+    fields: [
+      { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'highlight', label: '焦点新闻', type: 'news-highlight' },
+      { prop: 'items', label: '新闻条目', type: 'news-items' },
     ],
   },
 }

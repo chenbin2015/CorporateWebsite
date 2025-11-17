@@ -4,3 +4,4 @@ D:\code\company\backend\app-client\src\main\java\com\company\platform\client\aut
 D:\code\company\backend\app-client\src\main\java\com\company\platform\client\project\ProjectController.java
 D:\code\company\backend\app-client\src\main\java\com\company\platform\client\auth\dto\RegisterRequest.java
 D:\code\company\backend\app-client\src\main\java\com\company\platform\client\security\JwtTokenProvider.java
+D:\code\company\backend\app-client\src\main\java\com\company\platform\client\page\PageController.java

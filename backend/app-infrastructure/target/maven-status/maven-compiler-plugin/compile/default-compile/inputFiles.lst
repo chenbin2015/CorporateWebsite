@@ -1,6 +1,8 @@
 D:\code\company\backend\app-infrastructure\src\main\java\com\company\platform\infrastructure\project\database\MyBatisProjectRepository.java
 D:\code\company\backend\app-infrastructure\src\main\java\com\company\platform\infrastructure\config\MyBatisConfig.java
+D:\code\company\backend\app-infrastructure\src\main\java\com\company\platform\infrastructure\page\database\PageMapper.java
 D:\code\company\backend\app-infrastructure\src\main\java\com\company\platform\infrastructure\user\database\model\UserDO.java
 D:\code\company\backend\app-infrastructure\src\main\java\com\company\platform\infrastructure\user\database\UserMapper.java
+D:\code\company\backend\app-infrastructure\src\main\java\com\company\platform\infrastructure\page\database\MyBatisPageRepository.java
 D:\code\company\backend\app-infrastructure\src\main\java\com\company\platform\infrastructure\project\database\ProjectMapper.java
 D:\code\company\backend\app-infrastructure\src\main\java\com\company\platform\infrastructure\user\database\MyBatisUserRepository.java

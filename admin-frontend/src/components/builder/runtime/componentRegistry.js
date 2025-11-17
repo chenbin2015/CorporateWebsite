@@ -24,6 +24,7 @@ import TextImageSectionPreview from './components/TextImageSectionPreview.vue'
 import ImageGalleryPreview from './components/ImageGalleryPreview.vue'
 import TestimonialListPreview from './components/TestimonialListPreview.vue'
 import AvatarCardGridPreview from './components/AvatarCardGridPreview.vue'
+import NewsSectionPreview from './components/NewsSectionPreview.vue'
 import FallbackPreview from './components/FallbackPreview.vue'
 
 export const componentRegistry = {
@@ -53,6 +54,7 @@ export const componentRegistry = {
   CardGrid: CardGridPreview,
   FocusGrid: FocusGridPreview,
   TextImageSection: TextImageSectionPreview,
+  NewsSection: NewsSectionPreview,
 }
 
 export const resolveBuilderComponent = (key) => componentRegistry[key] ?? FallbackPreview

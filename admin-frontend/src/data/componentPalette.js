@@ -140,6 +140,13 @@ export const componentPalette = [
         source: 'frontend/src/components/sections/TimelineHorizontal.vue',
         icon: 'Aim',
       },
+      {
+        key: 'NewsSection',
+        label: 'NewsSection',
+        desc: '新闻列表（焦点+条目）',
+        source: 'frontend/src/components/NewsSection.vue',
+        icon: 'Document',
+      },
     ],
   },
   {
