@@ -26,11 +26,20 @@ export const componentSchemas = {
       title: '学院使命',
       description: '以创新驱动教学，以科研服务社会。',
       tag: '关于我们',
+      actions: [],
+      navigation: {
+        type: 'none',
+        targetPageId: null,
+        path: null,  // 页面路径，用于运行时跳转
+        url: '',
+        params: {},
+      },
     },
     fields: [
       { prop: 'tag', label: '角标文字', type: 'text' },
       { prop: 'title', label: '标题', type: 'text' },
       { prop: 'description', label: '描述', type: 'textarea' },
+      { prop: 'navigation', label: '跳转配置', type: 'navigation' },
     ],
   },
   CTABanner: {
@@ -38,11 +47,19 @@ export const componentSchemas = {
       title: '预约校园参观',
       description: '体验智慧校园解决方案与可视化搭建平台。',
       buttonText: '立即预约',
+      navigation: {
+        type: 'none',
+        targetPageId: null,
+        path: null,  // 页面路径，用于运行时跳转
+        url: '',
+        params: {},
+      },
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
       { prop: 'description', label: '描述', type: 'textarea' },
       { prop: 'buttonText', label: '按钮文案', type: 'text' },
+      { prop: 'navigation', label: '跳转配置', type: 'navigation' },
     ],
   },
   PageHero: {
@@ -51,12 +68,21 @@ export const componentSchemas = {
       subtitle: '副标题',
       description: '页面描述信息',
       background: '',
+      actions: [],
+      navigation: {
+        type: 'none',
+        targetPageId: null,
+        path: null,  // 页面路径，用于运行时跳转
+        url: '',
+        params: {},
+      },
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
       { prop: 'subtitle', label: '副标题', type: 'text' },
       { prop: 'description', label: '描述', type: 'textarea' },
       { prop: 'background', label: '背景色/图片', type: 'text' },
+      { prop: 'navigation', label: '跳转配置', type: 'navigation' },
     ],
   },
   InfoCardGrid: {
@@ -185,9 +211,17 @@ export const componentSchemas = {
           href: '#',
         },
       ],
+      detailPage: {
+        type: 'template',
+        templateType: 'event',
+        targetPageId: null,
+        paramKey: 'id',
+        paramSource: 'id',
+      },
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'detailPage', label: '详情页配置', type: 'detail-page' },
       // events 数组结构保持与前台组件一致，这里暂不做表单拆解
     ],
   },
@@ -244,9 +278,17 @@ export const componentSchemas = {
     defaults: {
       title: '公告列表',
       items: [],
+      detailPage: {
+        type: 'template',
+        templateType: 'notice',
+        targetPageId: null,
+        paramKey: 'id',
+        paramSource: 'id',
+      },
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'detailPage', label: '详情页配置', type: 'detail-page' },
     ],
   },
   SimpleForm: {
@@ -342,7 +384,14 @@ export const componentSchemas = {
   },
   TopLinksBar: {
     defaults: {
-      links: ['学生', '教职工', '访客', '服务大厅', '联系我们', '统一门户'],
+      links: [
+        { label: '学生', navigation: { type: 'none' } },
+        { label: '教职工', navigation: { type: 'none' } },
+        { label: '访客', navigation: { type: 'none' } },
+        { label: '服务大厅', navigation: { type: 'none' } },
+        { label: '联系我们', navigation: { type: 'none' } },
+        { label: '统一门户', navigation: { type: 'none' } },
+      ],
       localeCn: '中文',
       localeEn: 'EN',
     },
@@ -400,9 +449,17 @@ export const componentSchemas = {
         { title: '默认新闻条目示例二', date: '01-02', href: '#' },
         { title: '默认新闻条目示例三', date: '01-03', href: '#' },
       ],
+      detailPage: {
+        type: 'template',
+        templateType: 'news',
+        targetPageId: null,
+        paramKey: 'id',
+        paramSource: 'id',
+      },
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'detailPage', label: '详情页配置', type: 'detail-page' },
       { prop: 'highlight', label: '焦点新闻', type: 'news-highlight' },
       { prop: 'items', label: '新闻条目', type: 'news-items' },
     ],

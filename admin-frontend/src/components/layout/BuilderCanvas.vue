@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, watch, ref } from 'vue'
+import { nextTick, watch, ref, onBeforeUnmount } from 'vue'
 import { Delete } from '@element-plus/icons-vue'
 import { resolveBuilderComponent } from '@/components/builder/runtime/componentRegistry'
 
@@ -18,10 +18,17 @@ const emit = defineEmits(['select', 'delete'])
 
 const canvasFrameRef = ref(null)
 const builderCanvasRef = ref(null)
+let scrollTimer = null
 
 const handleSelect = (id) => {
   emit('select', id)
 }
+
+onBeforeUnmount(() => {
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+  }
+})
 
 // 找到真正的滚动容器
 const findScrollContainer = (element) => {
@@ -44,53 +51,50 @@ const findScrollContainer = (element) => {
 
 // 滚动到指定组件
 const scrollToItem = (itemId) => {
-  if (!itemId) return
+  if (!itemId || !canvasFrameRef.value) return
   
-  // 使用 setTimeout 确保 DOM 完全渲染和布局完成
-  setTimeout(() => {
-    const itemElement = canvasFrameRef.value?.querySelector(`[data-item-id="${itemId}"]`)
-    if (!itemElement) {
-      console.warn('Item element not found:', itemId)
-      return
-    }
-    
-    // 找到真正的滚动容器
-    const scrollContainer = findScrollContainer(itemElement) || canvasFrameRef.value
-    
-    if (!scrollContainer) {
-      console.warn('Scroll container not found')
-      return
-    }
-    
-    // 获取元素和容器的位置
-    const containerRect = scrollContainer.getBoundingClientRect()
-    const itemRect = itemElement.getBoundingClientRect()
-    
-    // 计算元素相对于滚动容器的位置（考虑当前滚动位置）
-    const relativeTop = itemRect.top - containerRect.top
-    const currentScrollTop = scrollContainer.scrollTop
-    const absoluteTop = relativeTop + currentScrollTop
-    
-    // 计算目标滚动位置，使组件在可视区域的上方 1/4 处
-    const containerHeight = scrollContainer.clientHeight
-    const targetScrollTop = absoluteTop - containerHeight / 4
-    
-    // 执行滚动
-    scrollContainer.scrollTo({
-      top: Math.max(0, targetScrollTop),
-      behavior: 'smooth',
-    })
-    
-    console.log('Scrolling:', {
-      itemId,
-      relativeTop,
-      currentScrollTop,
-      absoluteTop,
-      containerHeight,
-      targetScrollTop,
-      scrollContainer: scrollContainer.className,
-    })
-  }, 100) // 给足够的时间让 DOM 渲染完成
+  // 清除之前的定时器
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+  }
+  
+  // 使用 nextTick 和 setTimeout 确保 DOM 完全渲染和布局完成
+  nextTick(() => {
+    scrollTimer = setTimeout(() => {
+      if (!canvasFrameRef.value) return
+      
+      const itemElement = canvasFrameRef.value.querySelector(`[data-item-id="${itemId}"]`)
+      if (!itemElement) {
+        return
+      }
+      
+      // 找到真正的滚动容器
+      const scrollContainer = findScrollContainer(itemElement) || canvasFrameRef.value
+      
+      if (!scrollContainer) {
+        return
+      }
+      
+      // 获取元素和容器的位置
+      const containerRect = scrollContainer.getBoundingClientRect()
+      const itemRect = itemElement.getBoundingClientRect()
+      
+      // 计算元素相对于滚动容器的位置（考虑当前滚动位置）
+      const relativeTop = itemRect.top - containerRect.top
+      const currentScrollTop = scrollContainer.scrollTop
+      const absoluteTop = relativeTop + currentScrollTop
+      
+      // 计算目标滚动位置，使组件在可视区域的上方 1/4 处
+      const containerHeight = scrollContainer.clientHeight
+      const targetScrollTop = absoluteTop - containerHeight / 4
+      
+      // 执行滚动
+      scrollContainer.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: 'smooth',
+      })
+    }, 100)
+  })
 }
 
 // 监听 selectedId 变化，自动滚动到选中的组件

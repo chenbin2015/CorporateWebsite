@@ -8,6 +8,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  moreText: {
+    type: String,
+    default: '更多',
+  },
 })
 </script>
 
@@ -15,7 +19,7 @@ const props = defineProps({
   <section class="notice">
     <header>
       <h3>{{ title }}</h3>
-      <a href="#">{{ $t('home.more') }}</a>
+      <a href="#">{{ moreText }}</a>
     </header>
     <ul>
       <li v-for="item in items" :key="item.title">

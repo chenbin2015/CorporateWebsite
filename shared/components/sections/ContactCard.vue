@@ -9,31 +9,51 @@ const props = defineProps({
       qr: '',
     }),
   },
+  title: {
+    type: String,
+    default: '联系我们',
+  },
+  addressLabel: {
+    type: String,
+    default: '地址',
+  },
+  phoneLabel: {
+    type: String,
+    default: '电话',
+  },
+  emailLabel: {
+    type: String,
+    default: '邮箱',
+  },
+  qrLabel: {
+    type: String,
+    default: '扫码关注',
+  },
 })
 </script>
 
 <template>
   <section class="contact-card">
     <div class="contact-card__info">
-      <h3>{{ $t('showcasePage.contactTitle') }}</h3>
+      <h3>{{ title }}</h3>
       <ul>
         <li>
-          <span>{{ $t('showcasePage.contactAddress') }}</span>
+          <span>{{ addressLabel }}</span>
           <strong>{{ info.address }}</strong>
         </li>
         <li>
-          <span>{{ $t('showcasePage.contactPhone') }}</span>
+          <span>{{ phoneLabel }}</span>
           <strong>{{ info.phone }}</strong>
         </li>
         <li>
-          <span>{{ $t('showcasePage.contactEmail') }}</span>
+          <span>{{ emailLabel }}</span>
           <strong>{{ info.email }}</strong>
         </li>
       </ul>
     </div>
     <div class="contact-card__qr">
       <img :src="info.qr" alt="QR" />
-      <small>{{ $t('showcasePage.contactQR') }}</small>
+      <small>{{ qrLabel }}</small>
     </div>
   </section>
 </template>

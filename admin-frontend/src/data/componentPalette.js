@@ -9,6 +9,7 @@ export const componentPalette = [
         desc: '首页焦点大图轮播',
         source: 'frontend/src/components/HeroCarousel.vue',
         icon: 'Tickets',
+        navigationType: 'carousel',  // 轮播图统一配置
       },
       {
         key: 'SectionHero',
@@ -16,6 +17,7 @@ export const componentPalette = [
         desc: '分区级英雄横幅',
         source: 'frontend/src/components/sections/SectionHero.vue',
         icon: 'Flag',
+        navigationType: 'single-button',  // 单个按钮
       },
       {
         key: 'PageHero',
@@ -23,6 +25,7 @@ export const componentPalette = [
         desc: '内页头图 + 描述',
         source: 'frontend/src/components/PageHero.vue',
         icon: 'Reading',
+        navigationType: 'single-button',  // 单个按钮
       },
     ],
   },
@@ -36,6 +39,7 @@ export const componentPalette = [
         desc: '顶栏导航与语言切换',
         source: 'frontend/src/components/MainHeader.vue',
         icon: 'Menu',
+        navigationType: 'nav-items',  // 导航项
       },
       {
         key: 'TabsNav',
@@ -43,6 +47,7 @@ export const componentPalette = [
         desc: '横向标签导航',
         source: 'frontend/src/components/sections/TabsNav.vue',
         icon: 'Collection',
+        navigationType: 'nav-items',  // 导航项
       },
       {
         key: 'BreadcrumbHeader',
@@ -50,6 +55,7 @@ export const componentPalette = [
         desc: '面包屑 + 标题说明',
         source: 'frontend/src/components/sections/BreadcrumbHeader.vue',
         icon: 'Suitcase',
+        navigationType: 'nav-items',  // 导航项（可选跳转）
       },
       {
         key: 'TopLinksBar',
@@ -57,6 +63,7 @@ export const componentPalette = [
         desc: '顶部快速链接条',
         source: 'frontend/src/components/TopLinksBar.vue',
         icon: 'Link',
+        navigationType: 'nav-items',  // 导航项
       },
     ],
   },
@@ -70,6 +77,7 @@ export const componentPalette = [
         desc: '多列信息卡片组',
         source: 'frontend/src/components/InfoCardGrid.vue',
         icon: 'Grid',
+        navigationType: 'card-grid',  // 卡片网格（支持统一+单独覆盖）
       },
       {
         key: 'FocusGrid',
@@ -77,6 +85,7 @@ export const componentPalette = [
         desc: '特色专题集合',
         source: 'frontend/src/components/FocusGrid.vue',
         icon: 'Histogram',
+        navigationType: 'card-grid',  // 卡片网格（支持统一+单独覆盖）
       },
       {
         key: 'ContentSplit',
@@ -84,6 +93,7 @@ export const componentPalette = [
         desc: '左右图文条幅',
         source: 'frontend/src/components/sections/ContentSplit.vue',
         icon: 'SetUp',
+        navigationType: 'single-button',  // 单个按钮
       },
       {
         key: 'TextImageSection',
@@ -98,6 +108,7 @@ export const componentPalette = [
         desc: '基础卡片宫格',
         source: 'frontend/src/components/sections/CardGrid.vue',
         icon: 'Tickets',
+        navigationType: 'card-grid',  // 卡片网格（支持统一+单独覆盖）
       },
     ],
   },
@@ -118,6 +129,7 @@ export const componentPalette = [
         desc: '公告/动态列表',
         source: 'frontend/src/components/sections/NoticeList.vue',
         icon: 'Document',
+        navigationType: 'list-detail',  // 列表详情页
       },
       {
         key: 'StatisticsBar',
@@ -146,6 +158,7 @@ export const componentPalette = [
         desc: '新闻列表（焦点+条目）',
         source: 'frontend/src/components/NewsSection.vue',
         icon: 'Document',
+        navigationType: 'list-detail',  // 列表详情页
       },
     ],
   },
@@ -159,6 +172,7 @@ export const componentPalette = [
         desc: '行动召唤条',
         source: 'frontend/src/components/sections/CTABanner.vue',
         icon: 'Promotion',
+        navigationType: 'single-button',  // 单个按钮
       },
       {
         key: 'SimpleForm',
@@ -180,6 +194,7 @@ export const componentPalette = [
         desc: '服务入口集合',
         source: 'frontend/src/components/ServiceLinks.vue',
         icon: 'Share',
+        navigationType: 'card-grid',  // 卡片网格（支持统一+单独覆盖）
       },
       {
         key: 'PartnerLogoGrid',
@@ -200,6 +215,7 @@ export const componentPalette = [
         desc: '重点活动推介',
         source: 'frontend/src/components/EventSpotlight.vue',
         icon: 'Calendar',
+        navigationType: 'list-detail',  // 列表详情页
       },
       {
         key: 'ImageGallery',

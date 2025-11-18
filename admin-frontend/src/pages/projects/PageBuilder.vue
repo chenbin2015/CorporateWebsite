@@ -237,7 +237,13 @@ onMounted(() => {
   <div class="builder-wrapper">
     <header class="builder-header">
       <div>
-        <p class="builder-breadcrumb">项目 {{ projectId }} / 页面 {{ pageId }}</p>
+        <p class="builder-breadcrumb">
+          <a @click="() => router.push({ name: 'projects' })" class="breadcrumb-link">项目</a>
+          <span> / </span>
+          <a @click="() => router.push({ name: 'pageList', params: { projectId } })" class="breadcrumb-link">页面管理</a>
+          <span> / </span>
+          <span>页面 {{ pageId }}</span>
+        </p>
         <h1>页面搭建器</h1>
       </div>
       <div class="builder-actions">
@@ -290,6 +296,18 @@ onMounted(() => {
   margin: 0;
   color: var(--color-text-secondary);
   font-size: 0.9rem;
+}
+
+.breadcrumb-link {
+  color: var(--el-color-primary);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumb-link:hover {
+  color: var(--el-color-primary-dark-2);
+  text-decoration: underline;
 }
 
 .builder-actions {
