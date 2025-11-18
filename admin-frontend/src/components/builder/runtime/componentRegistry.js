@@ -6,6 +6,7 @@ import EventSpotlight from '@shared/components/EventSpotlight.vue'
 import FocusGrid from '@shared/components/FocusGrid.vue'
 import PageHero from '@shared/components/PageHero.vue'
 import InfoCardGrid from '@shared/components/InfoCardGrid.vue'
+import ProductList from '@shared/components/ProductList.vue'
 import TextImageSection from '@shared/components/TextImageSection.vue'
 import StatsHighlight from '@shared/components/StatsHighlight.vue'
 
@@ -58,6 +59,7 @@ export const componentRegistry = {
   BreadcrumbHeader: BreadcrumbHeader,
   TopLinksBar: TopLinksBarPreview, // 暂不迁移（i18n 依赖）
   InfoCardGrid: InfoCardGrid,
+  ProductList: ProductList,
   DataTable: DataTable,
   ServiceLinks: ServiceLinks,
   ContactCard: ContactCard,
@@ -76,6 +78,7 @@ export const componentRegistry = {
   FocusGrid: FocusGrid,
   TextImageSection: TextImageSection,
   NewsSection: NewsSection,
+  StatsHighlight: StatsHighlight,
   TimelineList: TimelineList,
   StepsList: StepsList,
   AccordionList: AccordionList,

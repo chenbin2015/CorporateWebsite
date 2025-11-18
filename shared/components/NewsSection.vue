@@ -185,22 +185,39 @@ const handleHighlightClick = (event) => {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.news-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-border-light, #e5e7eb);
+  min-height: 2.5rem;
+}
+
+.news-item:last-child {
+  border-bottom: none;
 }
 
 .news-item a {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1.6rem;
   color: var(--color-text-primary);
+  width: 100%;
 }
 
 .news-item__title {
   flex: 1;
   line-height: 1.5;
   font-size: 1.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .news-item__date {

@@ -253,7 +253,6 @@ watch(
 .builder-canvas {
   /* 中间画布区域高度与左侧保持一致，超出部分内部滚动 */
   max-height: calc(100vh - 280px);
-  border-radius: 1rem;
   display: flex;
   flex-direction: column;
   min-height: 0;

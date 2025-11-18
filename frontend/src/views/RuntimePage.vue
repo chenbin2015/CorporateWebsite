@@ -58,6 +58,17 @@ const loadPage = async () => {
   }
 }
 
+// 判断组件是否为全宽组件
+const isFullWidthComponent = (item) => {
+  // 1. 优先检查用户配置的 fullWidth 属性
+  if (item.props?.fullWidth !== undefined) {
+    return item.props.fullWidth === true
+  }
+  // 2. 如果没有配置，使用默认规则：MainHeader、HeroCarousel、Footer 默认为全宽
+  const fullWidthComponents = ['MainHeader', 'HeroCarousel', 'Footer']
+  return fullWidthComponents.includes(item.key)
+}
+
 // 监听路由参数变化，重新加载页面数据
 watch(
   () => [route.params.projectCode, route.params.pageCode],
@@ -84,13 +95,23 @@ onMounted(() => {
       <p>页面暂无内容</p>
     </div>
     <div v-else class="runtime-content">
-      <component
-        v-for="item in pageItems"
-        :key="item.id"
-        :is="resolveBuilderComponent(item.key)"
-        v-bind="item.props"
-        class="runtime-component"
-      />
+      <template v-for="item in pageItems" :key="item.id">
+        <!-- 全宽组件：直接渲染，不包裹容器 -->
+        <component
+          v-if="isFullWidthComponent(item)"
+          :is="resolveBuilderComponent(item.key)"
+          v-bind="item.props"
+          class="runtime-component runtime-component--fullwidth"
+        />
+        <!-- 固定宽度组件：包裹在容器中 -->
+        <div v-else class="runtime-container">
+          <component
+            :is="resolveBuilderComponent(item.key)"
+            v-bind="item.props"
+            class="runtime-component"
+          />
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -116,24 +137,40 @@ onMounted(() => {
 }
 
 .runtime-content {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0; /* 组件之间的间距由组件自身控制 */
+}
+
+/* 固定宽度容器：包裹非全宽组件 */
+.runtime-container {
   width: 100%;
   margin: 0 auto;
   padding: 2.4rem 1.5rem;
   max-width: 72rem;
-  gap: 2.8rem;
 }
 
-.runtime-content > * {
+.runtime-container + .runtime-container {
+  margin-top: 2.8rem; /* 容器之间的间距 */
+}
+
+/* 全宽组件：直接渲染，不包裹容器 */
+.runtime-component--fullwidth {
   width: 100%;
-  min-width: 0;
+  margin: 0;
+  padding: 0;
 }
 
 @media (max-width: 48rem) {
-  .runtime-content {
+  .runtime-container {
     padding: 1.6rem 1rem;
-    gap: 2rem;
+  }
+  
+  .runtime-container + .runtime-container {
+    margin-top: 2rem;
   }
 }
 

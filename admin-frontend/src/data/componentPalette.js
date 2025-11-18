@@ -95,6 +95,14 @@ export const componentPalette = [
         navigationType: 'card-grid',  // 卡片网格（支持统一+单独覆盖）
       },
       {
+        key: 'ProductList',
+        label: 'ProductList',
+        desc: '产品列表展示',
+        source: 'frontend/src/components/ProductList.vue',
+        icon: 'Goods',
+        navigationType: 'card-grid',  // 卡片网格（支持统一+单独覆盖）
+      },
+      {
         key: 'FocusGrid',
         label: 'FocusGrid',
         desc: '特色专题集合',
@@ -124,6 +132,13 @@ export const componentPalette = [
         source: 'frontend/src/components/sections/CardGrid.vue',
         icon: 'Tickets',
         navigationType: 'card-grid',  // 卡片网格（支持统一+单独覆盖）
+      },
+      {
+        key: 'StatsHighlight',
+        label: 'StatsHighlight',
+        desc: '统计数据高亮展示',
+        source: 'frontend/src/components/StatsHighlight.vue',
+        icon: 'DataAnalysis',
       },
     ],
   },

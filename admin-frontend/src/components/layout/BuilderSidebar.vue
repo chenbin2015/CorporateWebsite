@@ -153,10 +153,10 @@ const clearSearch = () => {
 
 <style scoped>
 .builder-panel {
-  max-height: calc(100vh - 280px);
+  height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .builder-panel :deep(.el-card__body) {

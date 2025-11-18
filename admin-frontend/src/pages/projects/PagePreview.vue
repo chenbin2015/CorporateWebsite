@@ -80,7 +80,14 @@ const loadPage = async () => {
 
     if (schemaData) {
       try {
-        pageItems.value = JSON.parse(schemaData)
+        const parsed = JSON.parse(schemaData)
+        pageItems.value = parsed
+        // 调试：检查 fullWidth 属性
+        parsed.forEach((item) => {
+          if (item.key === 'MainHeader' || item.key === 'HeroCarousel') {
+            console.log(`[PagePreview] ${item.key} fullWidth:`, item.props?.fullWidth)
+          }
+        })
       } catch (e) {
         console.error('Failed to parse schema data:', e)
         pageItems.value = []
@@ -95,6 +102,17 @@ const loadPage = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// 判断组件是否为全宽组件
+const isFullWidthComponent = (item) => {
+  // 1. 优先检查用户配置的 fullWidth 属性（明确设置 true 或 false 都生效）
+  if (item.props?.fullWidth !== undefined) {
+    return item.props.fullWidth === true
+  }
+  // 2. 如果没有配置，使用默认规则：MainHeader、HeroCarousel、Footer 默认为全宽
+  const fullWidthComponents = ['MainHeader', 'HeroCarousel', 'Footer']
+  return fullWidthComponents.includes(item.key)
 }
 
 // 监听路由参数变化，重新加载页面数据
@@ -140,13 +158,23 @@ onBeforeUnmount(() => {
       <p>页面暂无内容</p>
     </div>
     <div v-else class="preview-content">
-      <component
-        v-for="item in pageItems"
-        :key="item.id"
-        :is="resolveBuilderComponent(item.key)"
-        v-bind="item.props"
-        class="preview-component"
-      />
+      <template v-for="item in pageItems" :key="item.id">
+        <!-- 全宽组件：直接渲染，不包裹容器 -->
+        <component
+          v-if="isFullWidthComponent(item)"
+          :is="resolveBuilderComponent(item.key)"
+          v-bind="item.props"
+          class="preview-component preview-component--fullwidth"
+        />
+        <!-- 固定宽度组件：包裹在容器中 -->
+        <div v-else class="preview-container">
+          <component
+            :is="resolveBuilderComponent(item.key)"
+            v-bind="item.props"
+            class="preview-component"
+          />
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -174,25 +202,41 @@ onBeforeUnmount(() => {
 }
 
 .preview-content {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0; /* 组件之间的间距由组件自身控制 */
+}
+
+/* 固定宽度容器：包裹非全宽组件 */
+.preview-container {
   width: 100%;
   margin: 0 auto;
   padding: 2.4rem 1.5rem;
   max-width: 72rem; /* 与前端 container 一致 */
-  gap: 2.8rem; /* 与前端 page-stack 一致，组件之间的间距 */
 }
 
-.preview-content > * {
+.preview-container + .preview-container {
+  margin-top: 2.8rem; /* 容器之间的间距 */
+}
+
+/* 全宽组件：直接渲染，不包裹容器 */
+.preview-component--fullwidth {
   width: 100%;
-  min-width: 0; /* 防止内容溢出 */
+  margin: 0;
+  padding: 0;
 }
 
 /* 响应式 */
 @media (max-width: 48rem) {
-  .preview-content {
+  .preview-container {
     padding: 1.6rem 1rem;
-    gap: 2rem;
+  }
+  
+  .preview-container + .preview-container {
+    margin-top: 2rem;
   }
 }
 

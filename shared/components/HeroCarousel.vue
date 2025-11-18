@@ -24,16 +24,6 @@ const props = defineProps({
     type: Number,
     default: 5000,
   },
-  navigation: {
-    type: Object,
-    default: () => ({
-      type: 'none',
-      targetPageCode: null,
-      path: null,
-      url: '',
-      params: {},
-    }),
-  },
 })
 
 const slides = computed(() => (props.items && props.items.length ? props.items : defaultHeroItems))
@@ -50,13 +40,15 @@ const handleActionClick = (slide, event) => {
     return
   }
   
-  // 如果有 navigation 配置，使用 navigation 跳转
-  if (props.navigation && props.navigation.type !== 'none') {
+  // 使用 slide 自己的 navigation 配置
+  if (slide.navigation && slide.navigation.type !== 'none') {
     event.preventDefault()
     event.stopPropagation()
-    handleNavigation(props.navigation, slide)
+    handleNavigation(slide.navigation, slide)
+    return
   }
-  // 否则使用 slide.href（向后兼容）
+  
+  // 向后兼容：使用 slide.href
 }
 
 const goTo = (index) => {
@@ -91,7 +83,10 @@ const stopAutoplay = () => {
 }
 
 onMounted(() => {
-  startAutoplay()
+  // 设计态不启动自动轮播
+  if (!isDesignMode()) {
+    startAutoplay()
+  }
 })
 
 onUnmounted(() => {
@@ -101,9 +96,22 @@ onUnmounted(() => {
 watch(
   () => props.interval,
   () => {
-    stopAutoplay()
-    startAutoplay()
+    if (!isDesignMode()) {
+      stopAutoplay()
+      startAutoplay()
+    }
   },
+)
+
+watch(
+  () => slides.value,
+  () => {
+    if (!isDesignMode() && slides.value.length > 1) {
+      stopAutoplay()
+      startAutoplay()
+    }
+  },
+  { deep: true },
 )
 </script>
 
@@ -116,14 +124,19 @@ watch(
           :key="index"
           :class="['hero-carousel__slide', { 'hero-carousel__slide--active': index === activeIndex }]"
         >
-          <img :src="slide.cover" :alt="slide.title" class="hero-carousel__image" loading="lazy" />
+          <img 
+            :src="slide.cover" 
+            :alt="slide.title" 
+            class="hero-carousel__image" 
+            loading="lazy"
+          />
           <div class="hero-carousel__overlay">
             <div class="hero-carousel__content">
               <span class="hero-carousel__category">{{ slide.category }}</span>
               <h2 class="hero-carousel__title">{{ slide.title }}</h2>
               <p class="hero-carousel__description">{{ slide.description }}</p>
               <a 
-                :href="isDesignMode() || (navigation && navigation.type !== 'none') ? 'javascript:void(0)' : (slide.href || '#')" 
+                :href="isDesignMode() || (slide.navigation && slide.navigation.type !== 'none') ? 'javascript:void(0)' : (slide.href || '#')" 
                 class="hero-carousel__action"
                 @click="(e) => handleActionClick(slide, e)"
                 :style="isDesignMode() ? 'cursor: default; pointer-events: none;' : 'cursor: pointer;'"
@@ -161,7 +174,7 @@ watch(
 <style scoped>
 .hero-carousel {
   position: relative;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   overflow: hidden;
   min-height: 32rem;
   background: #0f172a;
@@ -171,12 +184,14 @@ watch(
   position: relative;
   width: 100%;
   height: 100%;
+  min-height: 32rem;
 }
 
 .hero-carousel__slides {
   position: relative;
   width: 100%;
   height: 100%;
+  min-height: 32rem;
 }
 
 .hero-carousel__slide {
@@ -184,6 +199,7 @@ watch(
   inset: 0;
   opacity: 0;
   transition: opacity 0.6s ease;
+  overflow: hidden;
 }
 
 .hero-carousel__slide--active {
@@ -195,6 +211,13 @@ watch(
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center center;
+  display: block;
+  /* 确保图片清晰显示，避免模糊 */
+  image-rendering: auto;
+  /* 防止图片被拉伸变形 */
+  min-width: 100%;
+  min-height: 100%;
 }
 
 .hero-carousel__overlay {
@@ -256,10 +279,14 @@ watch(
 
 .hero-carousel__controls {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
+  height: 100%;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   padding: 0 1.2rem;
   z-index: 2;

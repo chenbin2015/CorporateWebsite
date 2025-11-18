@@ -8,22 +8,16 @@ export const componentSchemas = {
           category: '默认分类',
           action: '了解更多',
           href: '#',
-          cover: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1600&q=80',
+          cover: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1920&q=95',
         },
       ],
       interval: 5000,
-      navigation: {
-        type: 'none',
-        targetPageCode: null, // 使用 code 替代 id
-        path: null, // 页面路径，用于运行时跳转
-        url: '',
-        params: {},
-      },
+      fullWidth: true, // 默认全宽
     },
     fields: [
       { prop: 'items', label: '轮播项', type: 'carousel-items' },
-      { prop: 'interval', label: '自动播放间隔（毫秒）', type: 'number' },
-      { prop: 'navigation', label: '跳转配置', type: 'navigation' },
+      { prop: 'interval', label: '自动播放间隔（毫秒）', type: 'number', placeholder: '5000' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
     ],
   },
   FocusGrid: {
@@ -109,6 +103,37 @@ export const componentSchemas = {
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
       { prop: 'columns', label: '列数', type: 'slider', min: 1, max: 6, step: 1 },
+    ],
+  },
+  ProductList: {
+    defaults: {
+      title: '产品列表',
+      columns: 3,
+      products: [
+        {
+          id: '1',
+          name: '默认产品名称',
+          description: '这是产品的默认描述信息。',
+          price: '¥999',
+          originalPrice: null,
+          image: 'http://localhost:8002/p1.jpg',
+          href: '#',
+          navigation: {
+            type: 'none',
+            targetPageCode: null,
+            path: null,
+            url: '',
+            params: {},
+          },
+        },
+      ],
+      detailPage: null,
+    },
+    fields: [
+      { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'columns', label: '列数', type: 'slider', min: 1, max: 6, step: 1 },
+      { prop: 'products', label: '产品列表', type: 'product-items' },
+      { prop: 'detailPage', label: '详情页配置', type: 'detail-page' },
     ],
   },
   StatisticsBar: {
@@ -436,19 +461,25 @@ export const componentSchemas = {
     defaults: {
       title: '企业门户',
       subtitle: '智慧校园 · 数字化管理平台',
+      navBackgroundColor: '#2d3748',
+      showSearch: false,
+      fullWidth: true, // 默认全宽
       menuItems: [
-        { label: '关于学校', href: '/about' },
-        { label: '院系设置', href: '/colleges' },
-        { label: '师资队伍', href: '/faculty' },
-        { label: '教育教学', href: '/education' },
-        { label: '科学研究', href: '/research' },
-        { label: '招生就业', href: '/admissions' },
-        { label: '图书馆', href: '/library' },
+        { label: '关于学校', href: '/about', navigation: { type: 'none' } },
+        { label: '院系设置', href: '/colleges', navigation: { type: 'none' } },
+        { label: '师资队伍', href: '/faculty', navigation: { type: 'none' } },
+        { label: '教育教学', href: '/education', navigation: { type: 'none' } },
+        { label: '科学研究', href: '/research', navigation: { type: 'none' } },
+        { label: '招生就业', href: '/admissions', navigation: { type: 'none' } },
+        { label: '图书馆', href: '/library', navigation: { type: 'none' } },
       ],
     },
     fields: [
       { prop: 'title', label: '站点标题', type: 'text' },
       { prop: 'subtitle', label: '副标题', type: 'text' },
+      { prop: 'navBackgroundColor', label: '导航背景色', type: 'color' },
+      { prop: 'showSearch', label: '显示搜索框', type: 'switch' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
       { prop: 'menuItems', label: '导航菜单', type: 'nav-items' },
     ],
   },
@@ -630,6 +661,7 @@ export const componentSchemas = {
   Footer: {
     defaults: {
       copyright: '© 2024 版权所有',
+      fullWidth: true, // 默认全宽
       links: [
         { label: '关于我们', href: '#' },
         { label: '联系我们', href: '#' },
@@ -642,8 +674,23 @@ export const componentSchemas = {
     },
     fields: [
       { prop: 'copyright', label: '版权信息', type: 'text' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
       { prop: 'links', label: '链接列表', type: 'quick-links' },
       { prop: 'contact', label: '联系信息', type: 'object' },
+    ],
+  },
+  StatsHighlight: {
+    defaults: {
+      items: [
+        { label: '学生规模', value: '30,000+' },
+        { label: '教职工', value: '3,500+' },
+        { label: '学科门类', value: '12' },
+      ],
+      columns: 3,
+    },
+    fields: [
+      { prop: 'items', label: '统计数据', type: 'array' },
+      { prop: 'columns', label: '列数', type: 'number' },
     ],
   },
 }

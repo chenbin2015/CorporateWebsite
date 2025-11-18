@@ -1,7 +1,8 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Delete, RefreshRight } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import PageSelector from '@/components/builder/PageSelector.vue'
 import {
   createDefaultNavigation,
@@ -10,6 +11,8 @@ import {
   DETAIL_PAGE_TYPES,
   DETAIL_TEMPLATE_OPTIONS,
 } from '@/utils/navigation'
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
 const props = defineProps({
   selectedItem: {
@@ -184,6 +187,187 @@ const removeNewsItem = (prop, index) => {
   const current = getArrayProp(prop)
   const next = current.filter((_, i) => i !== index)
   emit('update-props', { [prop]: next })
+}
+
+// 新闻详情编辑对话框
+const detailDialogVisible = ref(false)
+const detailDialogProp = ref('')
+const detailDialogIndex = ref(-1)
+const detailContent = ref('')
+
+const openDetailDialog = (prop, index) => {
+  const items = getArrayProp(prop)
+  const item = items[index]
+  detailDialogProp.value = prop
+  detailDialogIndex.value = index
+  detailContent.value = item?.content || ''
+  detailDialogVisible.value = true
+}
+
+const closeDetailDialog = () => {
+  detailDialogVisible.value = false
+  detailDialogProp.value = ''
+  detailDialogIndex.value = -1
+  detailContent.value = ''
+}
+
+const saveDetail = () => {
+  if (detailDialogProp.value && detailDialogIndex.value >= 0) {
+    updateNewsItem(detailDialogProp.value, detailDialogIndex.value, 'content', detailContent.value)
+    ElMessage.success('详情已保存')
+    closeDetailDialog()
+  }
+}
+
+// 产品项处理
+const addProductItem = (prop) => {
+  const current = getArrayProp(prop)
+  const next = [
+    ...current,
+    {
+      id: `product-${Date.now()}`,
+      name: '新产品名称',
+      description: '产品描述',
+      price: '¥999',
+      originalPrice: null,
+      image: 'http://localhost:8002/p1.jpg',
+      href: '#',
+      navigation: createDefaultNavigation(),
+    },
+  ]
+  emit('update-props', { [prop]: next })
+}
+
+const updateProductItem = (prop, index, key, value) => {
+  const current = getArrayProp(prop)
+  const next = current.map((item, i) =>
+    i === index ? { ...(item || {}), [key]: value } : item,
+  )
+  emit('update-props', { [prop]: next })
+}
+
+const removeProductItem = (prop, index) => {
+  const current = getArrayProp(prop)
+  const next = current.filter((_, i) => i !== index)
+  emit('update-props', { [prop]: next })
+}
+
+// 产品项跳转配置处理
+const getProductItemNavigation = (prop, index) => {
+  const current = getArrayProp(prop)
+  const item = current[index]
+  return item?.navigation || createDefaultNavigation()
+}
+
+const updateProductItemNavigation = (prop, index, key, value) => {
+  const current = getArrayProp(prop)
+  const item = current[index] || {}
+  const navigation = item.navigation || createDefaultNavigation()
+  const updatedNavigation = { ...navigation, [key]: value }
+  const updatedItem = { ...item, navigation: updatedNavigation }
+  const next = current.map((it, i) => (i === index ? updatedItem : it))
+  emit('update-props', { [prop]: next })
+}
+
+const updateProductItemNavigationFromSelector = (prop, index, value) => {
+  const current = getArrayProp(prop)
+  const item = current[index] || {}
+  const navigation = item.navigation || createDefaultNavigation()
+  if (value) {
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: value.targetPageCode,
+      path: value.path,
+    }
+    const updatedItem = { ...item, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
+  } else {
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: null,
+      path: null,
+    }
+    const updatedItem = { ...item, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
+  }
+}
+
+// 轮播项处理
+const addCarouselItem = (prop) => {
+  const current = getArrayProp(prop)
+  const next = [
+    ...current,
+    {
+      title: '新轮播标题',
+      description: '新轮播描述',
+      category: '分类',
+      action: '了解更多',
+      href: '#',
+      cover: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1920&q=95',
+      navigation: createDefaultNavigation(), // 为每个轮播项添加默认跳转配置
+    },
+  ]
+  emit('update-props', { [prop]: next })
+}
+
+const updateCarouselItem = (prop, index, key, value) => {
+  const current = getArrayProp(prop)
+  const next = current.map((item, i) =>
+    i === index ? { ...(item || {}), [key]: value } : item,
+  )
+  emit('update-props', { [prop]: next })
+}
+
+const removeCarouselItem = (prop, index) => {
+  const current = getArrayProp(prop)
+  const next = current.filter((_, i) => i !== index)
+  emit('update-props', { [prop]: next })
+}
+
+// 轮播项跳转配置处理
+const getCarouselItemNavigation = (prop, index) => {
+  const current = getArrayProp(prop)
+  const item = current[index]
+  return item?.navigation || createDefaultNavigation()
+}
+
+const updateCarouselItemNavigation = (prop, index, key, value) => {
+  const current = getArrayProp(prop)
+  const item = current[index] || {}
+  const navigation = item.navigation || createDefaultNavigation()
+  const updatedNavigation = { ...navigation, [key]: value }
+  const updatedItem = { ...item, navigation: updatedNavigation }
+  const next = current.map((it, i) => (i === index ? updatedItem : it))
+  emit('update-props', { [prop]: next })
+}
+
+const updateCarouselItemNavigationFromSelector = (prop, index, value) => {
+  const current = getArrayProp(prop)
+  const item = current[index] || {}
+  const navigation = item.navigation || createDefaultNavigation()
+  if (value) {
+    // 一次性更新整个 navigation 对象
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: value.targetPageCode,
+      path: value.path,
+    }
+    const updatedItem = { ...item, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
+  } else {
+    // 清空选择
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: null,
+      path: null,
+    }
+    const updatedItem = { ...item, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
+  }
 }
 
 // 跳转配置处理
@@ -459,6 +643,15 @@ const getQuickLinkNavigation = (prop, index) => {
             v-if="field.type === 'text'"
             :model-value="selectedItem.props?.[field.prop]"
             :placeholder="field.placeholder"
+            @update:model-value="(val) => handleInput(field.prop, val)"
+          />
+          <el-input-number
+            v-else-if="field.type === 'number'"
+            :model-value="selectedItem.props?.[field.prop]"
+            :placeholder="field.placeholder"
+            :min="0"
+            :step="100"
+            style="width: 100%"
             @update:model-value="(val) => handleInput(field.prop, val)"
           />
           <el-input
@@ -846,6 +1039,13 @@ const getQuickLinkNavigation = (prop, index) => {
                 />
                 <el-button
                   text
+                  type="primary"
+                  @click="openDetailDialog(field.prop, index)"
+                >
+                  {{ item?.content ? '编辑详情' : '添加详情' }}
+                </el-button>
+                <el-button
+                  text
                   type="danger"
                   @click="removeNewsItem(field.prop, index)"
                 >
@@ -1024,9 +1224,236 @@ const getQuickLinkNavigation = (prop, index) => {
               </div>
             </div>
           </template>
+          <template v-else-if="field.type === 'carousel-items'">
+            <div class="carousel-items-editor">
+              <div
+                v-for="(item, index) in getArrayProp(field.prop)"
+                :key="index"
+                class="carousel-item-editor"
+              >
+                <el-card shadow="hover" class="carousel-item-card">
+                  <template #header>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span>轮播项 {{ index + 1 }}</span>
+                      <el-button
+                        text
+                        type="danger"
+                        size="small"
+                        @click="removeCarouselItem(field.prop, index)"
+                      >
+                        删除
+                      </el-button>
+                    </div>
+                  </template>
+                  <el-form label-position="top" size="small">
+                    <el-form-item label="图片URL">
+                      <el-input
+                        :model-value="item?.cover"
+                        placeholder="输入图片URL"
+                        @update:model-value="(val) => updateCarouselItem(field.prop, index, 'cover', val)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="分类标签">
+                      <el-input
+                        :model-value="item?.category"
+                        placeholder="分类标签"
+                        @update:model-value="(val) => updateCarouselItem(field.prop, index, 'category', val)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="标题">
+                      <el-input
+                        :model-value="item?.title"
+                        placeholder="轮播标题"
+                        @update:model-value="(val) => updateCarouselItem(field.prop, index, 'title', val)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="描述">
+                      <el-input
+                        type="textarea"
+                        :rows="2"
+                        :model-value="item?.description"
+                        placeholder="轮播描述"
+                        @update:model-value="(val) => updateCarouselItem(field.prop, index, 'description', val)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="按钮文字">
+                      <el-input
+                        :model-value="item?.action"
+                        placeholder="按钮文字"
+                        @update:model-value="(val) => updateCarouselItem(field.prop, index, 'action', val)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="跳转配置">
+                      <el-collapse style="width: 100%">
+                        <el-collapse-item title="跳转配置" :name="`carousel-${index}`">
+                          <div class="navigation-editor" style="padding: 0.5rem 0">
+                            <el-select
+                              :model-value="getCarouselItemNavigation(field.prop, index).type"
+                              placeholder="选择跳转类型"
+                              style="width: 100%"
+                              @update:model-value="(val) => updateCarouselItemNavigation(field.prop, index, 'type', val)"
+                            >
+                              <el-option :label="'无跳转'" :value="NAVIGATION_TYPES.NONE" />
+                              <el-option :label="'页面跳转'" :value="NAVIGATION_TYPES.PAGE" />
+                              <el-option :label="'外部链接'" :value="NAVIGATION_TYPES.URL" />
+                            </el-select>
+                            
+                            <template v-if="getCarouselItemNavigation(field.prop, index).type === NAVIGATION_TYPES.PAGE">
+                              <div style="margin-top: 0.8rem">
+                                <PageSelector
+                                  :model-value="getCarouselItemNavigation(field.prop, index)"
+                                  :project-code="projectCode"
+                                  placeholder="选择目标页面"
+                                  @update:model-value="(val) => updateCarouselItemNavigationFromSelector(field.prop, index, val)"
+                                />
+                              </div>
+                            </template>
+                            
+                            <template v-if="getCarouselItemNavigation(field.prop, index).type === NAVIGATION_TYPES.URL">
+                              <el-input
+                                style="margin-top: 0.8rem"
+                                :model-value="getCarouselItemNavigation(field.prop, index).url"
+                                placeholder="请输入外部链接地址"
+                                @update:model-value="(val) => updateCarouselItemNavigation(field.prop, index, 'url', val)"
+                              />
+                            </template>
+                          </div>
+                        </el-collapse-item>
+                      </el-collapse>
+                    </el-form-item>
+                  </el-form>
+                </el-card>
+              </div>
+              <el-button type="primary" text @click="addCarouselItem(field.prop)" style="width: 100%; margin-top: 0.5rem;">
+                + 添加轮播项
+              </el-button>
+            </div>
+          </template>
+          <template v-else-if="field.type === 'product-items'">
+            <div class="product-items-editor">
+              <div
+                v-for="(item, index) in getArrayProp(field.prop)"
+                :key="index"
+                class="product-item-editor"
+              >
+                <el-card shadow="hover" class="product-item-card">
+                  <template #header>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span>产品 {{ index + 1 }}</span>
+                      <el-button
+                        text
+                        type="danger"
+                        size="small"
+                        @click="removeProductItem(field.prop, index)"
+                      >
+                        删除
+                      </el-button>
+                    </div>
+                  </template>
+                  <el-form label-position="top" size="small">
+                    <el-form-item label="产品图片URL">
+                      <el-input
+                        :model-value="item?.image"
+                        placeholder="输入产品图片URL"
+                        @update:model-value="(val) => updateProductItem(field.prop, index, 'image', val)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="产品名称">
+                      <el-input
+                        :model-value="item?.name"
+                        placeholder="产品名称"
+                        @update:model-value="(val) => updateProductItem(field.prop, index, 'name', val)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="产品描述">
+                      <el-input
+                        type="textarea"
+                        :rows="2"
+                        :model-value="item?.description"
+                        placeholder="产品描述"
+                        @update:model-value="(val) => updateProductItem(field.prop, index, 'description', val)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="价格">
+                      <el-input
+                        :model-value="item?.price"
+                        placeholder="如：¥999"
+                        @update:model-value="(val) => updateProductItem(field.prop, index, 'price', val)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="原价（可选）">
+                      <el-input
+                        :model-value="item?.originalPrice"
+                        placeholder="如：¥1299（留空则不显示）"
+                        @update:model-value="(val) => updateProductItem(field.prop, index, 'originalPrice', val || null)"
+                      />
+                    </el-form-item>
+                    <el-form-item label="跳转配置">
+                      <el-collapse style="width: 100%">
+                        <el-collapse-item title="跳转配置" :name="`product-${index}`">
+                          <div class="navigation-editor" style="padding: 0.5rem 0">
+                            <el-select
+                              :model-value="getProductItemNavigation(field.prop, index).type"
+                              placeholder="选择跳转类型"
+                              style="width: 100%"
+                              @update:model-value="(val) => updateProductItemNavigation(field.prop, index, 'type', val)"
+                            >
+                              <el-option :label="'无跳转'" :value="NAVIGATION_TYPES.NONE" />
+                              <el-option :label="'页面跳转'" :value="NAVIGATION_TYPES.PAGE" />
+                              <el-option :label="'外部链接'" :value="NAVIGATION_TYPES.URL" />
+                            </el-select>
+                            
+                            <template v-if="getProductItemNavigation(field.prop, index).type === NAVIGATION_TYPES.PAGE">
+                              <div style="margin-top: 0.8rem">
+                                <PageSelector
+                                  :model-value="getProductItemNavigation(field.prop, index)"
+                                  :project-code="projectCode"
+                                  placeholder="选择目标页面"
+                                  @update:model-value="(val) => updateProductItemNavigationFromSelector(field.prop, index, val)"
+                                />
+                              </div>
+                            </template>
+                            
+                            <template v-if="getProductItemNavigation(field.prop, index).type === NAVIGATION_TYPES.URL">
+                              <el-input
+                                style="margin-top: 0.8rem"
+                                :model-value="getProductItemNavigation(field.prop, index).url"
+                                placeholder="请输入外部链接地址"
+                                @update:model-value="(val) => updateProductItemNavigation(field.prop, index, 'url', val)"
+                              />
+                            </template>
+                          </div>
+                        </el-collapse-item>
+                      </el-collapse>
+                    </el-form-item>
+                  </el-form>
+                </el-card>
+              </div>
+              <el-button type="primary" text @click="addProductItem(field.prop)" style="width: 100%; margin-top: 0.5rem;">
+                + 添加产品
+              </el-button>
+            </div>
+          </template>
           <el-color-picker
             v-else-if="field.type === 'color'"
             :model-value="selectedItem.props?.[field.prop]"
+            @update:model-value="(val) => handleInput(field.prop, val)"
+          />
+          <el-slider
+            v-else-if="field.type === 'slider'"
+            :model-value="selectedItem.props?.[field.prop] || field.min || 1"
+            :min="field.min || 1"
+            :max="field.max || 6"
+            :step="field.step || 1"
+            :show-tooltip="true"
+            :show-input="true"
+            @update:model-value="(val) => handleInput(field.prop, val)"
+          />
+          <el-switch
+            v-else-if="field.type === 'switch'"
+            :model-value="selectedItem.props?.[field.prop]"
+            :active-text="field.activeText || ''"
+            :inactive-text="field.inactiveText || ''"
             @update:model-value="(val) => handleInput(field.prop, val)"
           />
         </el-form-item>
@@ -1044,6 +1471,43 @@ const getQuickLinkNavigation = (prop, index) => {
     </template>
     <el-empty v-else description="请选择画布中的组件以配置属性" />
   </el-card>
+
+  <!-- 新闻详情编辑对话框 -->
+  <el-dialog
+    v-model="detailDialogVisible"
+    title="编辑新闻详情"
+    width="800px"
+    :before-close="closeDetailDialog"
+  >
+    <div class="detail-editor">
+      <QuillEditor
+        v-model:content="detailContent"
+        content-type="html"
+        theme="snow"
+        :options="{
+          placeholder: '请输入新闻详情内容...',
+          modules: {
+            toolbar: [
+              [{ header: [1, 2, 3, false] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ list: 'ordered' }, { list: 'bullet' }],
+              [{ color: [] }, { background: [] }],
+              [{ align: [] }],
+              ['link', 'image'],
+              ['clean'],
+            ],
+          },
+        }"
+        style="height: 400px; margin-bottom: 1rem"
+      />
+    </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="closeDetailDialog">取消</el-button>
+        <el-button type="primary" @click="saveDetail">保存</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -1079,6 +1543,34 @@ const getQuickLinkNavigation = (prop, index) => {
   margin-top: 0.5rem;
 }
 
+.carousel-items-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.carousel-item-editor {
+  width: 100%;
+}
+
+.carousel-item-card {
+  margin-bottom: 0.5rem;
+}
+
+.product-items-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.product-item-editor {
+  width: 100%;
+}
+
+.product-item-card {
+  margin-bottom: 0.5rem;
+}
+
 .nav-items-editor {
   display: flex;
   flex-direction: column;
@@ -1087,13 +1579,19 @@ const getQuickLinkNavigation = (prop, index) => {
 
 .nav-items-editor__row {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.4rem;
-  align-items: stretch;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .nav-items-editor__input {
   flex: 1;
+  min-width: 120px;
+}
+
+.detail-editor {
+  margin: 1rem 0;
 }
 
 .nav-items-editor__row :deep(.el-button) {

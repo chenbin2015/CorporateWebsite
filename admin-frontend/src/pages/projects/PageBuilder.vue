@@ -6,7 +6,7 @@ import { DocumentCopy } from '@element-plus/icons-vue'
 
 import BuilderCanvas from '@/components/layout/BuilderCanvas.vue'
 import BuilderInspector from '@/components/layout/BuilderInspector.vue'
-import BuilderSidebar from '@/components/layout/BuilderSidebar.vue'
+import BuilderLeftPanel from '@/components/layout/BuilderLeftPanel.vue'
 import { componentPalette } from '@/data/componentPalette'
 import { getComponentSchema } from '@/data/componentSchemas'
 import { getPage, saveDraft, publishPage } from '@/services/modules/project'
@@ -54,6 +54,13 @@ const handleInsert = (component) => {
 
 const handleSelect = (componentId) => {
   selectedId.value = componentId
+}
+
+// 处理从结构树点击的滚动事件
+const handleScrollTo = (id) => {
+  // 先选中组件
+  selectedId.value = id
+  // BuilderCanvas 会自动监听 selectedId 变化并滚动
 }
 
 const handleUpdateProps = (updatedProps) => {
@@ -328,7 +335,15 @@ onBeforeUnmount(() => {
     </header>
 
     <div class="builder">
-      <BuilderSidebar :categories="componentPalette" @insert="handleInsert" />
+      <BuilderLeftPanel
+        :categories="componentPalette"
+        :page-name="pageInfo?.name || `页面 ${pageCode}`"
+        :items="canvasItems"
+        :selected-id="selectedId"
+        @insert="handleInsert"
+        @select="handleSelect"
+        @scroll-to="handleScrollTo"
+      />
       <BuilderCanvas 
         :items="canvasItems" 
         :selected-id="selectedId" 
