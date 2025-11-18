@@ -30,8 +30,15 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}")
-    public Project get(@PathVariable("id") Long id) {
-        return projectQueryService.getProject(id);
+    public Project get(@PathVariable("id") String id) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        try {
+            Long projectId = Long.parseLong(id);
+            return projectQueryService.getProject(projectId);
+        } catch (NumberFormatException e) {
+            // 如果不是数字，则作为 code 查询
+            return projectQueryService.getProjectByCode(id);
+        }
     }
 
     @PostMapping
@@ -45,19 +52,37 @@ public class ProjectController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Project> update(@PathVariable("id") Long id, @RequestBody UpdateProjectRequest request) {
+    public ResponseEntity<Project> update(@PathVariable("id") String id, @RequestBody UpdateProjectRequest request) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        Project project;
+        try {
+            Long projectId = Long.parseLong(id);
+            project = projectQueryService.getProject(projectId);
+        } catch (NumberFormatException e) {
+            project = projectQueryService.getProjectByCode(id);
+        }
+        
         UpdateProjectCommand command = new UpdateProjectCommand();
-        command.setId(id);
+        command.setId(project.getId());
         command.setName(request.getName());
         command.setDescription(request.getDescription());
 
-        Project project = projectCommandService.updateProject(command);
-        return ResponseEntity.ok(project);
+        Project updatedProject = projectCommandService.updateProject(command);
+        return ResponseEntity.ok(updatedProject);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Boolean>> delete(@PathVariable("id") Long id) {
-        projectCommandService.deleteProject(id);
+    public ResponseEntity<Map<String, Boolean>> delete(@PathVariable("id") String id) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        Project project;
+        try {
+            Long projectId = Long.parseLong(id);
+            project = projectQueryService.getProject(projectId);
+        } catch (NumberFormatException e) {
+            project = projectQueryService.getProjectByCode(id);
+        }
+        
+        projectCommandService.deleteProject(project.getId());
         return ResponseEntity.ok(Map.of("success", true));
     }
 

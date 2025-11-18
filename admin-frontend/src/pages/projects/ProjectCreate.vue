@@ -6,7 +6,7 @@ import { createProject, updateProject, getProject } from '@/services/modules/pro
 
 const router = useRouter()
 const route = useRoute()
-const isEdit = ref(!!route.params.id)
+const isEdit = ref(!!route.params.code)
 const loading = ref(false)
 
 const form = reactive({
@@ -21,11 +21,11 @@ const rules = {
 const formRef = ref(null)
 
 const loadProject = async () => {
-  if (!isEdit.value || !route.params.id) return
+  if (!isEdit.value || !route.params.code) return
 
   loading.value = true
   try {
-    const project = await getProject(route.params.id)
+    const project = await getProject(route.params.code)
     form.name = project.name || ''
     form.description = project.description || ''
   } catch (error) {
@@ -45,8 +45,8 @@ const handleSubmit = async () => {
 
     loading.value = true
     try {
-      if (isEdit.value && route.params.id) {
-        await updateProject(route.params.id, {
+      if (isEdit.value && route.params.code) {
+        await updateProject(route.params.code, {
           name: form.name,
           description: form.description,
         })
@@ -58,7 +58,7 @@ const handleSubmit = async () => {
         })
         ElMessage.success('创建成功')
       }
-      router.push({ name: 'projectList' })
+      router.push({ name: 'projects' })
     } catch (error) {
       console.error('Failed to save project:', error)
       ElMessage.error(isEdit.value ? '更新失败' : '创建失败')

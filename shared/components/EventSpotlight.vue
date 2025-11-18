@@ -1,5 +1,7 @@
 <script setup>
 import { toRefs } from 'vue'
+import { handleDetailPageNavigation } from '@/utils/navigation'
+import { isDesignMode } from '@shared/utils/context'
 
 const props = defineProps({
   title: {
@@ -9,16 +11,34 @@ const props = defineProps({
   events: {
     type: Array,
     default: () => [
-      { day: '01', month: 'Jan', title: '默认事件标题', location: '主校区', time: '09:00', href: '#' },
+      { day: '01', month: 'Jan', title: '默认事件标题', location: '主校区', time: '09:00', href: '#', id: '1' },
     ],
   },
   moreText: {
     type: String,
     default: '更多',
   },
+  detailPage: {
+    type: Object,
+    default: () => null,
+  },
 })
 
 const { title, events } = toRefs(props)
+
+const handleEventClick = (event, e) => {
+  // 设计态中禁用交互
+  if (isDesignMode()) {
+    e.preventDefault()
+    e.stopPropagation()
+    return
+  }
+  
+  if (props.detailPage) {
+    e.preventDefault()
+    handleDetailPageNavigation(props.detailPage, event)
+  }
+}
 </script>
 
 <template>
@@ -28,13 +48,20 @@ const { title, events } = toRefs(props)
       <a class="events__more" href="#">{{ moreText || '更多' }}</a>
     </header>
     <ul class="events__list">
-      <li v-for="event in events" :key="event.title" class="events__item">
+      <li v-for="event in events" :key="event.title || event.id" class="events__item">
         <div class="events__time">
           <span class="events__day">{{ event.day }}</span>
           <span class="events__month">{{ event.month }}</span>
         </div>
         <div class="events__details">
-          <a class="events__title" :href="event.href">{{ event.title }}</a>
+          <a 
+            class="events__title" 
+            :href="isDesignMode() ? 'javascript:void(0)' : (detailPage ? 'javascript:void(0)' : (event.href || '#'))"
+            @click="(e) => handleEventClick(event, e)"
+            :style="isDesignMode() ? 'cursor: default; pointer-events: none;' : 'cursor: pointer;'"
+          >
+            {{ event.title }}
+          </a>
           <p class="events__meta">
             {{ event.location }} · {{ event.time }}
           </p>

@@ -33,6 +33,12 @@ public class MyBatisProjectRepository implements ProjectRepository {
     }
 
     @Override
+    public Optional<Project> findByCode(String code) {
+        Project project = projectMapper.findByCode(code);
+        return Optional.ofNullable(project);
+    }
+
+    @Override
     public List<Project> findAll() {
         return projectMapper.findAll();
     }

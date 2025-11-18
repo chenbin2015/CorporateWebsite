@@ -188,7 +188,7 @@ const removeNewsItem = (prop, index) => {
 
 // 跳转配置处理
 const route = useRoute()
-const projectId = computed(() => route.params.projectId)
+const projectCode = computed(() => route.params.projectCode)
 
 const getNavigation = (prop) => {
   const current = props.selectedItem?.props?.[prop]
@@ -230,12 +230,25 @@ const updateDetailPage = (prop, key, value) => {
 
 // 更新详情页配置（处理PageSelector返回的对象）
 const updateDetailPageFromSelector = (prop, value) => {
+  const current = getDetailPage(prop)
   if (value) {
-    updateDetailPage(prop, 'targetPageId', value.targetPageId)
-    updateDetailPage(prop, 'path', value.path)
+    // 一次性更新整个 detailPage 对象
+    emit('update-props', {
+      [prop]: {
+        ...current,
+        targetPageCode: value.targetPageCode,
+        path: value.path,
+      },
+    })
   } else {
-    updateDetailPage(prop, 'targetPageId', null)
-    updateDetailPage(prop, 'path', null)
+    // 清空选择
+    emit('update-props', {
+      [prop]: {
+        ...current,
+        targetPageCode: null,
+        path: null,
+      },
+    })
   }
 }
 
@@ -252,12 +265,29 @@ const updateNavItemNavigation = (prop, index, key, value) => {
 
 // 更新导航项跳转（处理PageSelector返回的对象）
 const updateNavItemNavigationFromSelector = (prop, index, value) => {
+  const current = getArrayProp(prop)
+  const item = current[index] || {}
+  const navigation = item.navigation || createDefaultNavigation()
   if (value) {
-    updateNavItemNavigation(prop, index, 'targetPageId', value.targetPageId)
-    updateNavItemNavigation(prop, index, 'path', value.path)
+    // 一次性更新整个 navigation 对象
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: value.targetPageCode,
+      path: value.path,
+    }
+    const updatedItem = { ...item, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
   } else {
-    updateNavItemNavigation(prop, index, 'targetPageId', null)
-    updateNavItemNavigation(prop, index, 'path', null)
+    // 清空选择
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: null,
+      path: null,
+    }
+    const updatedItem = { ...item, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
   }
 }
 
@@ -280,12 +310,29 @@ const updateTabItemNavigation = (prop, index, key, value) => {
 
 // 更新Tab项跳转（处理PageSelector返回的对象）
 const updateTabItemNavigationFromSelector = (prop, index, value) => {
+  const current = getArrayProp(prop)
+  const item = current[index] || {}
+  const navigation = item.navigation || createDefaultNavigation()
   if (value) {
-    updateTabItemNavigation(prop, index, 'targetPageId', value.targetPageId)
-    updateTabItemNavigation(prop, index, 'path', value.path)
+    // 一次性更新整个 navigation 对象
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: value.targetPageCode,
+      path: value.path,
+    }
+    const updatedItem = { ...item, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
   } else {
-    updateTabItemNavigation(prop, index, 'targetPageId', null)
-    updateTabItemNavigation(prop, index, 'path', null)
+    // 清空选择
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: null,
+      path: null,
+    }
+    const updatedItem = { ...item, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
   }
 }
 
@@ -308,12 +355,29 @@ const updateBreadcrumbItemNavigation = (prop, index, key, value) => {
 
 // 更新Breadcrumb项跳转（处理PageSelector返回的对象）
 const updateBreadcrumbItemNavigationFromSelector = (prop, index, value) => {
+  const current = getArrayProp(prop)
+  const item = current[index] || {}
+  const navigation = item.navigation || createDefaultNavigation()
   if (value) {
-    updateBreadcrumbItemNavigation(prop, index, 'targetPageId', value.targetPageId)
-    updateBreadcrumbItemNavigation(prop, index, 'path', value.path)
+    // 一次性更新整个 navigation 对象
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: value.targetPageCode,
+      path: value.path,
+    }
+    const updatedItem = { ...item, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
   } else {
-    updateBreadcrumbItemNavigation(prop, index, 'targetPageId', null)
-    updateBreadcrumbItemNavigation(prop, index, 'path', null)
+    // 清空选择
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: null,
+      path: null,
+    }
+    const updatedItem = { ...item, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
   }
 }
 
@@ -339,12 +403,31 @@ const updateQuickLinkNavigation = (prop, index, key, value) => {
 
 // 更新QuickLink跳转（处理PageSelector返回的对象）
 const updateQuickLinkNavigationFromSelector = (prop, index, value) => {
+  const current = getArrayProp(prop)
+  const item = current[index] || {}
+  const isOldFormat = typeof item === 'string'
+  const baseItem = isOldFormat ? { label: item, navigation: createDefaultNavigation() } : item
+  const navigation = baseItem.navigation || createDefaultNavigation()
   if (value) {
-    updateQuickLinkNavigation(prop, index, 'targetPageId', value.targetPageId)
-    updateQuickLinkNavigation(prop, index, 'path', value.path)
+    // 一次性更新整个 navigation 对象
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: value.targetPageCode,
+      path: value.path,
+    }
+    const updatedItem = { ...baseItem, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
   } else {
-    updateQuickLinkNavigation(prop, index, 'targetPageId', null)
-    updateQuickLinkNavigation(prop, index, 'path', null)
+    // 清空选择
+    const updatedNavigation = {
+      ...navigation,
+      targetPageCode: null,
+      path: null,
+    }
+    const updatedItem = { ...baseItem, navigation: updatedNavigation }
+    const next = current.map((it, i) => (i === index ? updatedItem : it))
+    emit('update-props', { [prop]: next })
   }
 }
 
@@ -423,7 +506,7 @@ const getQuickLinkNavigation = (prop, index) => {
                         <div style="margin-top: 0.8rem">
                           <PageSelector
                             :model-value="getNavItemNavigation(field.prop, index)"
-                            :project-id="projectId"
+                            :project-code="projectCode"
                             placeholder="选择目标页面"
                             @update:model-value="(val) => updateNavItemNavigationFromSelector(field.prop, index, val)"
                           />
@@ -489,7 +572,7 @@ const getQuickLinkNavigation = (prop, index) => {
                         <div style="margin-top: 0.8rem">
                           <PageSelector
                             :model-value="getTabItemNavigation(field.prop, index)"
-                            :project-id="projectId"
+                            :project-code="projectCode"
                             placeholder="选择目标页面"
                             @update:model-value="(val) => updateTabItemNavigationFromSelector(field.prop, index, val)"
                           />
@@ -555,7 +638,7 @@ const getQuickLinkNavigation = (prop, index) => {
                         <div style="margin-top: 0.8rem">
                           <PageSelector
                             :model-value="getBreadcrumbItemNavigation(field.prop, index)"
-                            :project-id="projectId"
+                            :project-code="projectCode"
                             placeholder="选择目标页面"
                             @update:model-value="(val) => updateBreadcrumbItemNavigationFromSelector(field.prop, index, val)"
                           />
@@ -615,7 +698,7 @@ const getQuickLinkNavigation = (prop, index) => {
                         <div style="margin-top: 0.8rem">
                           <PageSelector
                             :model-value="getQuickLinkNavigation(field.prop, index)"
-                            :project-id="projectId"
+                            :project-code="projectCode"
                             placeholder="选择目标页面"
                             @update:model-value="(val) => updateQuickLinkNavigationFromSelector(field.prop, index, val)"
                           />
@@ -789,15 +872,28 @@ const getQuickLinkNavigation = (prop, index) => {
                 <div style="margin-top: 0.8rem">
                   <PageSelector
                     :model-value="getNavigation(field.prop)"
-                    :project-id="projectId"
+                    :project-code="projectCode"
                     placeholder="选择目标页面"
                     @update:model-value="(val) => {
+                      const current = getNavigation(field.prop)
                       if (val) {
-                        updateNavigation(field.prop, 'targetPageId', val.targetPageId)
-                        updateNavigation(field.prop, 'path', val.path)
+                        // 一次性更新整个 navigation 对象
+                        emit('update-props', {
+                          [field.prop]: {
+                            ...current,
+                            targetPageCode: val.targetPageCode,
+                            path: val.path,
+                          },
+                        })
                       } else {
-                        updateNavigation(field.prop, 'targetPageId', null)
-                        updateNavigation(field.prop, 'path', null)
+                        // 清空选择
+                        emit('update-props', {
+                          [field.prop]: {
+                            ...current,
+                            targetPageCode: null,
+                            path: null,
+                          },
+                        })
                       }
                     }"
                   />
@@ -891,7 +987,7 @@ const getQuickLinkNavigation = (prop, index) => {
                 <div style="margin-top: 0.8rem">
                   <PageSelector
                     :model-value="getDetailPage(field.prop)"
-                    :project-id="projectId"
+                    :project-code="projectCode"
                     placeholder="选择自定义详情页"
                     @update:model-value="(val) => updateDetailPageFromSelector(field.prop, val)"
                   />
@@ -916,6 +1012,15 @@ const getQuickLinkNavigation = (prop, index) => {
                 >
                   <template #prepend>参数来源</template>
                 </el-input>
+              </div>
+              
+              <div style="margin-top: 0.8rem; display: flex; align-items: center; gap: 0.5rem">
+                <el-switch
+                  :model-value="getDetailPage(field.prop).openInNewTab || false"
+                  active-text="新标签页打开"
+                  inactive-text="当前页跳转"
+                  @update:model-value="(val) => updateDetailPage(field.prop, 'openInNewTab', val)"
+                />
               </div>
             </div>
           </template>

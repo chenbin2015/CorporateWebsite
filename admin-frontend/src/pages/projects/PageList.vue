@@ -6,17 +6,17 @@ import { fetchProjectPages, deletePage } from '@/services/modules/project'
 
 const router = useRouter()
 const route = useRoute()
-const projectId = route.params.projectId
+const projectCode = route.params.projectCode
 
 const pages = ref([])
 const loading = ref(false)
 
 const loadPages = async () => {
-  if (!projectId) return
+  if (!projectCode) return
 
   loading.value = true
   try {
-    pages.value = await fetchProjectPages(projectId)
+    pages.value = await fetchProjectPages(projectCode)
   } catch (error) {
     console.error('Failed to load pages:', error)
     ElMessage.error('加载页面列表失败')
@@ -28,16 +28,16 @@ const loadPages = async () => {
 const goToBuilder = (page) => {
   router.push({
     name: 'pageBuilder',
-    params: { projectId, pageId: page.id },
+    params: { projectCode, pageCode: page.code },
   })
 }
 
 const handleCreate = () => {
-  router.push({ name: 'pageCreate', params: { projectId } })
+  router.push({ name: 'pageCreate', params: { projectCode } })
 }
 
 const handleEdit = (page) => {
-  router.push({ name: 'pageEdit', params: { projectId, id: page.id } })
+  router.push({ name: 'pageEdit', params: { projectCode, code: page.code } })
 }
 
 const handleDelete = async (page) => {
@@ -48,7 +48,7 @@ const handleDelete = async (page) => {
       type: 'warning',
     })
 
-    await deletePage(projectId, page.id)
+    await deletePage(projectCode, page.code)
     ElMessage.success('删除成功')
     await loadPages()
   } catch (error) {

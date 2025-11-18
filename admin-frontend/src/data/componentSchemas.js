@@ -1,14 +1,29 @@
 export const componentSchemas = {
   HeroCarousel: {
     defaults: {
-      headline: '智慧校园，连结未来',
-      subline: '构建国际化、数字化、可持续的校园体验',
-      accent: '#2563eb',
+      items: [
+        {
+          title: '默认标题：打造高水平大学',
+          description: '这是组件的默认介绍文案，可在调用组件时通过 props 覆盖。',
+          category: '默认分类',
+          action: '了解更多',
+          href: '#',
+          cover: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1600&q=80',
+        },
+      ],
+      interval: 5000,
+      navigation: {
+        type: 'none',
+        targetPageCode: null, // 使用 code 替代 id
+        path: null, // 页面路径，用于运行时跳转
+        url: '',
+        params: {},
+      },
     },
     fields: [
-      { prop: 'headline', label: '主标题', type: 'text', placeholder: '输入标题' },
-      { prop: 'subline', label: '副标题', type: 'textarea', placeholder: '输入简介' },
-      { prop: 'accent', label: '主题色', type: 'color' },
+      { prop: 'items', label: '轮播项', type: 'carousel-items' },
+      { prop: 'interval', label: '自动播放间隔（毫秒）', type: 'number' },
+      { prop: 'navigation', label: '跳转配置', type: 'navigation' },
     ],
   },
   FocusGrid: {
@@ -29,7 +44,7 @@ export const componentSchemas = {
       actions: [],
       navigation: {
         type: 'none',
-        targetPageId: null,
+        targetPageCode: null, // 使用 code 替代 id
         path: null,  // 页面路径，用于运行时跳转
         url: '',
         params: {},
@@ -49,7 +64,7 @@ export const componentSchemas = {
       buttonText: '立即预约',
       navigation: {
         type: 'none',
-        targetPageId: null,
+        targetPageCode: null, // 使用 code 替代 id
         path: null,  // 页面路径，用于运行时跳转
         url: '',
         params: {},
@@ -71,7 +86,7 @@ export const componentSchemas = {
       actions: [],
       navigation: {
         type: 'none',
-        targetPageId: null,
+        targetPageCode: null, // 使用 code 替代 id
         path: null,  // 页面路径，用于运行时跳转
         url: '',
         params: {},
@@ -214,9 +229,10 @@ export const componentSchemas = {
       detailPage: {
         type: 'template',
         templateType: 'event',
-        targetPageId: null,
+        targetPageCode: null, // 使用 code 替代 id
         paramKey: 'id',
         paramSource: 'id',
+        openInNewTab: false,
       },
     },
     fields: [
@@ -281,9 +297,10 @@ export const componentSchemas = {
       detailPage: {
         type: 'template',
         templateType: 'notice',
-        targetPageId: null,
+        targetPageCode: null, // 使用 code 替代 id
         paramKey: 'id',
         paramSource: 'id',
+        openInNewTab: false,
       },
     },
     fields: [
@@ -443,18 +460,20 @@ export const componentSchemas = {
         summary: '请在 props 中传入 highlight、items 数据，或绑定远程接口结果。',
         date: '2025-01-01',
         cover: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80',
+        id: '1',
       },
       items: [
-        { title: '默认新闻条目示例一', date: '01-01', href: '#' },
-        { title: '默认新闻条目示例二', date: '01-02', href: '#' },
-        { title: '默认新闻条目示例三', date: '01-03', href: '#' },
+        { title: '默认新闻条目示例一', date: '01-01', href: '#', id: '1' },
+        { title: '默认新闻条目示例二', date: '01-02', href: '#', id: '2' },
+        { title: '默认新闻条目示例三', date: '01-03', href: '#', id: '3' },
       ],
       detailPage: {
         type: 'template',
         templateType: 'news',
-        targetPageId: null,
+        targetPageCode: null, // 使用 code 替代 id
         paramKey: 'id',
         paramSource: 'id',
+        openInNewTab: false,
       },
     },
     fields: [
@@ -462,6 +481,169 @@ export const componentSchemas = {
       { prop: 'detailPage', label: '详情页配置', type: 'detail-page' },
       { prop: 'highlight', label: '焦点新闻', type: 'news-highlight' },
       { prop: 'items', label: '新闻条目', type: 'news-items' },
+    ],
+  },
+  EventCalendar: {
+    defaults: {
+      title: '活动日历',
+      events: [
+        { date: '2024-01-15', title: '学术讲座', type: 'academic' },
+        { date: '2024-01-20', title: '校园活动', type: 'campus' },
+      ],
+    },
+    fields: [
+      { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'events', label: '活动列表', type: 'array' },
+    ],
+  },
+  MediaLinks: {
+    defaults: {
+      title: '媒体报道',
+      items: [
+        {
+          title: '媒体报道标题',
+          source: '来源',
+          date: '2024-01-15',
+          url: '#',
+        },
+      ],
+    },
+    fields: [
+      { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'items', label: '媒体报道列表', type: 'array' },
+    ],
+  },
+  DownloadList: {
+    defaults: {
+      title: '资料下载',
+      items: [
+        { name: '文件名称', size: '1.2MB', href: '#' },
+      ],
+    },
+    fields: [
+      { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'items', label: '文件列表', type: 'array' },
+    ],
+  },
+  SocialMediaLinks: {
+    defaults: {
+      title: '关注我们',
+      items: [
+        { name: '微信', icon: 'wechat', url: '#' },
+        { name: '微博', icon: 'weibo', url: '#' },
+      ],
+    },
+    fields: [
+      { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'items', label: '社交媒体列表', type: 'array' },
+    ],
+  },
+  SearchBox: {
+    defaults: {
+      placeholder: '请输入关键词搜索...',
+      action: '/search',
+      method: 'get',
+    },
+    fields: [
+      { prop: 'placeholder', label: '占位符', type: 'text' },
+      { prop: 'action', label: '搜索地址', type: 'text' },
+      { prop: 'method', label: '请求方法', type: 'text' },
+    ],
+  },
+  NotificationBanner: {
+    defaults: {
+      message: '重要通知：请关注最新公告',
+      type: 'info',
+      closable: true,
+      position: 'top',
+    },
+    fields: [
+      { prop: 'message', label: '通知内容', type: 'textarea' },
+      { prop: 'type', label: '类型', type: 'select', options: [
+        { label: '信息', value: 'info' },
+        { label: '警告', value: 'warning' },
+        { label: '错误', value: 'error' },
+        { label: '成功', value: 'success' },
+      ]},
+      { prop: 'closable', label: '可关闭', type: 'boolean' },
+      { prop: 'position', label: '位置', type: 'select', options: [
+        { label: '顶部', value: 'top' },
+        { label: '底部', value: 'bottom' },
+      ]},
+    ],
+  },
+  TagCloud: {
+    defaults: {
+      title: '热门标签',
+      tags: [
+        { name: '新闻', count: 120, href: '#' },
+        { name: '活动', count: 85, href: '#' },
+      ],
+      maxSize: 24,
+      minSize: 12,
+    },
+    fields: [
+      { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'tags', label: '标签列表', type: 'array' },
+      { prop: 'maxSize', label: '最大字号', type: 'number' },
+      { prop: 'minSize', label: '最小字号', type: 'number' },
+    ],
+  },
+  VideoPlayer: {
+    defaults: {
+      title: '',
+      src: '',
+      poster: '',
+      autoplay: false,
+      controls: true,
+      width: '100%',
+      height: 'auto',
+    },
+    fields: [
+      { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'src', label: '视频地址', type: 'text' },
+      { prop: 'poster', label: '封面图', type: 'text' },
+      { prop: 'autoplay', label: '自动播放', type: 'boolean' },
+      { prop: 'controls', label: '显示控制条', type: 'boolean' },
+      { prop: 'width', label: '宽度', type: 'text' },
+      { prop: 'height', label: '高度', type: 'text' },
+    ],
+  },
+  MultiLevelMenu: {
+    defaults: {
+      items: [
+        { label: '首页', href: '/' },
+        {
+          label: '关于我们',
+          href: '#',
+          children: [
+            { label: '学校简介', href: '#' },
+            { label: '历史沿革', href: '#' },
+          ],
+        },
+      ],
+    },
+    fields: [
+      { prop: 'items', label: '菜单项', type: 'nav-items' },
+    ],
+  },
+  Footer: {
+    defaults: {
+      copyright: '© 2024 版权所有',
+      links: [
+        { label: '关于我们', href: '#' },
+        { label: '联系我们', href: '#' },
+      ],
+      contact: {
+        address: '地址：江苏省南京市',
+        phone: '电话：025-12345678',
+        email: '邮箱：contact@example.com',
+      },
+    },
+    fields: [
+      { prop: 'copyright', label: '版权信息', type: 'text' },
+      { prop: 'links', label: '链接列表', type: 'quick-links' },
+      { prop: 'contact', label: '联系信息', type: 'object' },
     ],
   },
 }

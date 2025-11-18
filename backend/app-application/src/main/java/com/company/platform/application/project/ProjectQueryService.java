@@ -23,6 +23,11 @@ public class ProjectQueryService {
         return projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
     }
+
+    public Project getProjectByCode(String code) {
+        return projectRepository.findByCode(code)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+    }
 }
 
 

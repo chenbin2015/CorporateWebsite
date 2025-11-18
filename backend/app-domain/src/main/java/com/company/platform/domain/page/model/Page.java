@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 public class Page {
 
     private Long id;
+    private String code; // UUID，全局唯一标识符
     private Long projectId;
+    private String projectCode; // 项目的 code，用于前端路由
     private String name;
     private String path;
     private String title;
@@ -27,12 +29,28 @@ public class Page {
         this.id = id;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
     public Long getProjectId() {
         return projectId;
     }
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getProjectCode() {
+        return projectCode;
+    }
+
+    public void setProjectCode(String projectCode) {
+        this.projectCode = projectCode;
     }
 
     public String getName() {

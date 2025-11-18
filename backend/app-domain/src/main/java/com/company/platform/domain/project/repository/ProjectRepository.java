@@ -11,6 +11,8 @@ public interface ProjectRepository {
 
     Optional<Project> findById(Long id);
 
+    Optional<Project> findByCode(String code);
+
     List<Project> findAll();
 
     void deleteById(Long id);

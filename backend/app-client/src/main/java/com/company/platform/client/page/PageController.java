@@ -6,7 +6,9 @@ import com.company.platform.application.page.command.CreatePageCommand;
 import com.company.platform.application.page.command.PublishPageCommand;
 import com.company.platform.application.page.command.SaveDraftCommand;
 import com.company.platform.application.page.command.UpdatePageCommand;
+import com.company.platform.application.project.ProjectQueryService;
 import com.company.platform.domain.page.model.Page;
+import com.company.platform.domain.project.model.Project;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,26 +22,51 @@ public class PageController {
 
     private final PageQueryService pageQueryService;
     private final PageCommandService pageCommandService;
+    private final ProjectQueryService projectQueryService;
 
-    public PageController(PageQueryService pageQueryService, PageCommandService pageCommandService) {
+    public PageController(PageQueryService pageQueryService, PageCommandService pageCommandService, ProjectQueryService projectQueryService) {
         this.pageQueryService = pageQueryService;
         this.pageCommandService = pageCommandService;
+        this.projectQueryService = projectQueryService;
     }
 
     @GetMapping
-    public List<Page> listPages(@PathVariable("projectId") Long projectId) {
-        return pageQueryService.listPages(projectId);
+    public List<Page> listPages(@PathVariable("projectId") String projectId) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        try {
+            Long id = Long.parseLong(projectId);
+            return pageQueryService.listPages(id);
+        } catch (NumberFormatException e) {
+            return pageQueryService.listPagesByProjectCode(projectId);
+        }
     }
 
     @GetMapping("/{pageId}")
-    public Page getPage(@PathVariable("projectId") Long projectId, @PathVariable("pageId") Long pageId) {
-        return pageQueryService.getPage(projectId, pageId);
+    public Page getPage(@PathVariable("projectId") String projectId, @PathVariable("pageId") String pageId) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        try {
+            Long projectIdLong = Long.parseLong(projectId);
+            Long pageIdLong = Long.parseLong(pageId);
+            return pageQueryService.getPage(projectIdLong, pageIdLong);
+        } catch (NumberFormatException e) {
+            // 如果任一参数不是数字，则作为 code 查询
+            return pageQueryService.getPageByCode(projectId, pageId);
+        }
     }
 
     @PostMapping
-    public ResponseEntity<Page> createPage(@PathVariable("projectId") Long projectId, @RequestBody CreatePageRequest request) {
+    public ResponseEntity<Page> createPage(@PathVariable("projectId") String projectId, @RequestBody CreatePageRequest request) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        Project project;
+        try {
+            Long id = Long.parseLong(projectId);
+            project = projectQueryService.getProject(id);
+        } catch (NumberFormatException e) {
+            project = projectQueryService.getProjectByCode(projectId);
+        }
+        
         CreatePageCommand command = new CreatePageCommand();
-        command.setProjectId(projectId);
+        command.setProjectId(project.getId());
         command.setName(request.getName());
         command.setPath(request.getPath());
         command.setTitle(request.getTitle());
@@ -52,60 +79,100 @@ public class PageController {
 
     @PutMapping("/{pageId}/draft")
     public ResponseEntity<Page> saveDraft(
-            @PathVariable("projectId") Long projectId,
-            @PathVariable("pageId") Long pageId,
+            @PathVariable("projectId") String projectId,
+            @PathVariable("pageId") String pageId,
             @RequestBody SaveDraftRequest request) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        Page page;
+        try {
+            Long projectIdLong = Long.parseLong(projectId);
+            Long pageIdLong = Long.parseLong(pageId);
+            page = pageQueryService.getPage(projectIdLong, pageIdLong);
+        } catch (NumberFormatException e) {
+            page = pageQueryService.getPageByCode(projectId, pageId);
+        }
+        
         SaveDraftCommand command = new SaveDraftCommand();
-        command.setProjectId(projectId);
-        command.setPageId(pageId);
+        command.setProjectId(page.getProjectId());
+        command.setPageId(page.getId());
         command.setName(request.getName());
         command.setPath(request.getPath());
         command.setTitle(request.getTitle());
         command.setDescription(request.getDescription());
         command.setSchemaData(request.getSchemaData());
 
-        Page page = pageCommandService.saveDraft(command);
-        return ResponseEntity.ok(page);
+        Page savedPage = pageCommandService.saveDraft(command);
+        return ResponseEntity.ok(savedPage);
     }
 
     @PutMapping("/{pageId}")
     public ResponseEntity<Page> updatePage(
-            @PathVariable("projectId") Long projectId,
-            @PathVariable("pageId") Long pageId,
+            @PathVariable("projectId") String projectId,
+            @PathVariable("pageId") String pageId,
             @RequestBody UpdatePageRequest request) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        Page page;
+        try {
+            Long projectIdLong = Long.parseLong(projectId);
+            Long pageIdLong = Long.parseLong(pageId);
+            page = pageQueryService.getPage(projectIdLong, pageIdLong);
+        } catch (NumberFormatException e) {
+            page = pageQueryService.getPageByCode(projectId, pageId);
+        }
+        
         UpdatePageCommand command = new UpdatePageCommand();
-        command.setProjectId(projectId);
-        command.setPageId(pageId);
+        command.setProjectId(page.getProjectId());
+        command.setPageId(page.getId());
         command.setName(request.getName());
         command.setPath(request.getPath());
         command.setTitle(request.getTitle());
         command.setDescription(request.getDescription());
 
-        Page page = pageCommandService.updatePage(command);
-        return ResponseEntity.ok(page);
+        Page updatedPage = pageCommandService.updatePage(command);
+        return ResponseEntity.ok(updatedPage);
     }
 
     @PostMapping("/{pageId}/publish")
     public ResponseEntity<Page> publishPage(
-            @PathVariable("projectId") Long projectId,
-            @PathVariable("pageId") Long pageId,
+            @PathVariable("projectId") String projectId,
+            @PathVariable("pageId") String pageId,
             @RequestBody(required = false) PublishPageRequest request) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        Page page;
+        try {
+            Long projectIdLong = Long.parseLong(projectId);
+            Long pageIdLong = Long.parseLong(pageId);
+            page = pageQueryService.getPage(projectIdLong, pageIdLong);
+        } catch (NumberFormatException e) {
+            page = pageQueryService.getPageByCode(projectId, pageId);
+        }
+        
         PublishPageCommand command = new PublishPageCommand();
-        command.setProjectId(projectId);
-        command.setPageId(pageId);
+        command.setProjectId(page.getProjectId());
+        command.setPageId(page.getId());
         if (request != null && request.getSchemaData() != null) {
             command.setSchemaData(request.getSchemaData());
         }
 
-        Page page = pageCommandService.publishPage(command);
-        return ResponseEntity.ok(page);
+        Page publishedPage = pageCommandService.publishPage(command);
+        return ResponseEntity.ok(publishedPage);
     }
 
     @DeleteMapping("/{pageId}")
     public ResponseEntity<Map<String, Boolean>> deletePage(
-            @PathVariable("projectId") Long projectId,
-            @PathVariable("pageId") Long pageId) {
-        pageCommandService.deletePage(projectId, pageId);
+            @PathVariable("projectId") String projectId,
+            @PathVariable("pageId") String pageId) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        Page page;
+        try {
+            Long projectIdLong = Long.parseLong(projectId);
+            Long pageIdLong = Long.parseLong(pageId);
+            page = pageQueryService.getPage(projectIdLong, pageIdLong);
+        } catch (NumberFormatException e) {
+            page = pageQueryService.getPageByCode(projectId, pageId);
+        }
+        
+        pageCommandService.deletePage(page.getProjectId(), page.getId());
         return ResponseEntity.ok(Map.of("success", true));
     }
 

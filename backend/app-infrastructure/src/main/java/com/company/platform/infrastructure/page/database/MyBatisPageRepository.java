@@ -33,8 +33,20 @@ public class MyBatisPageRepository implements PageRepository {
     }
 
     @Override
+    public Optional<Page> findByCode(String code) {
+        Page page = pageMapper.findByCode(code);
+        return Optional.ofNullable(page);
+    }
+
+    @Override
     public Optional<Page> findByProjectIdAndId(Long projectId, Long id) {
         Page page = pageMapper.findByProjectIdAndId(projectId, id);
+        return Optional.ofNullable(page);
+    }
+
+    @Override
+    public Optional<Page> findByProjectCodeAndPageCode(String projectCode, String pageCode) {
+        Page page = pageMapper.findByProjectCodeAndPageCode(projectCode, pageCode);
         return Optional.ofNullable(page);
     }
 
@@ -53,6 +65,11 @@ public class MyBatisPageRepository implements PageRepository {
     @Override
     public List<Page> findByProjectId(Long projectId) {
         return pageMapper.findByProjectId(projectId);
+    }
+
+    @Override
+    public List<Page> findByProjectCode(String projectCode) {
+        return pageMapper.findByProjectCode(projectCode);
     }
 
     @Override

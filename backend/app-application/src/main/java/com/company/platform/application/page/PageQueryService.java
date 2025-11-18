@@ -19,8 +19,17 @@ public class PageQueryService {
         return pageRepository.findByProjectId(projectId);
     }
 
+    public List<Page> listPagesByProjectCode(String projectCode) {
+        return pageRepository.findByProjectCode(projectCode);
+    }
+
     public Page getPage(Long projectId, Long pageId) {
         return pageRepository.findByProjectIdAndId(projectId, pageId)
+                .orElseThrow(() -> new RuntimeException("Page not found"));
+    }
+
+    public Page getPageByCode(String projectCode, String pageCode) {
+        return pageRepository.findByProjectCodeAndPageCode(projectCode, pageCode)
                 .orElseThrow(() -> new RuntimeException("Page not found"));
     }
 

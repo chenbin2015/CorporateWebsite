@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public class Project {
 
     private Long id;
+    private String code; // UUID，全局唯一标识符
     private String name;
     private String description;
     private LocalDateTime createdAt;
@@ -15,6 +16,14 @@ public class Project {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getName() {

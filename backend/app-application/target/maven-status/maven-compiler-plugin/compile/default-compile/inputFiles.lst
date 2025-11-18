@@ -1,9 +1,13 @@
-D:\code\company\backend\app-application\src\main\java\com\company\platform\application\page\command\PublishPageCommand.java
+D:\code\company\backend\app-application\src\main\java\com\company\platform\application\page\command\UpdatePageCommand.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\auth\command\LoginCommand.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\page\command\SaveDraftCommand.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\page\PageCommandService.java
-D:\code\company\backend\app-application\src\main\java\com\company\platform\application\page\PageQueryService.java
-D:\code\company\backend\app-application\src\main\java\com\company\platform\application\auth\AuthApplicationService.java
+D:\code\company\backend\app-application\src\main\java\com\company\platform\application\project\command\CreateProjectCommand.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\auth\command\RegisterCommand.java
+D:\code\company\backend\app-application\src\main\java\com\company\platform\application\project\command\UpdateProjectCommand.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\page\command\CreatePageCommand.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\project\ProjectQueryService.java
+D:\code\company\backend\app-application\src\main\java\com\company\platform\application\page\command\PublishPageCommand.java
+D:\code\company\backend\app-application\src\main\java\com\company\platform\application\page\PageQueryService.java
+D:\code\company\backend\app-application\src\main\java\com\company\platform\application\auth\AuthApplicationService.java
+D:\code\company\backend\app-application\src\main\java\com\company\platform\application\project\ProjectCommandService.java

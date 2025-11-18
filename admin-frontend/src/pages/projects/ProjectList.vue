@@ -20,9 +20,11 @@ const loadProjects = async () => {
   }
 }
 
-const goToBuilder = (projectId) => {
-  const defaultPageId = 'home'
-  router.push({ name: 'pageBuilder', params: { projectId, pageId: defaultPageId } })
+const goToBuilder = (projectCode) => {
+  // 注意：这里需要先获取默认页面的 code，暂时使用第一个页面的 code 或 'home'
+  // 实际应该从项目数据中获取默认页面
+  const defaultPageCode = 'home' // TODO: 从项目配置中获取默认页面 code
+  router.push({ name: 'pageBuilder', params: { projectCode, pageCode: defaultPageCode } })
 }
 
 const handleCreate = () => {
@@ -30,7 +32,7 @@ const handleCreate = () => {
 }
 
 const handleEdit = (project) => {
-  router.push({ name: 'projectEdit', params: { id: project.id } })
+  router.push({ name: 'projectEdit', params: { code: project.code } })
 }
 
 const handleDelete = async (project) => {
@@ -41,7 +43,7 @@ const handleDelete = async (project) => {
       type: 'warning',
     })
 
-    await deleteProject(project.id)
+    await deleteProject(project.code)
     ElMessage.success('删除成功')
     await loadProjects()
   } catch (error) {
@@ -85,10 +87,10 @@ onMounted(() => {
             <p class="project-card__meta">创建时间：{{ formatDate(project.createdAt) }}</p>
           </div>
           <div class="project-card__actions">
-            <el-button size="small" type="primary" @click="() => router.push({ name: 'pageList', params: { projectId: project.id } })">
+            <el-button size="small" type="primary" @click="() => router.push({ name: 'pageList', params: { projectCode: project.code } })">
               页面管理
             </el-button>
-            <el-button size="small" @click="goToBuilder(project.id)">打开</el-button>
+            <el-button size="small" @click="goToBuilder(project.code)">打开</el-button>
             <el-button size="small" type="primary" text @click="handleEdit(project)">编辑</el-button>
             <el-button size="small" type="danger" text @click="handleDelete(project)">删除</el-button>
           </div>

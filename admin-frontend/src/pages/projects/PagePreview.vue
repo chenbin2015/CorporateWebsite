@@ -1,13 +1,18 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getPage } from '@/services/modules/project'
 import { resolveBuilderComponent } from '@/components/builder/runtime/componentRegistry'
 
 const route = useRoute()
-const projectId = route.params.projectId
-const pageId = route.params.pageId
+
+// 使用 computed 来响应式获取路由参数
+const projectCode = computed(() => route.params.projectCode)
+const pageCode = computed(() => route.params.pageCode)
+
+// 判断是否为运行态（通过路径判断）
+const isRuntime = computed(() => route.path.includes('/runtime/'))
 
 const pageItems = ref([])
 const pageInfo = ref(null)
@@ -50,17 +55,32 @@ const restoreOverflow = () => {
 
 // 加载页面数据
 const loadPage = async () => {
-  if (!projectId || !pageId) return
+  if (!projectCode.value || !pageCode.value) return
 
   loading.value = true
   try {
-    const page = await getPage(projectId, pageId)
+    const page = await getPage(projectCode.value, pageCode.value)
     pageInfo.value = page
 
-    // 解析 schema_data
-    if (page.schemaData) {
+    // 运行态只使用 publishedSchemaData（已发布数据），预览态使用 schemaData（草稿数据）
+    let schemaData = null
+    if (isRuntime.value) {
+      // 运行态：只使用已发布的数据，如果没有发布则提示
+      if (page.publishedSchemaData) {
+        schemaData = page.publishedSchemaData
+      } else {
+        pageItems.value = []
+        ElMessage.warning('页面尚未发布，无法查看运行态')
+        return
+      }
+    } else {
+      // 预览态：使用草稿数据
+      schemaData = page.schemaData
+    }
+
+    if (schemaData) {
       try {
-        pageItems.value = JSON.parse(page.schemaData)
+        pageItems.value = JSON.parse(schemaData)
       } catch (e) {
         console.error('Failed to parse schema data:', e)
         pageItems.value = []
@@ -77,12 +97,36 @@ const loadPage = async () => {
   }
 }
 
+// 监听路由参数变化，重新加载页面数据
+watch(
+  () => [route.params.projectCode, route.params.pageCode],
+  () => {
+    loadPage()
+  },
+  { immediate: false }
+)
+
 onMounted(() => {
+  // 预览页面和运行态页面都不是设计态，允许交互
+  // 只设置 admin 模式标识，不设置设计态标识
+  window.__ADMIN_MODE__ = true
+  if (isRuntime.value) {
+    // 运行态不设置预览模式标识
+    window.__RUNTIME_MODE__ = true
+  } else {
+    window.__PREVIEW_MODE__ = true
+  }
+  
   fixOverflow()
   loadPage()
 })
 
 onBeforeUnmount(() => {
+  // 清理标识
+  delete window.__ADMIN_MODE__
+  delete window.__PREVIEW_MODE__
+  delete window.__RUNTIME_MODE__
+  
   restoreOverflow()
 })
 </script>

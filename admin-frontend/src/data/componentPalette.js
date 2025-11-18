@@ -65,6 +65,21 @@ export const componentPalette = [
         icon: 'Link',
         navigationType: 'nav-items',  // 导航项
       },
+      {
+        key: 'MultiLevelMenu',
+        label: 'MultiLevelMenu',
+        desc: '多级下拉导航菜单',
+        source: 'frontend/src/components/MultiLevelMenu.vue',
+        icon: 'Menu',
+        navigationType: 'nav-items',  // 导航项
+      },
+      {
+        key: 'SearchBox',
+        label: 'SearchBox',
+        desc: '搜索框组件',
+        source: 'frontend/src/components/sections/SearchBox.vue',
+        icon: 'Search',
+      },
     ],
   },
   {
@@ -160,6 +175,27 @@ export const componentPalette = [
         icon: 'Document',
         navigationType: 'list-detail',  // 列表详情页
       },
+      {
+        key: 'EventCalendar',
+        label: 'EventCalendar',
+        desc: '活动日历',
+        source: 'frontend/src/components/sections/EventCalendar.vue',
+        icon: 'Calendar',
+      },
+      {
+        key: 'MediaLinks',
+        label: 'MediaLinks',
+        desc: '媒体报道链接聚合',
+        source: 'frontend/src/components/sections/MediaLinks.vue',
+        icon: 'Link',
+      },
+      {
+        key: 'DownloadList',
+        label: 'DownloadList',
+        desc: '文件下载列表',
+        source: 'frontend/src/components/sections/DownloadList.vue',
+        icon: 'Download',
+      },
     ],
   },
   {
@@ -203,6 +239,27 @@ export const componentPalette = [
         source: 'frontend/src/components/sections/PartnerLogoGrid.vue',
         icon: 'Briefcase',
       },
+      {
+        key: 'SocialMediaLinks',
+        label: 'SocialMediaLinks',
+        desc: '社交媒体链接',
+        source: 'frontend/src/components/sections/SocialMediaLinks.vue',
+        icon: 'Share',
+      },
+      {
+        key: 'NotificationBanner',
+        label: 'NotificationBanner',
+        desc: '通知公告弹窗',
+        source: 'frontend/src/components/sections/NotificationBanner.vue',
+        icon: 'Bell',
+      },
+      {
+        key: 'TagCloud',
+        label: 'TagCloud',
+        desc: '标签云组件',
+        source: 'frontend/src/components/sections/TagCloud.vue',
+        icon: 'CollectionTag',
+      },
     ],
   },
   {
@@ -237,6 +294,26 @@ export const componentPalette = [
         desc: '人物/专家卡片',
         source: 'frontend/src/components/sections/AvatarCardGrid.vue',
         icon: 'UserFilled',
+      },
+      {
+        key: 'VideoPlayer',
+        label: 'VideoPlayer',
+        desc: '视频播放组件',
+        source: 'frontend/src/components/sections/VideoPlayer.vue',
+        icon: 'VideoPlay',
+      },
+    ],
+  },
+  {
+    label: '布局 & 结构',
+    value: 'layout',
+    items: [
+      {
+        key: 'Footer',
+        label: 'Footer',
+        desc: '页脚组件',
+        source: 'frontend/src/components/Footer.vue',
+        icon: 'Bottom',
       },
     ],
   },

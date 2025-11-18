@@ -1,5 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { isDesignMode } from '@shared/utils/context'
+import { handleNavigation } from '@/utils/navigation'
 
 // 内联默认值，避免依赖 @/data/defaults
 const defaultHeroItems = [
@@ -22,6 +24,16 @@ const props = defineProps({
     type: Number,
     default: 5000,
   },
+  navigation: {
+    type: Object,
+    default: () => ({
+      type: 'none',
+      targetPageCode: null,
+      path: null,
+      url: '',
+      params: {},
+    }),
+  },
 })
 
 const slides = computed(() => (props.items && props.items.length ? props.items : defaultHeroItems))
@@ -29,6 +41,23 @@ const autoplayInterval = computed(() => Math.max(props.interval || 5000, 1500))
 
 const activeIndex = ref(0)
 let timerId
+
+const handleActionClick = (slide, event) => {
+  // 设计态中禁用交互
+  if (isDesignMode()) {
+    event.preventDefault()
+    event.stopPropagation()
+    return
+  }
+  
+  // 如果有 navigation 配置，使用 navigation 跳转
+  if (props.navigation && props.navigation.type !== 'none') {
+    event.preventDefault()
+    event.stopPropagation()
+    handleNavigation(props.navigation, slide)
+  }
+  // 否则使用 slide.href（向后兼容）
+}
 
 const goTo = (index) => {
   if (!slides.value.length) {
@@ -93,7 +122,14 @@ watch(
               <span class="hero-carousel__category">{{ slide.category }}</span>
               <h2 class="hero-carousel__title">{{ slide.title }}</h2>
               <p class="hero-carousel__description">{{ slide.description }}</p>
-              <a :href="slide.href" class="hero-carousel__action">{{ slide.action }}</a>
+              <a 
+                :href="isDesignMode() || (navigation && navigation.type !== 'none') ? 'javascript:void(0)' : (slide.href || '#')" 
+                class="hero-carousel__action"
+                @click="(e) => handleActionClick(slide, e)"
+                :style="isDesignMode() ? 'cursor: default; pointer-events: none;' : 'cursor: pointer;'"
+              >
+                {{ slide.action }}
+              </a>
             </div>
           </div>
         </article>

@@ -33,6 +33,15 @@ import AccordionList from '@shared/components/sections/AccordionList.vue'
 import FilterBar from '@shared/components/sections/FilterBar.vue'
 import DemoPanel from '@shared/components/sections/DemoPanel.vue'
 import DownloadList from '@shared/components/sections/DownloadList.vue'
+import SocialMediaLinks from '@shared/components/sections/SocialMediaLinks.vue'
+import SearchBox from '@shared/components/sections/SearchBox.vue'
+import NotificationBanner from '@shared/components/sections/NotificationBanner.vue'
+import TagCloud from '@shared/components/sections/TagCloud.vue'
+import MediaLinks from '@shared/components/sections/MediaLinks.vue'
+import VideoPlayer from '@shared/components/sections/VideoPlayer.vue'
+import EventCalendar from '@shared/components/sections/EventCalendar.vue'
+import MultiLevelMenu from '@shared/components/MultiLevelMenu.vue'
+import Footer from '@shared/components/Footer.vue'
 
 // 暂时保留的预览组件（MainHeader 和 TopLinksBar 有 i18n 依赖，暂不迁移）
 import MainHeaderPreview from './components/MainHeaderPreview.vue'
@@ -73,6 +82,15 @@ export const componentRegistry = {
   FilterBar: FilterBar,
   DemoPanel: DemoPanel,
   DownloadList: DownloadList,
+  SocialMediaLinks: SocialMediaLinks,
+  SearchBox: SearchBox,
+  NotificationBanner: NotificationBanner,
+  TagCloud: TagCloud,
+  MediaLinks: MediaLinks,
+  VideoPlayer: VideoPlayer,
+  EventCalendar: EventCalendar,
+  MultiLevelMenu: MultiLevelMenu,
+  Footer: Footer,
 }
 
 export const resolveBuilderComponent = (key) => componentRegistry[key] ?? FallbackPreview

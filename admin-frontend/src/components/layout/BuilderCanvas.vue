@@ -14,14 +14,93 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['select', 'delete'])
+const emit = defineEmits(['select', 'delete', 'reorder'])
 
 const canvasFrameRef = ref(null)
 const builderCanvasRef = ref(null)
 let scrollTimer = null
 
+// 拖拽相关状态
+const draggedItemId = ref(null)
+const dragOverItemId = ref(null)
+
 const handleSelect = (id) => {
   emit('select', id)
+}
+
+// 拖拽开始
+const handleDragStart = (event, itemId) => {
+  draggedItemId.value = itemId
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('text/plain', itemId)
+  // 添加拖拽样式
+  if (event.target) {
+    event.target.style.opacity = '0.5'
+  }
+}
+
+// 拖拽结束
+const handleDragEnd = (event) => {
+  if (event.target) {
+    event.target.style.opacity = '1'
+  }
+  draggedItemId.value = null
+  dragOverItemId.value = null
+}
+
+// 拖拽经过
+const handleDragOver = (event, itemId) => {
+  event.preventDefault()
+  event.dataTransfer.dropEffect = 'move'
+  
+  if (draggedItemId.value && draggedItemId.value !== itemId) {
+    dragOverItemId.value = itemId
+  }
+}
+
+// 拖拽离开
+const handleDragLeave = (event) => {
+  // 只有当离开整个元素时才清除 dragOverItemId
+  const rect = event.currentTarget.getBoundingClientRect()
+  const x = event.clientX
+  const y = event.clientY
+  
+  if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+    dragOverItemId.value = null
+  }
+}
+
+// 放置
+const handleDrop = (event, targetItemId) => {
+  event.preventDefault()
+  event.stopPropagation()
+  
+  if (!draggedItemId.value || draggedItemId.value === targetItemId) {
+    draggedItemId.value = null
+    dragOverItemId.value = null
+    return
+  }
+  
+  // 获取当前 items 的索引
+  const draggedIndex = props.items.findIndex((item) => item.id === draggedItemId.value)
+  const targetIndex = props.items.findIndex((item) => item.id === targetItemId)
+  
+  if (draggedIndex === -1 || targetIndex === -1) {
+    draggedItemId.value = null
+    dragOverItemId.value = null
+    return
+  }
+  
+  // 创建新的数组，重新排序
+  const newItems = [...props.items]
+  const [draggedItem] = newItems.splice(draggedIndex, 1)
+  newItems.splice(targetIndex, 0, draggedItem)
+  
+  // 发送重新排序事件
+  emit('reorder', newItems)
+  
+  draggedItemId.value = null
+  dragOverItemId.value = null
 }
 
 onBeforeUnmount(() => {
@@ -126,8 +205,21 @@ watch(
             v-for="item in props.items"
             :key="item.id"
             :data-item-id="item.id"
-            :class="['canvas-item', { 'canvas-item--active': props.selectedId === item.id }]"
+            :class="[
+              'canvas-item',
+              {
+                'canvas-item--active': props.selectedId === item.id,
+                'canvas-item--dragging': draggedItemId === item.id,
+                'canvas-item--drag-over': dragOverItemId === item.id,
+              }
+            ]"
+            draggable="true"
             @click="handleSelect(item.id)"
+            @dragstart="(e) => handleDragStart(e, item.id)"
+            @dragend="handleDragEnd"
+            @dragover="(e) => handleDragOver(e, item.id)"
+            @dragleave="handleDragLeave"
+            @drop="(e) => handleDrop(e, item.id)"
           >
             <header>
               <div>
@@ -209,12 +301,29 @@ watch(
   box-shadow: 0 1rem 2rem rgba(15, 23, 42, 0.05);
   display: grid;
   gap: 0.8rem;
-  cursor: pointer;
+  cursor: move;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.canvas-item:hover {
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .canvas-item--active {
   border-color: rgba(59, 130, 246, 0.9);
   box-shadow: 0 1.2rem 2.4rem rgba(37, 99, 235, 0.2);
+}
+
+.canvas-item--dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.canvas-item--drag-over {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  transform: translateY(-2px);
 }
 
 .canvas-item header {

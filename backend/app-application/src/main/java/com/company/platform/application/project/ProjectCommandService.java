@@ -7,6 +7,8 @@ import com.company.platform.domain.project.repository.ProjectRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 public class ProjectCommandService {
 
@@ -19,6 +21,7 @@ public class ProjectCommandService {
     @Transactional
     public Project createProject(CreateProjectCommand command) {
         Project project = new Project();
+        project.setCode(UUID.randomUUID().toString()); // 生成全局唯一标识符
         project.setName(command.getName());
         project.setDescription(command.getDescription());
         return projectRepository.save(project);

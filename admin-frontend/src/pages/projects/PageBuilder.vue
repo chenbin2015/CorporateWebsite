@@ -1,7 +1,8 @@
 <script setup>
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import { DocumentCopy } from '@element-plus/icons-vue'
 
 import BuilderCanvas from '@/components/layout/BuilderCanvas.vue'
 import BuilderInspector from '@/components/layout/BuilderInspector.vue'
@@ -12,8 +13,8 @@ import { getPage, saveDraft, publishPage } from '@/services/modules/project'
 
 const route = useRoute()
 const router = useRouter()
-const projectId = computed(() => route.params.projectId)
-const pageId = computed(() => route.params.pageId)
+const projectCode = computed(() => route.params.projectCode)
+const pageCode = computed(() => route.params.pageCode)
 
 const canvasItems = ref([])
 const selectedId = ref(null)
@@ -104,12 +105,19 @@ const handleDelete = async (id) => {
   }
 }
 
+// 处理组件重新排序
+const handleReorder = (newItems) => {
+  canvasItems.value = newItems
+  // 自动保存
+  handleSaveDraft()
+}
+
 // 加载页面数据
 const loadPage = async () => {
-  if (!projectId.value || !pageId.value) return
+  if (!projectCode.value || !pageCode.value) return
   
   try {
-    const page = await getPage(projectId.value, pageId.value)
+    const page = await getPage(projectCode.value, pageCode.value)
     pageInfo.value = page
     
     // 解析 schema_data
@@ -131,13 +139,13 @@ const loadPage = async () => {
 
 // 保存草稿
 const handleSaveDraft = async () => {
-  if (!projectId.value || !pageId.value) return
+  if (!projectCode.value || !pageCode.value) return
   if (saving.value) return
   
   saving.value = true
   try {
     const schemaData = JSON.stringify(canvasItems.value)
-    await saveDraft(projectId.value, pageId.value, {
+    await saveDraft(projectCode.value, pageCode.value, {
       schemaData,
     })
     ElMessage.success('草稿已保存')
@@ -151,19 +159,25 @@ const handleSaveDraft = async () => {
 
 // 发布页面
 const handlePublish = async () => {
-  if (!projectId.value || !pageId.value) return
+  if (!projectCode.value || !pageCode.value) return
   
   try {
-    await ElMessageBox.confirm('确定要发布此页面吗？发布后页面将对用户可见。', '发布确认', {
-      confirmButtonText: '发布',
-      cancelButtonText: '取消',
-      type: 'info',
-    })
+    await ElMessageBox.confirm(
+      '发布后，当前页面的内容将对所有用户可见。\n\n发布操作会将当前草稿内容保存为已发布版本，运行态页面将显示已发布的内容。\n\n确定要发布此页面吗？',
+      '发布确认',
+      {
+        confirmButtonText: '确定发布',
+        cancelButtonText: '取消',
+        type: 'warning',
+        dangerouslyUseHTMLString: false,
+        distinguishCancelAndClose: true,
+      }
+    )
     
     publishing.value = true
     try {
       const schemaData = JSON.stringify(canvasItems.value)
-      await publishPage(projectId.value, pageId.value, {
+      await publishPage(projectCode.value, pageCode.value, {
         schemaData,
       })
       ElMessage.success('页面已发布')
@@ -176,13 +190,53 @@ const handlePublish = async () => {
       publishing.value = false
     }
   } catch {
-    // 用户取消发布
+    // 用户取消发布，不显示任何提示
+  }
+}
+
+// 复制访问地址（运行态地址）
+const handleCopyUrl = async () => {
+  if (!projectCode.value || !pageCode.value) {
+    ElMessage.warning('页面信息不完整')
+    return
+  }
+  
+  try {
+    // 复制运行态地址：/projects/:projectCode/runtime/pages/:pageCode
+    // 注意：运行态在 frontend 项目中，需要获取 frontend 的地址
+    // 这里假设 frontend 运行在同一个域名下，或者可以通过配置获取
+    const runtimePath = `/projects/${projectCode.value}/runtime/pages/${pageCode.value}`
+    
+    // 获取 frontend 的基础 URL（可以通过环境变量配置，或使用相对路径）
+    // 暂时使用当前域名，实际应该从配置中获取 frontend 的地址
+    const frontendBaseUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin
+    const fullUrl = `${frontendBaseUrl}${runtimePath}`
+    
+    // 使用 Clipboard API 复制
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(fullUrl)
+      ElMessage.success('运行态访问地址已复制到剪贴板')
+    } else {
+      // 降级方案：使用传统方法
+      const textArea = document.createElement('textarea')
+      textArea.value = fullUrl
+      textArea.style.position = 'fixed'
+      textArea.style.opacity = '0'
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      ElMessage.success('运行态访问地址已复制到剪贴板')
+    }
+  } catch (error) {
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败，请手动复制')
   }
 }
 
 // 预览页面
 const handlePreview = () => {
-  if (!projectId.value || !pageId.value) {
+  if (!projectCode.value || !pageCode.value) {
     ElMessage.warning('页面信息不完整')
     return
   }
@@ -193,8 +247,8 @@ const handlePreview = () => {
     const previewUrl = router.resolve({
       name: 'pagePreview',
       params: {
-        projectId: projectId.value,
-        pageId: pageId.value,
+        projectCode: projectCode.value,
+        pageCode: pageCode.value,
       },
     }).href
     
@@ -204,8 +258,8 @@ const handlePreview = () => {
     const previewUrl = router.resolve({
       name: 'pagePreview',
       params: {
-        projectId: projectId.value,
-        pageId: pageId.value,
+        projectCode: projectCode.value,
+        pageCode: pageCode.value,
       },
     }).href
     
@@ -229,7 +283,17 @@ watch(
 )
 
 onMounted(() => {
+  // 设置设计态标识（页面搭建器是设计态）
+  window.__DESIGN_MODE__ = true
+  window.__BUILDER_MODE__ = true
+  
   loadPage()
+})
+
+onBeforeUnmount(() => {
+  // 清理设计态标识
+  delete window.__DESIGN_MODE__
+  delete window.__BUILDER_MODE__
 })
 </script>
 
@@ -240,13 +304,17 @@ onMounted(() => {
         <p class="builder-breadcrumb">
           <a @click="() => router.push({ name: 'projects' })" class="breadcrumb-link">项目</a>
           <span> / </span>
-          <a @click="() => router.push({ name: 'pageList', params: { projectId } })" class="breadcrumb-link">页面管理</a>
+          <a @click="() => router.push({ name: 'pageList', params: { projectCode } })" class="breadcrumb-link">页面管理</a>
           <span> / </span>
-          <span>页面 {{ pageId }}</span>
+          <span>{{ pageInfo?.name || `页面 ${pageCode}` }}</span>
         </p>
         <h1>页面搭建器</h1>
       </div>
       <div class="builder-actions">
+        <button class="btn btn--ghost" @click="handleCopyUrl" title="复制访问地址">
+          <el-icon style="margin-right: 0.25rem;"><DocumentCopy /></el-icon>
+          复制地址
+        </button>
         <button class="btn btn--ghost" @click="handlePreview" :disabled="saving || publishing">
           预览
         </button>
@@ -261,7 +329,13 @@ onMounted(() => {
 
     <div class="builder">
       <BuilderSidebar :categories="componentPalette" @insert="handleInsert" />
-      <BuilderCanvas :items="canvasItems" :selected-id="selectedId" @select="handleSelect" @delete="handleDelete" />
+      <BuilderCanvas 
+        :items="canvasItems" 
+        :selected-id="selectedId" 
+        @select="handleSelect" 
+        @delete="handleDelete"
+        @reorder="handleReorder"
+      />
       <BuilderInspector
         :selected-item="selectedItem"
         :schema="selectedSchema"
@@ -322,6 +396,10 @@ onMounted(() => {
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
 }
 
 .btn:disabled {

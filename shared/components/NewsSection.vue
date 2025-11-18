@@ -1,5 +1,7 @@
 <script setup>
 import { toRefs } from 'vue'
+import { handleDetailPageNavigation } from '@/utils/navigation'
+import { isDesignMode } from '@shared/utils/context'
 
 const props = defineProps({
   title: {
@@ -18,18 +20,56 @@ const props = defineProps({
   items: {
     type: Array,
     default: () => [
-      { title: '默认新闻条目示例一', date: '01-01', href: '#' },
-      { title: '默认新闻条目示例二', date: '01-02', href: '#' },
-      { title: '默认新闻条目示例三', date: '01-03', href: '#' },
+      { title: '默认新闻条目示例一', date: '01-01', href: '#', id: '1' },
+      { title: '默认新闻条目示例二', date: '01-02', href: '#', id: '2' },
+      { title: '默认新闻条目示例三', date: '01-03', href: '#', id: '3' },
     ],
   },
   moreText: {
     type: String,
     default: '更多',
   },
+  detailPage: {
+    type: Object,
+    default: () => null,
+  },
 })
 
 const { title, highlight, items } = toRefs(props)
+
+const handleItemClick = (item, event) => {
+  // 设计态中禁用交互
+  if (isDesignMode()) {
+    event.preventDefault()
+    event.stopPropagation()
+    return
+  }
+  
+  if (props.detailPage) {
+    event.preventDefault()
+    event.stopPropagation()
+    console.log('NewsSection item click:', { detailPage: props.detailPage, item })
+    handleDetailPageNavigation(props.detailPage, item)
+  }
+}
+
+const handleHighlightClick = (event) => {
+  // 设计态中禁用交互
+  if (isDesignMode()) {
+    event.preventDefault()
+    event.stopPropagation()
+    return
+  }
+  
+  if (props.detailPage && props.highlight) {
+    event.preventDefault()
+    event.stopPropagation()
+    console.log('NewsSection highlight click:', { detailPage: props.detailPage, highlight: props.highlight })
+    // 确保 highlight 有 id
+    const highlightWithId = { ...props.highlight, id: props.highlight.id || '1' }
+    handleDetailPageNavigation(props.detailPage, highlightWithId)
+  }
+}
 </script>
 
 <template>
@@ -40,18 +80,32 @@ const { title, highlight, items } = toRefs(props)
     </header>
 
     <div class="news-section__content">
-      <article v-if="highlight" class="news-section__highlight">
-        <img :src="highlight.cover" :alt="highlight.title" class="news-section__image" />
-        <div class="news-section__highlight-text">
-          <time class="news-section__date">{{ highlight.date }}</time>
-          <h4>{{ highlight.title }}</h4>
-          <p>{{ highlight.summary }}</p>
-        </div>
+      <article 
+        v-if="highlight" 
+        class="news-section__highlight" 
+        @click="handleHighlightClick"
+        :style="isDesignMode() ? 'cursor: default; pointer-events: none;' : ''"
+      >
+        <a 
+          :href="isDesignMode() ? 'javascript:void(0)' : (detailPage ? 'javascript:void(0)' : '#')" 
+          style="display: contents"
+        >
+          <img :src="highlight.cover" :alt="highlight.title" class="news-section__image" />
+          <div class="news-section__highlight-text">
+            <time class="news-section__date">{{ highlight.date }}</time>
+            <h4>{{ highlight.title }}</h4>
+            <p>{{ highlight.summary }}</p>
+          </div>
+        </a>
       </article>
 
       <ul class="news-section__list">
-        <li v-for="item in items" :key="item.title" class="news-item">
-          <a :href="item.href">
+        <li v-for="(item, index) in items" :key="item.title || item.id || index" class="news-item">
+          <a 
+            :href="isDesignMode() ? 'javascript:void(0)' : (detailPage ? 'javascript:void(0)' : (item.href || '#'))" 
+            @click="(e) => handleItemClick(item, e)"
+            :style="isDesignMode() ? 'cursor: default; pointer-events: none;' : 'cursor: pointer;'"
+          >
             <span class="news-item__title">{{ item.title }}</span>
             <time class="news-item__date">{{ item.date }}</time>
           </a>
@@ -97,6 +151,11 @@ const { title, highlight, items } = toRefs(props)
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1.2rem;
+  cursor: pointer;
+}
+
+.news-section__highlight:hover {
+  opacity: 0.9;
 }
 
 .news-section__image {

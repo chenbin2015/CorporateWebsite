@@ -1,5 +1,7 @@
 <script setup>
 import { toRefs } from 'vue'
+import { handleDetailPageNavigation } from '@/utils/navigation'
+import { isDesignMode } from '@shared/utils/context'
 
 const props = defineProps({
   title: {
@@ -14,12 +16,31 @@ const props = defineProps({
         summary: '这是默认的专题摘要说明，建议通过接口返回的内容覆盖。',
         href: '#',
         cover: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=80',
+        id: '1',
       },
     ],
+  },
+  detailPage: {
+    type: Object,
+    default: () => null,
   },
 })
 
 const { title, items } = toRefs(props)
+
+const handleItemClick = (item, event) => {
+  // 设计态中禁用交互
+  if (isDesignMode()) {
+    event.preventDefault()
+    event.stopPropagation()
+    return
+  }
+  
+  if (props.detailPage) {
+    event.preventDefault()
+    handleDetailPageNavigation(props.detailPage, item)
+  }
+}
 </script>
 
 <template>
@@ -28,7 +49,14 @@ const { title, items } = toRefs(props)
       <h3>{{ title }}</h3>
     </header>
     <div class="focus__grid">
-      <a v-for="item in items" :key="item.title" class="focus__item" :href="item.href">
+      <a 
+        v-for="item in items" 
+        :key="item.title || item.id" 
+        class="focus__item" 
+        :href="isDesignMode() ? 'javascript:void(0)' : (detailPage ? 'javascript:void(0)' : (item.href || '#'))"
+        @click="(e) => handleItemClick(item, e)"
+        :style="isDesignMode() ? 'cursor: default; pointer-events: none;' : ''"
+      >
         <img :src="item.cover" :alt="item.title" class="focus__image" />
         <div class="focus__overlay">
           <h4>{{ item.title }}</h4>

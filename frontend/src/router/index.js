@@ -73,6 +73,33 @@ const routes = [
       title: 'routes.styleGuide',
     },
   },
+  // 详情页路由
+  {
+    path: '/news/:id',
+    name: 'newsDetail',
+    component: () => import('../views/templates/NewsDetail.vue'),
+  },
+  {
+    path: '/events/:id',
+    name: 'eventDetail',
+    component: () => import('../views/templates/EventDetail.vue'),
+  },
+  {
+    path: '/notices/:id',
+    name: 'noticeDetail',
+    component: () => import('../views/templates/NoticeDetail.vue'),
+  },
+  {
+    path: '/focus/:id',
+    name: 'focusDetail',
+    component: () => import('../views/templates/FocusDetail.vue'),
+  },
+  // 运行态页面路由
+  {
+    path: '/projects/:projectCode/runtime/pages/:pageCode',
+    name: 'runtimePage',
+    component: () => import('../views/RuntimePage.vue'),
+  },
 ]
 
 const router = createRouter({

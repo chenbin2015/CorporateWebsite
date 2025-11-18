@@ -6,8 +6,8 @@ import { createPage, updatePage, getPage } from '@/services/modules/project'
 
 const router = useRouter()
 const route = useRoute()
-const projectId = route.params.projectId
-const isEdit = ref(!!route.params.id)
+const projectCode = route.params.projectCode
+const isEdit = ref(!!route.params.code)
 const loading = ref(false)
 
 const form = reactive({
@@ -28,11 +28,11 @@ const rules = {
 const formRef = ref(null)
 
 const loadPage = async () => {
-  if (!isEdit.value || !route.params.id) return
+  if (!isEdit.value || !route.params.code) return
 
   loading.value = true
   try {
-    const page = await getPage(projectId, route.params.id)
+    const page = await getPage(projectCode, route.params.code)
     form.name = page.name || ''
     form.path = page.path || ''
     form.title = page.title || ''
@@ -54,8 +54,8 @@ const handleSubmit = async () => {
 
     loading.value = true
     try {
-      if (isEdit.value && route.params.id) {
-        await updatePage(projectId, route.params.id, {
+      if (isEdit.value && route.params.code) {
+        await updatePage(projectCode, route.params.code, {
           name: form.name,
           path: form.path,
           title: form.title,
@@ -63,7 +63,7 @@ const handleSubmit = async () => {
         })
         ElMessage.success('更新成功')
       } else {
-        await createPage(projectId, {
+        await createPage(projectCode, {
           name: form.name,
           path: form.path,
           title: form.title,
@@ -72,7 +72,7 @@ const handleSubmit = async () => {
         })
         ElMessage.success('创建成功')
       }
-      router.push({ name: 'pageList', params: { projectId } })
+      router.push({ name: 'pageList', params: { projectCode } })
     } catch (error) {
       console.error('Failed to save page:', error)
       ElMessage.error(isEdit.value ? '更新失败' : '创建失败')

@@ -8,8 +8,8 @@ const props = defineProps({
     type: [Number, String, Object],
     default: null,
   },
-  projectId: {
-    type: [Number, String],
+  projectCode: {
+    type: String,
     required: true,
   },
   placeholder: {
@@ -24,11 +24,11 @@ const pages = ref([])
 const loading = ref(false)
 
 const loadPages = async () => {
-  if (!props.projectId) return
+  if (!props.projectCode) return
 
   loading.value = true
   try {
-    pages.value = await fetchProjectPages(props.projectId)
+    pages.value = await fetchProjectPages(props.projectCode)
   } catch (error) {
     console.error('Failed to load pages:', error)
     pages.value = []
@@ -38,25 +38,27 @@ const loadPages = async () => {
 }
 
 const handleChange = (value) => {
-  // value 是页面ID，需要同时保存 id 和 path
-  const selectedPage = pages.value.find((p) => p.id === value)
+  // value 是页面 code，需要同时保存 code 和 path
+  const selectedPage = pages.value.find((p) => p.code === value)
   if (selectedPage) {
-    // 返回包含 id 和 path 的对象
+    // 生成 runtime 路由格式：/projects/{projectCode}/runtime/pages/{pageCode}
+    const runtimePath = `/projects/${props.projectCode}/runtime/pages/${selectedPage.code}`
+    // 返回包含 code 和 runtime path 的对象
     emit('update:modelValue', {
-      targetPageId: selectedPage.id,
-      path: selectedPage.path,
+      targetPageCode: selectedPage.code,
+      path: runtimePath,
     })
   } else {
     emit('update:modelValue', null)
   }
 }
 
-// 获取当前选中的页面ID（用于显示）
-const currentPageId = computed(() => {
+// 获取当前选中的页面 code（用于显示）
+const currentPageCode = computed(() => {
   if (!props.modelValue) return null
-  // 兼容旧格式（直接是ID）和新格式（对象）
+  // 兼容旧格式（直接是 code）和新格式（对象）
   if (typeof props.modelValue === 'object') {
-    return props.modelValue.targetPageId
+    return props.modelValue.targetPageCode
   }
   return props.modelValue
 })
@@ -66,7 +68,7 @@ onMounted(() => {
 })
 
 watch(
-  () => props.projectId,
+  () => props.projectCode,
   () => {
     loadPages()
   },
@@ -75,7 +77,7 @@ watch(
 
 <template>
   <el-select
-    :model-value="currentPageId"
+    :model-value="currentPageCode"
     :placeholder="placeholder"
     :loading="loading"
     filterable
@@ -85,9 +87,9 @@ watch(
   >
     <el-option
       v-for="page in pages"
-      :key="page.id"
+      :key="page.code"
       :label="`${page.name} (${page.path})`"
-      :value="page.id"
+      :value="page.code"
     >
       <div style="display: flex; flex-direction: column; gap: 0.2rem">
         <span style="font-weight: 500">{{ page.name }}</span>
