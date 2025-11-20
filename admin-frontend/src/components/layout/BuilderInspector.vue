@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Delete, RefreshRight } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { ElDatePicker } from 'element-plus'
 import PageSelector from '@/components/builder/PageSelector.vue'
 import {
   createDefaultNavigation,
@@ -13,6 +14,10 @@ import {
 } from '@/utils/navigation'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
+import { getDataSources } from '@/services/modules/datasource'
+import { onMounted, ref as vueRef } from 'vue'
+import DataSourceSelector from '@/components/builder/DataSourceSelector.vue'
+import DataSourceItemSelector from '@/components/builder/DataSourceItemSelector.vue'
 
 const props = defineProps({
   selectedItem: {
@@ -177,9 +182,17 @@ const addNewsItem = (prop) => {
 
 const updateNewsItem = (prop, index, key, value) => {
   const current = getArrayProp(prop)
-  const next = current.map((item, i) =>
-    i === index ? { ...(item || {}), [key]: value } : item,
-  )
+  const next = current.map((item, i) => {
+    if (i === index) {
+      // 如果 key 为 null，说明是更新整个对象
+      if (key === null) {
+        return value
+      }
+      // 否则更新指定字段
+      return { ...(item || {}), [key]: value }
+    }
+    return item
+  })
   emit('update-props', { [prop]: next })
 }
 
@@ -193,13 +206,33 @@ const removeNewsItem = (prop, index) => {
 const detailDialogVisible = ref(false)
 const detailDialogProp = ref('')
 const detailDialogIndex = ref(-1)
+const detailTitle = ref('')
+
+// 数据源项选择对话框
+const dataSourceItemDialogVisible = ref(false)
+const currentDataSourceCode = ref(null)
+const currentItemsField = ref(null) // 当前正在编辑的 items 字段名（如 'items', 'products'）
+const detailDate = ref('')
 const detailContent = ref('')
+
+// 产品详情编辑对话框
+const productDialogVisible = ref(false)
+const productDialogProp = ref('')
+const productDialogIndex = ref(-1)
+const productName = ref('')
+const productDescription = ref('')
+const productImage = ref('')
+const productPrice = ref('')
+const productOriginalPrice = ref('')
+const productContent = ref('')
 
 const openDetailDialog = (prop, index) => {
   const items = getArrayProp(prop)
   const item = items[index]
   detailDialogProp.value = prop
   detailDialogIndex.value = index
+  detailTitle.value = item?.title || ''
+  detailDate.value = item?.date || ''
   detailContent.value = item?.content || ''
   detailDialogVisible.value = true
 }
@@ -208,14 +241,82 @@ const closeDetailDialog = () => {
   detailDialogVisible.value = false
   detailDialogProp.value = ''
   detailDialogIndex.value = -1
+  detailTitle.value = ''
+  detailDate.value = ''
   detailContent.value = ''
 }
 
 const saveDetail = () => {
   if (detailDialogProp.value && detailDialogIndex.value >= 0) {
-    updateNewsItem(detailDialogProp.value, detailDialogIndex.value, 'content', detailContent.value)
+    // 同时更新标题、日期和详情内容
+    const items = getArrayProp(detailDialogProp.value)
+    const currentItem = items[detailDialogIndex.value] || {}
+    const updatedItem = {
+      ...currentItem,
+      id: currentItem.id || `news-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, // 确保有 id
+      title: detailTitle.value || '未命名新闻',
+      date: detailDate.value || '',
+      content: detailContent.value || '',
+    }
+    console.log('保存新闻详情:', { prop: detailDialogProp.value, index: detailDialogIndex.value, updatedItem })
+    updateNewsItem(detailDialogProp.value, detailDialogIndex.value, null, updatedItem)
     ElMessage.success('详情已保存')
     closeDetailDialog()
+  } else {
+    console.error('保存失败: 缺少必要参数', { prop: detailDialogProp.value, index: detailDialogIndex.value })
+    ElMessage.error('保存失败，请重试')
+  }
+}
+
+const openProductDialog = (prop, index) => {
+  const items = getArrayProp(prop)
+  const item = items[index]
+  productDialogProp.value = prop
+  productDialogIndex.value = index
+  productName.value = item?.name || ''
+  productDescription.value = item?.description || ''
+  productImage.value = item?.image || ''
+  productPrice.value = item?.price || ''
+  productOriginalPrice.value = item?.originalPrice || ''
+  productContent.value = item?.content || ''
+  productDialogVisible.value = true
+}
+
+const closeProductDialog = () => {
+  productDialogVisible.value = false
+  productDialogProp.value = ''
+  productDialogIndex.value = -1
+  productName.value = ''
+  productDescription.value = ''
+  productImage.value = ''
+  productPrice.value = ''
+  productOriginalPrice.value = ''
+  productContent.value = ''
+}
+
+const saveProductDetail = () => {
+  if (productDialogProp.value && productDialogIndex.value >= 0) {
+    // 同时更新所有产品信息（不包含跳转配置，跳转配置由组件全局的detailPage管理）
+    const items = getArrayProp(productDialogProp.value)
+    const currentItem = items[productDialogIndex.value] || {}
+    const updatedItem = {
+      ...currentItem,
+      id: currentItem.id || `product-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, // 确保有 id
+      name: productName.value || '未命名产品',
+      description: productDescription.value || '',
+      image: productImage.value || 'http://localhost:8002/p1.jpg',
+      price: productPrice.value || '',
+      originalPrice: productOriginalPrice.value || null,
+      content: productContent.value || '',
+      // 移除 navigation，跳转配置由组件全局的 detailPage 管理
+    }
+    console.log('保存产品详情:', { prop: productDialogProp.value, index: productDialogIndex.value, updatedItem })
+    updateProductItem(productDialogProp.value, productDialogIndex.value, null, updatedItem)
+    ElMessage.success('详情已保存')
+    closeProductDialog()
+  } else {
+    console.error('保存失败: 缺少必要参数', { prop: productDialogProp.value, index: productDialogIndex.value })
+    ElMessage.error('保存失败，请重试')
   }
 }
 
@@ -231,8 +332,6 @@ const addProductItem = (prop) => {
       price: '¥999',
       originalPrice: null,
       image: 'http://localhost:8002/p1.jpg',
-      href: '#',
-      navigation: createDefaultNavigation(),
     },
   ]
   emit('update-props', { [prop]: next })
@@ -240,13 +339,51 @@ const addProductItem = (prop) => {
 
 const updateProductItem = (prop, index, key, value) => {
   const current = getArrayProp(prop)
+  const next = current.map((item, i) => {
+    if (i === index) {
+      // 如果 key 为 null，说明是更新整个对象
+      if (key === null) {
+        return value
+      }
+      // 否则更新指定字段
+      return { ...(item || {}), [key]: value }
+    }
+    return item
+  })
+  emit('update-props', { [prop]: next })
+}
+
+const removeProductItem = (prop, index) => {
+  const current = getArrayProp(prop)
+  const next = current.filter((_, i) => i !== index)
+  emit('update-props', { [prop]: next })
+}
+
+// 信息卡片处理
+const addInfoCard = (prop) => {
+  const current = getArrayProp(prop)
+  const next = [
+    ...current,
+    {
+      title: '新卡片标题',
+      description: '新卡片描述',
+      image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=400&q=80',
+      href: '#',
+      meta: '',
+    },
+  ]
+  emit('update-props', { [prop]: next })
+}
+
+const updateInfoCard = (prop, index, key, value) => {
+  const current = getArrayProp(prop)
   const next = current.map((item, i) =>
     i === index ? { ...(item || {}), [key]: value } : item,
   )
   emit('update-props', { [prop]: next })
 }
 
-const removeProductItem = (prop, index) => {
+const removeInfoCard = (prop, index) => {
   const current = getArrayProp(prop)
   const next = current.filter((_, i) => i !== index)
   emit('update-props', { [prop]: next })
@@ -374,6 +511,42 @@ const updateCarouselItemNavigationFromSelector = (prop, index, value) => {
 const route = useRoute()
 const projectCode = computed(() => route.params.projectCode)
 
+// 处理数据源选择
+const handleDataSourceSelect = (dataSourceCode) => {
+  console.log('[BuilderInspector] data source selected:', dataSourceCode, 'component:', props.selectedItem?.key)
+  if (!dataSourceCode) return
+  
+  try {
+    currentDataSourceCode.value = dataSourceCode
+    // 根据组件类型确定 items 字段名
+    if (props.selectedItem?.key === 'ProductList') {
+      currentItemsField.value = 'products'
+    } else if (props.selectedItem?.key === 'InfoCardGrid') {
+      currentItemsField.value = 'cards'
+    } else {
+      currentItemsField.value = 'items'
+    }
+    console.log('[BuilderInspector] opening dialog, currentItemsField:', currentItemsField.value)
+    dataSourceItemDialogVisible.value = true
+    console.log('[BuilderInspector] dialogVisible:', dataSourceItemDialogVisible.value)
+  } catch (error) {
+    console.error('[BuilderInspector] Error in handleDataSourceSelect:', error)
+  }
+}
+
+// 处理从数据源添加按钮点击
+const handleAddFromDataSource = (fieldProp) => {
+  try {
+    if (props.selectedItem?.props?.dataSourceCode) {
+      currentDataSourceCode.value = props.selectedItem.props.dataSourceCode
+      currentItemsField.value = fieldProp
+      dataSourceItemDialogVisible.value = true
+    }
+  } catch (error) {
+    console.error('[BuilderInspector] Error in handleAddFromDataSource:', error)
+  }
+}
+
 const getNavigation = (prop) => {
   const current = props.selectedItem?.props?.[prop]
   return current || createDefaultNavigation()
@@ -409,6 +582,7 @@ const getDetailPage = (prop) => {
 const updateDetailPage = (prop, key, value) => {
   const current = getDetailPage(prop)
   const next = { ...current, [key]: value }
+  console.log('[BuilderInspector] updateDetailPage:', { prop, key, value, current, next })
   emit('update-props', { [prop]: next })
 }
 
@@ -417,11 +591,15 @@ const updateDetailPageFromSelector = (prop, value) => {
   const current = getDetailPage(prop)
   if (value) {
     // 一次性更新整个 detailPage 对象
+    // 保留 templateType，以便在跳转时知道数据类型（news, product, event 等）
     emit('update-props', {
       [prop]: {
         ...current,
+        type: DETAIL_PAGE_TYPES.CUSTOM, // 确保类型是 custom
         targetPageCode: value.targetPageCode,
         path: value.path,
+        // 保留 templateType（如果已设置），用于在跳转时传递 type 查询参数
+        templateType: current.templateType || 'news',
       },
     })
   } else {
@@ -649,8 +827,9 @@ const getQuickLinkNavigation = (prop, index) => {
             v-else-if="field.type === 'number'"
             :model-value="selectedItem.props?.[field.prop]"
             :placeholder="field.placeholder"
-            :min="0"
-            :step="100"
+            :min="field.min !== undefined ? field.min : 0"
+            :max="field.max !== undefined ? field.max : undefined"
+            :step="field.step !== undefined ? field.step : 1"
             style="width: 100%"
             @update:model-value="(val) => handleInput(field.prop, val)"
           />
@@ -1012,47 +1191,88 @@ const getQuickLinkNavigation = (prop, index) => {
               </div>
             </div>
           </template>
+          <template v-else-if="field.type === 'data-source'">
+            <div class="data-source-editor">
+              <DataSourceSelector
+                :model-value="selectedItem.props?.[field.prop]"
+                :project-code="projectCode"
+                :data-source-type="field.dataSourceType || 'news'"
+                @update:model-value="(val) => handleInput(field.prop, val)"
+                @select="handleDataSourceSelect"
+              />
+            </div>
+          </template>
           <template v-else-if="field.type === 'news-items'">
             <div class="nav-items-editor">
-              <div
-                v-for="(item, index) in getArrayProp(field.prop)"
-                :key="index"
-                class="nav-items-editor__row"
-              >
-                <el-input
-                  class="nav-items-editor__input"
-                  :model-value="item?.title"
-                  placeholder="新闻标题"
-                  @update:model-value="(val) => updateNewsItem(field.prop, index, 'title', val)"
-                />
-                <el-input
-                  class="nav-items-editor__input"
-                  :model-value="item?.date"
-                  placeholder="日期（如 01-01）"
-                  @update:model-value="(val) => updateNewsItem(field.prop, index, 'date', val)"
-                />
-                <el-input
-                  class="nav-items-editor__input"
-                  :model-value="item?.href"
-                  placeholder="链接（如 /news/1）"
-                  @update:model-value="(val) => updateNewsItem(field.prop, index, 'href', val)"
-                />
+              <!-- 如果选择了数据源，显示已选择的数据项，允许删除和调整 -->
+              <template v-if="selectedItem.props?.dataSourceCode">
+                <div
+                  v-for="(item, index) in getArrayProp(field.prop)"
+                  :key="index"
+                  class="nav-items-editor__row"
+                >
+                  <el-input
+                    class="nav-items-editor__input"
+                    :model-value="item?.title || '未命名新闻'"
+                    placeholder="新闻标题"
+                    disabled
+                    style="opacity: 0.7;"
+                  />
+                  <el-button
+                    text
+                    type="danger"
+                    @click="removeNewsItem(field.prop, index)"
+                  >
+                    删除
+                  </el-button>
+                </div>
                 <el-button
-                  text
                   type="primary"
-                  @click="openDetailDialog(field.prop, index)"
-                >
-                  {{ item?.content ? '编辑详情' : '添加详情' }}
-                </el-button>
-                <el-button
                   text
-                  type="danger"
-                  @click="removeNewsItem(field.prop, index)"
+                  @click="handleAddFromDataSource(field.prop)"
                 >
-                  删除
+                  + 从数据源添加
                 </el-button>
-              </div>
-              <el-button type="primary" text @click="addNewsItem(field.prop)">新增新闻条目</el-button>
+                <el-alert
+                  type="info"
+                  :closable="false"
+                  style="margin-top: 0.5rem;"
+                >
+                  <template #title>
+                    <span style="font-size: 0.85rem;">数据来自数据源，可在"数据源管理"中编辑数据内容</span>
+                  </template>
+                </el-alert>
+              </template>
+              <!-- 如果没有选择数据源，显示可编辑模式 -->
+              <template v-else>
+                <div
+                  v-for="(item, index) in getArrayProp(field.prop)"
+                  :key="index"
+                  class="nav-items-editor__row"
+                >
+                  <el-input
+                    class="nav-items-editor__input"
+                    :model-value="item?.title || '未命名新闻'"
+                    placeholder="新闻标题"
+                    @update:model-value="(val) => updateNewsItem(field.prop, index, 'title', val)"
+                  />
+                  <el-button
+                    text
+                    type="primary"
+                    @click="openDetailDialog(field.prop, index)"
+                  >
+                    {{ item?.content ? '编辑详情' : '添加详情' }}
+                  </el-button>
+                  <el-button
+                    text
+                    type="danger"
+                    @click="removeNewsItem(field.prop, index)"
+                  >
+                    删除
+                  </el-button>
+                </div>
+                <el-button type="primary" text @click="addNewsItem(field.prop)">新增新闻条目</el-button>
+              </template>
             </div>
           </template>
           <template v-else-if="field.type === 'navigation'">
@@ -1192,6 +1412,20 @@ const getQuickLinkNavigation = (prop, index) => {
                     @update:model-value="(val) => updateDetailPageFromSelector(field.prop, val)"
                   />
                 </div>
+                <!-- 自定义页面也需要设置数据类型，用于在跳转时传递 type 查询参数和调用正确的 API -->
+                <el-select
+                  style="margin-top: 0.8rem; width: 100%"
+                  :model-value="getDetailPage(field.prop).templateType || 'news'"
+                  placeholder="选择数据类型"
+                  @update:model-value="(val) => updateDetailPage(field.prop, 'templateType', val)"
+                >
+                  <el-option
+                    v-for="option in DETAIL_TEMPLATE_OPTIONS"
+                    :key="option.value"
+                    :label="option.label"
+                    :value="option.value"
+                  />
+                </el-select>
               </template>
               
               <div style="margin-top: 0.8rem">
@@ -1330,108 +1564,160 @@ const getQuickLinkNavigation = (prop, index) => {
             </div>
           </template>
           <template v-else-if="field.type === 'product-items'">
-            <div class="product-items-editor">
-              <div
-                v-for="(item, index) in getArrayProp(field.prop)"
-                :key="index"
-                class="product-item-editor"
-              >
-                <el-card shadow="hover" class="product-item-card">
-                  <template #header>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                      <span>产品 {{ index + 1 }}</span>
-                      <el-button
-                        text
-                        type="danger"
-                        size="small"
-                        @click="removeProductItem(field.prop, index)"
-                      >
-                        删除
-                      </el-button>
-                    </div>
+            <div class="nav-items-editor">
+              <!-- 如果选择了数据源，显示已选择的数据项，允许删除和调整 -->
+              <template v-if="selectedItem.props?.dataSourceCode">
+                <div
+                  v-for="(item, index) in getArrayProp(field.prop)"
+                  :key="index"
+                  class="nav-items-editor__row"
+                >
+                  <el-input
+                    class="nav-items-editor__input"
+                    :model-value="item?.name || '未命名产品'"
+                    placeholder="产品名称"
+                    disabled
+                    style="opacity: 0.7;"
+                  />
+                  <el-button
+                    text
+                    type="danger"
+                    @click="removeProductItem(field.prop, index)"
+                  >
+                    删除
+                  </el-button>
+                </div>
+                <el-button
+                  type="primary"
+                  text
+                  @click="handleAddFromDataSource(field.prop)"
+                >
+                  + 从数据源添加
+                </el-button>
+                <el-alert
+                  type="info"
+                  :closable="false"
+                  style="margin-top: 0.5rem;"
+                >
+                  <template #title>
+                    <span style="font-size: 0.85rem;">数据来自数据源，可在"数据源管理"中编辑数据内容</span>
                   </template>
-                  <el-form label-position="top" size="small">
-                    <el-form-item label="产品图片URL">
-                      <el-input
-                        :model-value="item?.image"
-                        placeholder="输入产品图片URL"
-                        @update:model-value="(val) => updateProductItem(field.prop, index, 'image', val)"
-                      />
-                    </el-form-item>
-                    <el-form-item label="产品名称">
-                      <el-input
-                        :model-value="item?.name"
-                        placeholder="产品名称"
-                        @update:model-value="(val) => updateProductItem(field.prop, index, 'name', val)"
-                      />
-                    </el-form-item>
-                    <el-form-item label="产品描述">
-                      <el-input
-                        type="textarea"
-                        :rows="2"
-                        :model-value="item?.description"
-                        placeholder="产品描述"
-                        @update:model-value="(val) => updateProductItem(field.prop, index, 'description', val)"
-                      />
-                    </el-form-item>
-                    <el-form-item label="价格">
-                      <el-input
-                        :model-value="item?.price"
-                        placeholder="如：¥999"
-                        @update:model-value="(val) => updateProductItem(field.prop, index, 'price', val)"
-                      />
-                    </el-form-item>
-                    <el-form-item label="原价（可选）">
-                      <el-input
-                        :model-value="item?.originalPrice"
-                        placeholder="如：¥1299（留空则不显示）"
-                        @update:model-value="(val) => updateProductItem(field.prop, index, 'originalPrice', val || null)"
-                      />
-                    </el-form-item>
-                    <el-form-item label="跳转配置">
-                      <el-collapse style="width: 100%">
-                        <el-collapse-item title="跳转配置" :name="`product-${index}`">
-                          <div class="navigation-editor" style="padding: 0.5rem 0">
-                            <el-select
-                              :model-value="getProductItemNavigation(field.prop, index).type"
-                              placeholder="选择跳转类型"
-                              style="width: 100%"
-                              @update:model-value="(val) => updateProductItemNavigation(field.prop, index, 'type', val)"
-                            >
-                              <el-option :label="'无跳转'" :value="NAVIGATION_TYPES.NONE" />
-                              <el-option :label="'页面跳转'" :value="NAVIGATION_TYPES.PAGE" />
-                              <el-option :label="'外部链接'" :value="NAVIGATION_TYPES.URL" />
-                            </el-select>
-                            
-                            <template v-if="getProductItemNavigation(field.prop, index).type === NAVIGATION_TYPES.PAGE">
-                              <div style="margin-top: 0.8rem">
-                                <PageSelector
-                                  :model-value="getProductItemNavigation(field.prop, index)"
-                                  :project-code="projectCode"
-                                  placeholder="选择目标页面"
-                                  @update:model-value="(val) => updateProductItemNavigationFromSelector(field.prop, index, val)"
-                                />
-                              </div>
-                            </template>
-                            
-                            <template v-if="getProductItemNavigation(field.prop, index).type === NAVIGATION_TYPES.URL">
-                              <el-input
-                                style="margin-top: 0.8rem"
-                                :model-value="getProductItemNavigation(field.prop, index).url"
-                                placeholder="请输入外部链接地址"
-                                @update:model-value="(val) => updateProductItemNavigation(field.prop, index, 'url', val)"
-                              />
-                            </template>
-                          </div>
-                        </el-collapse-item>
-                      </el-collapse>
-                    </el-form-item>
-                  </el-form>
-                </el-card>
-              </div>
-              <el-button type="primary" text @click="addProductItem(field.prop)" style="width: 100%; margin-top: 0.5rem;">
-                + 添加产品
-              </el-button>
+                </el-alert>
+              </template>
+              <!-- 如果没有选择数据源，显示可编辑模式 -->
+              <template v-else>
+                <div
+                  v-for="(item, index) in getArrayProp(field.prop)"
+                  :key="index"
+                  class="nav-items-editor__row"
+                >
+                  <el-input
+                    class="nav-items-editor__input"
+                    :model-value="item?.name || '未命名产品'"
+                    placeholder="产品名称"
+                    @update:model-value="(val) => updateProductItem(field.prop, index, 'name', val)"
+                  />
+                  <el-button
+                    text
+                    type="primary"
+                    @click="openProductDialog(field.prop, index)"
+                  >
+                    {{ item?.content ? '编辑详情' : '添加详情' }}
+                  </el-button>
+                  <el-button
+                    text
+                    type="danger"
+                    @click="removeProductItem(field.prop, index)"
+                  >
+                    删除
+                  </el-button>
+                </div>
+                <el-button type="primary" text @click="addProductItem(field.prop)">新增产品条目</el-button>
+              </template>
+            </div>
+          </template>
+          <template v-else-if="field.type === 'info-cards'">
+            <div class="nav-items-editor">
+              <!-- 如果选择了数据源，显示已选择的数据项，允许删除和调整 -->
+              <template v-if="selectedItem.props?.dataSourceCode">
+                <div
+                  v-for="(item, index) in getArrayProp(field.prop)"
+                  :key="index"
+                  class="nav-items-editor__row"
+                >
+                  <el-input
+                    class="nav-items-editor__input"
+                    :model-value="item?.title || '未命名卡片'"
+                    placeholder="卡片标题"
+                    disabled
+                    style="opacity: 0.7;"
+                  />
+                  <el-button
+                    text
+                    type="danger"
+                    @click="removeInfoCard(field.prop, index)"
+                  >
+                    删除
+                  </el-button>
+                </div>
+                <el-button
+                  type="primary"
+                  text
+                  @click="handleAddFromDataSource(field.prop)"
+                >
+                  + 从数据源添加
+                </el-button>
+                <el-alert
+                  type="info"
+                  :closable="false"
+                  style="margin-top: 0.5rem;"
+                >
+                  <template #title>
+                    <span style="font-size: 0.85rem;">数据来自数据源，可在"数据源管理"中编辑数据内容</span>
+                  </template>
+                </el-alert>
+              </template>
+              <!-- 如果没有选择数据源，显示可编辑模式 -->
+              <template v-else>
+                <div
+                  v-for="(item, index) in getArrayProp(field.prop)"
+                  :key="index"
+                  class="nav-items-editor__row"
+                  style="flex-direction: column; align-items: stretch; gap: 0.5rem;"
+                >
+                  <el-input
+                    :model-value="item?.title || '未命名卡片'"
+                    placeholder="卡片标题"
+                    @update:model-value="(val) => updateInfoCard(field.prop, index, 'title', val)"
+                  />
+                  <el-input
+                    :model-value="item?.description || ''"
+                    type="textarea"
+                    :rows="2"
+                    placeholder="卡片描述"
+                    @update:model-value="(val) => updateInfoCard(field.prop, index, 'description', val)"
+                  />
+                  <el-input
+                    :model-value="item?.image || ''"
+                    placeholder="图片URL"
+                    @update:model-value="(val) => updateInfoCard(field.prop, index, 'image', val)"
+                  />
+                  <el-input
+                    :model-value="item?.meta || ''"
+                    placeholder="元信息（可选）"
+                    @update:model-value="(val) => updateInfoCard(field.prop, index, 'meta', val)"
+                  />
+                  <el-button
+                    text
+                    type="danger"
+                    @click="removeInfoCard(field.prop, index)"
+                    style="align-self: flex-start;"
+                  >
+                    删除
+                  </el-button>
+                </div>
+                <el-button type="primary" text @click="addInfoCard(field.prop)">新增卡片</el-button>
+              </template>
             </div>
           </template>
           <el-color-picker
@@ -1476,30 +1762,51 @@ const getQuickLinkNavigation = (prop, index) => {
   <el-dialog
     v-model="detailDialogVisible"
     title="编辑新闻详情"
-    width="800px"
+    width="1000px"
     :before-close="closeDetailDialog"
   >
     <div class="detail-editor">
-      <QuillEditor
-        v-model:content="detailContent"
-        content-type="html"
-        theme="snow"
-        :options="{
-          placeholder: '请输入新闻详情内容...',
-          modules: {
-            toolbar: [
-              [{ header: [1, 2, 3, false] }],
-              ['bold', 'italic', 'underline', 'strike'],
-              [{ list: 'ordered' }, { list: 'bullet' }],
-              [{ color: [] }, { background: [] }],
-              [{ align: [] }],
-              ['link', 'image'],
-              ['clean'],
-            ],
-          },
-        }"
-        style="height: 400px; margin-bottom: 1rem"
-      />
+      <el-form label-position="top" size="default">
+        <el-form-item label="新闻标题">
+          <el-input
+            v-model="detailTitle"
+            placeholder="请输入新闻标题"
+          />
+        </el-form-item>
+        <el-form-item label="发布日期">
+          <el-date-picker
+            v-model="detailDate"
+            type="date"
+            placeholder="选择日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="详情内容">
+          <div class="quill-editor-wrapper">
+            <QuillEditor
+              v-model:content="detailContent"
+              content-type="html"
+              theme="snow"
+              :options="{
+                placeholder: '请输入新闻详情内容...',
+                modules: {
+                  toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    [{ color: [] }, { background: [] }],
+                    [{ align: [] }],
+                    ['link', 'image'],
+                    ['clean'],
+                  ],
+                },
+              }"
+            />
+          </div>
+        </el-form-item>
+      </el-form>
     </div>
     <template #footer>
       <span class="dialog-footer">
@@ -1508,6 +1815,124 @@ const getQuickLinkNavigation = (prop, index) => {
       </span>
     </template>
   </el-dialog>
+
+  <!-- 产品详情编辑对话框 -->
+  <el-dialog
+    v-model="productDialogVisible"
+    title="编辑产品详情"
+    width="1000px"
+    :before-close="closeProductDialog"
+  >
+    <div class="detail-editor">
+      <el-form label-position="top" size="default">
+        <el-form-item label="产品名称">
+          <el-input
+            v-model="productName"
+            placeholder="请输入产品名称"
+          />
+        </el-form-item>
+        <el-form-item label="产品描述">
+          <el-input
+            v-model="productDescription"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入产品描述"
+          />
+        </el-form-item>
+        <el-form-item label="产品图片URL">
+          <el-input
+            v-model="productImage"
+            placeholder="请输入产品图片URL"
+          />
+        </el-form-item>
+        <el-form-item label="价格">
+          <el-input
+            v-model="productPrice"
+            placeholder="如：¥999"
+          />
+        </el-form-item>
+        <el-form-item label="原价（可选）">
+          <el-input
+            v-model="productOriginalPrice"
+            placeholder="如：¥1299（留空则不显示）"
+          />
+        </el-form-item>
+        <el-form-item label="详情内容">
+          <div class="quill-editor-wrapper">
+            <QuillEditor
+              v-model:content="productContent"
+              content-type="html"
+              theme="snow"
+              :options="{
+                placeholder: '请输入产品详情内容...',
+                modules: {
+                  toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    [{ color: [] }, { background: [] }],
+                    [{ align: [] }],
+                    ['link', 'image'],
+                    ['clean'],
+                  ],
+                },
+              }"
+            />
+          </div>
+        </el-form-item>
+      </el-form>
+    </div>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="closeProductDialog">取消</el-button>
+        <el-button type="primary" @click="saveProductDetail">保存</el-button>
+      </span>
+    </template>
+  </el-dialog>
+
+  <!-- 数据源项选择对话框 -->
+  <DataSourceItemSelector
+    v-model="dataSourceItemDialogVisible"
+    :data-source-code="currentDataSourceCode"
+    :selected-items="currentItemsField ? getArrayProp(currentItemsField) : []"
+    :component-key="selectedItem?.key || ''"
+    @confirm="(selectedItems) => {
+      console.log('[BuilderInspector] DataSourceItemSelector confirm:', { 
+        selectedItems, 
+        currentItemsField, 
+        componentKey: selectedItem?.key,
+        selectedItemsCount: selectedItems.length 
+      })
+      if (currentItemsField && selectedItems && selectedItems.length > 0) {
+        // 合并新选择的数据项到现有列表中（避免重复）
+        const current = getArrayProp(currentItemsField)
+        console.log('[BuilderInspector] Current items:', current)
+        
+        // 对于 InfoCardGrid，使用 id 或 title 作为唯一标识；对于其他组件，使用 id 或 code
+        const getItemKey = (item) => {
+          if (props.selectedItem?.key === 'InfoCardGrid') {
+            return item.id || item.title || item.code
+          }
+          return item.id || item.code || item.title
+        }
+        const currentKeys = new Set(current.map(getItemKey).filter(Boolean))
+        const newItems = selectedItems.filter(item => {
+          const key = getItemKey(item)
+          return key && !currentKeys.has(key)
+        })
+        
+        console.log('[BuilderInspector] Filtered new items:', newItems)
+        const merged = [...current, ...newItems]
+        console.log('[BuilderInspector] Merged items:', merged)
+        console.log('[BuilderInspector] Emitting update-props:', { [currentItemsField]: merged })
+        
+        // 强制触发更新
+        emit('update-props', { [currentItemsField]: merged })
+      } else {
+        console.warn('[BuilderInspector] No items to update:', { currentItemsField, selectedItems })
+      }
+    }"
+  />
 </template>
 
 <style scoped>
@@ -1592,6 +2017,27 @@ const getQuickLinkNavigation = (prop, index) => {
 
 .detail-editor {
   margin: 1rem 0;
+}
+
+.detail-editor :deep(.el-form-item) {
+  margin-bottom: 1.5rem;
+}
+
+.quill-editor-wrapper {
+  width: 100%;
+}
+
+.quill-editor-wrapper :deep(.quill) {
+  width: 100%;
+}
+
+.quill-editor-wrapper :deep(.ql-container) {
+  min-height: 400px;
+  font-size: 14px;
+}
+
+.quill-editor-wrapper :deep(.ql-editor) {
+  min-height: 400px;
 }
 
 .nav-items-editor__row :deep(.el-button) {

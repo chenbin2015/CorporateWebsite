@@ -47,7 +47,7 @@
             <a
               :href="isDesignMode() ? 'javascript:void(0)' : (item.href || '#')"
               class="nav-link"
-              :class="{ 'nav-link--active': index === 0 }"
+              :class="{ 'nav-link--active': index === defaultActiveIndex }"
               @click="(e) => handleItemClick(item, e)"
               :style="isDesignMode() ? 'cursor: default; pointer-events: none;' : ''"
             >
@@ -118,6 +118,10 @@ const props = defineProps({
       { label: '招生就业', href: '/admissions', navigation: { type: 'none' } },
       { label: '图书馆', href: '/library', navigation: { type: 'none' } },
     ],
+  },
+  defaultActiveIndex: {
+    type: Number,
+    default: 0, // 默认选中第一个菜单项
   },
 })
 

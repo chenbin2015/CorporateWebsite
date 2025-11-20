@@ -36,12 +36,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/projects").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                         // 开发环境：允许所有接口访问（生产环境应移除）
                         .requestMatchers("/api/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/actuator/**").permitAll()
+                        .anyRequest().permitAll() // 临时允许所有请求，用于调试
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class);

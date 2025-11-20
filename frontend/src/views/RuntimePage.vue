@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { resolveBuilderComponent } from '@/components/builder/runtime/componentRegistry'
+import { loadDataSourceData, mergeDataSourceData } from '@/utils/dataSource'
 
 const route = useRoute()
 
@@ -13,6 +14,48 @@ const pageItems = ref([])
 const pageInfo = ref(null)
 const loading = ref(true)
 const error = ref(null)
+const detailData = ref(null) // 详情页的动态数据
+
+// 加载详情数据（如果当前页面是详情页）
+const loadDetailData = async () => {
+  const itemId = route.query.id
+  const itemType = route.query.type || 'news'
+  
+  if (!itemId || !projectCode.value) {
+    return
+  }
+  
+  try {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    let response
+    
+    // 根据类型调用不同的 API
+    if (itemType === 'product') {
+      response = await fetch(`${apiBaseUrl}/products/${itemId}?projectCode=${projectCode.value}`)
+    } else if (itemType === 'news') {
+      response = await fetch(`${apiBaseUrl}/news/${itemId}?projectCode=${projectCode.value}`)
+    } else if (itemType === 'event') {
+      // TODO: 实现 event API
+      return
+    } else if (itemType === 'notice') {
+      // TODO: 实现 notice API
+      return
+    } else if (itemType === 'focus') {
+      // TODO: 实现 focus API
+      return
+    } else {
+      return
+    }
+    
+    if (response.ok) {
+      detailData.value = await response.json()
+      // 将详情数据注入到全局 context，供组件使用
+      window.__DETAIL_DATA__ = detailData.value
+    }
+  } catch (err) {
+    console.error('Failed to load detail data:', err)
+  }
+}
 
 // 加载页面数据
 const loadPage = async () => {
@@ -26,6 +69,9 @@ const loadPage = async () => {
   error.value = null
   
   try {
+    // 先加载详情数据（如果是详情页）
+    await loadDetailData()
+    
     // 调用 API 获取页面数据（运行态应该使用已发布的数据）
     // 使用 fetch 直接调用 API，因为 frontend 可能没有配置 request 工具
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
@@ -40,7 +86,28 @@ const loadPage = async () => {
     // 运行态：只使用已发布的数据（publishedSchemaData），不使用草稿数据
     if (page.publishedSchemaData) {
       try {
-        pageItems.value = JSON.parse(page.publishedSchemaData)
+        const parsed = JSON.parse(page.publishedSchemaData)
+        
+        // 加载数据源数据
+        const itemsWithDataSource = await Promise.all(
+          parsed.map(async (item) => {
+            if (item.props?.dataSourceCode) {
+              const dataSourceData = await loadDataSourceData(
+                item.props.dataSourceCode,
+                item.key
+              )
+              if (dataSourceData) {
+                return {
+                  ...item,
+                  props: mergeDataSourceData(item.props, item.key, dataSourceData),
+                }
+              }
+            }
+            return item
+          })
+        )
+        
+        pageItems.value = itemsWithDataSource
       } catch (e) {
         console.error('Failed to parse schema data:', e)
         pageItems.value = []
@@ -69,9 +136,9 @@ const isFullWidthComponent = (item) => {
   return fullWidthComponents.includes(item.key)
 }
 
-// 监听路由参数变化，重新加载页面数据
+// 监听路由参数和查询参数变化，重新加载页面数据
 watch(
-  () => [route.params.projectCode, route.params.pageCode],
+  () => [route.params.projectCode, route.params.pageCode, route.query.id, route.query.type],
   () => {
     loadPage()
   },
@@ -80,6 +147,11 @@ watch(
 
 onMounted(() => {
   loadPage()
+})
+
+// 组件卸载时清理全局数据
+onBeforeUnmount(() => {
+  delete window.__DETAIL_DATA__
 })
 </script>
 

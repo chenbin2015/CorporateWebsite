@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import BuilderSidebar from './BuilderSidebar.vue'
 import BuilderOutline from './BuilderOutline.vue'
+import BuilderDataSourceManager from './BuilderDataSourceManager.vue'
 
 const props = defineProps({
   categories: {
@@ -20,11 +21,15 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  projectCode: {
+    type: String,
+    required: true,
+  },
 })
 
 const emit = defineEmits(['insert', 'select', 'scroll-to'])
 
-const activeTab = ref('components') // 'components' 或 'outline'
+const activeTab = ref('components') // 'components'、'outline' 或 'datasources'
 
 const handleInsert = (component) => {
   emit('insert', component)
@@ -53,6 +58,9 @@ const handleScrollTo = (id) => {
           @select="handleSelect"
           @scroll-to="handleScrollTo"
         />
+      </el-tab-pane>
+      <el-tab-pane label="数据源管理" name="datasources">
+        <BuilderDataSourceManager :project-code="projectCode" />
       </el-tab-pane>
     </el-tabs>
   </div>

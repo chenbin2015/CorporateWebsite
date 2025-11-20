@@ -10,6 +10,7 @@ import BuilderLeftPanel from '@/components/layout/BuilderLeftPanel.vue'
 import { componentPalette } from '@/data/componentPalette'
 import { getComponentSchema } from '@/data/componentSchemas'
 import { getPage, saveDraft, publishPage } from '@/services/modules/project'
+import { loadDataSourceData, mergeDataSourceData } from '@/utils/dataSource'
 
 const route = useRoute()
 const router = useRouter()
@@ -63,16 +64,36 @@ const handleScrollTo = (id) => {
   // BuilderCanvas 会自动监听 selectedId 变化并滚动
 }
 
-const handleUpdateProps = (updatedProps) => {
+const handleUpdateProps = async (updatedProps) => {
   const index = canvasItems.value.findIndex((item) => item.id === selectedId.value)
-  if (index === -1) return
-  canvasItems.value[index] = {
-    ...canvasItems.value[index],
-    props: {
-      ...canvasItems.value[index].props,
-      ...updatedProps,
-    },
+  if (index === -1) {
+    console.warn('[PageBuilder] handleUpdateProps: item not found', { selectedId: selectedId.value, items: canvasItems.value.map(i => i.id) })
+    return
   }
+  console.log('[PageBuilder] handleUpdateProps:', { index, selectedId: selectedId.value, updatedProps, before: JSON.parse(JSON.stringify(canvasItems.value[index].props)) })
+  
+  const item = canvasItems.value[index]
+  const newProps = {
+    ...item.props,
+    ...updatedProps,
+  }
+  
+  // 使用 Vue 的响应式更新方式
+  canvasItems.value[index] = {
+    ...item,
+    props: newProps,
+  }
+  
+  // 强制触发响应式更新
+  canvasItems.value = [...canvasItems.value]
+  
+  console.log('[PageBuilder] handleUpdateProps after:', { 
+    props: JSON.parse(JSON.stringify(canvasItems.value[index].props)),
+    cardsCount: canvasItems.value[index].props?.cards?.length || 0
+  })
+  
+  // 自动保存草稿
+  handleSaveDraft()
 }
 
 const handleResetProps = () => {
@@ -128,16 +149,18 @@ const loadPage = async () => {
     pageInfo.value = page
     
     // 解析 schema_data
+    let items = []
     if (page.schemaData) {
       try {
-        canvasItems.value = JSON.parse(page.schemaData)
+        items = JSON.parse(page.schemaData)
       } catch (e) {
         console.error('Failed to parse schema data:', e)
-        canvasItems.value = []
+        items = []
       }
-    } else {
-      canvasItems.value = []
     }
+    
+    // 不再自动加载数据源数据，用户需要手动选择数据项
+    canvasItems.value = items
   } catch (error) {
     console.error('Failed to load page:', error)
     ElMessage.error('加载页面失败')
@@ -340,6 +363,7 @@ onBeforeUnmount(() => {
         :page-name="pageInfo?.name || `页面 ${pageCode}`"
         :items="canvasItems"
         :selected-id="selectedId"
+        :project-code="projectCode"
         @insert="handleInsert"
         @select="handleSelect"
         @scroll-to="handleScrollTo"

@@ -9,6 +9,7 @@ export const DETAIL_TEMPLATE_TYPES = {
   EVENT: 'event',
   NOTICE: 'notice',
   FOCUS: 'focus',
+  PRODUCT: 'product',
 }
 
 // 详情页模板类型选项（用于下拉选择）
@@ -17,6 +18,7 @@ export const DETAIL_TEMPLATE_OPTIONS = [
   { label: '活动详情页', value: DETAIL_TEMPLATE_TYPES.EVENT },
   { label: '公告详情页', value: DETAIL_TEMPLATE_TYPES.NOTICE },
   { label: '专题详情页', value: DETAIL_TEMPLATE_TYPES.FOCUS },
+  { label: '产品详情页', value: DETAIL_TEMPLATE_TYPES.PRODUCT },
 ]
 
 // 跳转类型
@@ -115,6 +117,7 @@ export function handleDetailPageNavigation(detailPage, item) {
     event: '/events',
     notice: '/notices',
     focus: '/focus',
+    product: '/products',
   }
   
   let path = ''
@@ -124,25 +127,52 @@ export function handleDetailPageNavigation(detailPage, item) {
     const basePath = templatePathMap[templateType] || `/news`
     path = `${basePath}/${paramValue}`
   } else if (detailPage.type === 'custom') {
-    // 使用自定义页面路径
+    // 使用自定义页面路径（可配置的详情页）
     path = detailPage.path || ''
     if (path && paramValue) {
-      // 替换路径参数
-      path = path.replace(`:${detailPage.paramKey || 'id'}`, paramValue)
+      // 如果路径是 runtime 格式（/projects/{projectCode}/runtime/pages/{pageCode}）
+      // 则添加查询参数 id 和 type，而不是替换路径参数
+      if (path.includes('/runtime/pages/')) {
+        // runtime 页面，通过查询参数传递 id 和 type
+        // path 保持不变，查询参数在下面添加
+      } else {
+        // 传统路径格式，替换路径参数
+        path = path.replace(`:${detailPage.paramKey || 'id'}`, paramValue)
+      }
     }
   }
 
   console.log('详情页跳转：', { detailPage, item, paramValue, path })
 
   if (path) {
+    // 获取当前路由的 projectCode（如果存在）
+    const currentRoute = router.currentRoute.value
+    const projectCode = currentRoute.params.projectCode
+    
+    // 构建查询参数
+    const query = projectCode ? { projectCode } : {}
+    
+    // 如果是自定义页面（可配置的详情页），添加 id 和 type 查询参数
+    if (detailPage.type === 'custom' && paramValue) {
+      query.id = paramValue
+      // 根据 detailPage 的配置或 item 的类型推断 type
+      // 可以从 detailPage.templateType 或 item 的类型推断
+      const itemType = detailPage.templateType || item.type || 'news'
+      query.type = itemType
+    }
+    
     // 根据配置决定是当前页跳转还是新标签页打开
     if (detailPage.openInNewTab) {
       // 新标签页打开
-      const fullUrl = window.location.origin + path
+      const queryString = new URLSearchParams(query).toString()
+      const fullUrl = window.location.origin + path + (queryString ? `?${queryString}` : '')
       window.open(fullUrl, '_blank')
     } else {
-      // 当前页跳转
-      router.push(path).catch((err) => {
+      // 当前页跳转，传递路径参数（id）和查询参数（projectCode, id, type）
+      router.push({
+        path,
+        query,
+      }).catch((err) => {
         console.error('路由跳转失败:', err)
       })
     }

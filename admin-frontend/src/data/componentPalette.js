@@ -83,6 +83,19 @@ export const componentPalette = [
     ],
   },
   {
+    label: '详情页数据',
+    value: 'detail-data',
+    items: [
+      {
+        key: 'DetailData',
+        label: '详情数据',
+        desc: '显示详情页的动态数据（标题、内容等）',
+        source: 'shared/components/DetailData.vue',
+        icon: 'Document',
+      },
+    ],
+  },
+  {
     label: '内容展示',
     value: 'content',
     items: [
@@ -188,6 +201,14 @@ export const componentPalette = [
         desc: '新闻列表（焦点+条目）',
         source: 'frontend/src/components/NewsSection.vue',
         icon: 'Document',
+        navigationType: 'list-detail',  // 列表详情页
+      },
+      {
+        key: 'NewsListPage',
+        label: 'NewsListPage',
+        desc: '新闻列表页（纯列表）',
+        source: 'frontend/src/components/NewsListPage.vue',
+        icon: 'List',
         navigationType: 'list-detail',  // 列表详情页
       },
       {

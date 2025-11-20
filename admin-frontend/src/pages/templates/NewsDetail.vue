@@ -1,14 +1,58 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import axios from 'axios'
 import PageHero from '@shared/components/PageHero.vue'
 import TextImageSection from '@shared/components/TextImageSection.vue'
 
 const route = useRoute()
 const newsId = route.params.id
+const projectCode = route.query.projectCode // 从查询参数获取 projectCode
 
 const news = ref(null)
 const loading = ref(true)
+const error = ref(null)
+
+// 从接口获取新闻详情
+const fetchNewsDetail = async () => {
+  if (!projectCode) {
+    error.value = '缺少项目代码参数'
+    loading.value = false
+    return
+  }
+  
+  try {
+    loading.value = true
+    error.value = null
+    
+    // 调用接口获取新闻详情
+    // 接口会从项目下所有页面的 schema_data 中查找对应的新闻项
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    const response = await axios.get(`${apiBaseUrl}/news/${newsId}`, {
+      params: { projectCode },
+    })
+    
+    if (response.data) {
+      news.value = {
+        id: response.data.id || newsId,
+        title: response.data.title || '新闻标题',
+        subtitle: response.data.summary || response.data.subtitle || '新闻副标题',
+        date: response.data.date || '2025-01-01',
+        author: response.data.author || '新闻中心',
+        cover: response.data.cover || response.data.image || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80',
+        content: response.data.content || '<p>这是新闻详情内容。</p>',
+        tags: response.data.tags || (response.data.category ? [response.data.category] : ['新闻']),
+      }
+    } else {
+      error.value = '未找到新闻详情'
+    }
+  } catch (err) {
+    console.error('获取新闻详情失败:', err)
+    error.value = '获取新闻详情失败，请稍后重试'
+  } finally {
+    loading.value = false
+  }
+}
 
 // Mock 数据 - 实际应该从 API 获取
 const mockNews = {
@@ -51,20 +95,7 @@ const mockNews = {
 }
 
 onMounted(() => {
-  // 模拟 API 调用
-  setTimeout(() => {
-    news.value = mockNews[newsId] || {
-      id: newsId,
-      title: '新闻标题',
-      subtitle: '新闻副标题',
-      date: '2025-01-01',
-      author: '新闻中心',
-      cover: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80',
-      content: '<p>这是新闻详情内容。</p>',
-      tags: ['新闻'],
-    }
-    loading.value = false
-  }, 300)
+  fetchNewsDetail()
 })
 </script>
 
@@ -79,6 +110,10 @@ onMounted(() => {
 
     <div v-if="loading" class="container" style="padding: 4rem; text-align: center">
       <p>加载中...</p>
+    </div>
+
+    <div v-else-if="error" class="container" style="padding: 4rem; text-align: center">
+      <p style="color: var(--color-error)">{{ error }}</p>
     </div>
 
     <div v-else-if="news" class="container">

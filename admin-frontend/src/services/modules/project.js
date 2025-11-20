@@ -32,3 +32,7 @@ export const deletePage = (projectId, pageId) =>
 export const savePageSchema = (projectId, pageId, data) =>
   saveDraft(projectId, pageId, data)
 
+// 获取新闻详情（从页面配置中查找）
+export const getNewsDetail = (projectCode, pageCode, newsId) =>
+  request.get(`/projects/${projectCode}/pages/${pageCode}/news/${newsId}`)
+

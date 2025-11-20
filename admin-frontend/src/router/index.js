@@ -72,6 +72,12 @@ const routes = [
     meta: { public: false },
   },
   {
+    path: '/products/:id',
+    name: 'productDetail',
+    component: () => import('../pages/templates/ProductDetail.vue'),
+    meta: { public: false },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'notFound',
     component: () => import('../pages/NotFound.vue'),

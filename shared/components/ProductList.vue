@@ -79,23 +79,30 @@ const handleProductClick = (product, event) => {
     return
   }
   
-  // 优先使用产品自己的 navigation 配置
-  if (product.navigation && product.navigation.type !== 'none') {
-    event.preventDefault()
-    event.stopPropagation()
-    handleNavigation(product.navigation, product)
-    return
-  }
+  // 优先使用产品自己的 navigation 配置（已移除，现在统一使用 detailPage）
+  // if (product.navigation && product.navigation.type !== 'none') {
+  //   event.preventDefault()
+  //   event.stopPropagation()
+  //   handleNavigation(product.navigation, product)
+  //   return
+  // }
   
-  // 其次使用组件级别的 detailPage 配置
-  if (props.detailPage) {
+  // 使用组件级别的 detailPage 配置
+  // 检查 detailPage 是否存在且有效（不是 null 且 type 不为空）
+  if (props.detailPage && props.detailPage.type) {
     event.preventDefault()
     event.stopPropagation()
+    console.log('ProductList item click:', { detailPage: props.detailPage, product })
     handleDetailPageNavigation(props.detailPage, product)
     return
   }
   
   // 最后使用 product.href（向后兼容）
+  console.warn('ProductList: 没有配置 detailPage 或配置无效，无法跳转', { 
+    product, 
+    detailPage: props.detailPage,
+    hint: '请在页面搭建器的属性面板中配置"详情页配置"'
+  })
 }
 
 const gridTemplate = computed(() => `repeat(${props.columns || 3}, minmax(0, 1fr))`)

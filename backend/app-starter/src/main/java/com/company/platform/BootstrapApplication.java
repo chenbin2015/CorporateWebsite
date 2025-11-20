@@ -8,7 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @MapperScan({
         "com.company.platform.infrastructure.user.database",
         "com.company.platform.infrastructure.project.database",
-        "com.company.platform.infrastructure.page.database"
+        "com.company.platform.infrastructure.page.database",
+        "com.company.platform.infrastructure.datasource.database"
 })
 public class BootstrapApplication {
 

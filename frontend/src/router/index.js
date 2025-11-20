@@ -94,6 +94,11 @@ const routes = [
     name: 'focusDetail',
     component: () => import('../views/templates/FocusDetail.vue'),
   },
+  {
+    path: '/products/:id',
+    name: 'productDetail',
+    component: () => import('../views/templates/ProductDetail.vue'),
+  },
   // 运行态页面路由
   {
     path: '/projects/:projectCode/runtime/pages/:pageCode',

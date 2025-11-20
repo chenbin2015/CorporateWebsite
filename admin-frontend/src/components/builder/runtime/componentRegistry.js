@@ -1,6 +1,7 @@
 // 使用共享组件
 import HeroCarousel from '@shared/components/HeroCarousel.vue'
 import NewsSection from '@shared/components/NewsSection.vue'
+import NewsListPage from '@shared/components/NewsListPage.vue'
 import ServiceLinks from '@shared/components/ServiceLinks.vue'
 import EventSpotlight from '@shared/components/EventSpotlight.vue'
 import FocusGrid from '@shared/components/FocusGrid.vue'
@@ -43,6 +44,7 @@ import VideoPlayer from '@shared/components/sections/VideoPlayer.vue'
 import EventCalendar from '@shared/components/sections/EventCalendar.vue'
 import MultiLevelMenu from '@shared/components/MultiLevelMenu.vue'
 import Footer from '@shared/components/Footer.vue'
+import DetailData from '@shared/components/DetailData.vue'
 
 // 暂时保留的预览组件（MainHeader 和 TopLinksBar 有 i18n 依赖，暂不迁移）
 import MainHeaderPreview from './components/MainHeaderPreview.vue'
@@ -78,6 +80,7 @@ export const componentRegistry = {
   FocusGrid: FocusGrid,
   TextImageSection: TextImageSection,
   NewsSection: NewsSection,
+  NewsListPage: NewsListPage,
   StatsHighlight: StatsHighlight,
   TimelineList: TimelineList,
   StepsList: StepsList,
@@ -94,6 +97,7 @@ export const componentRegistry = {
   EventCalendar: EventCalendar,
   MultiLevelMenu: MultiLevelMenu,
   Footer: Footer,
+  DetailData: DetailData,
 }
 
 export const resolveBuilderComponent = (key) => componentRegistry[key] ?? FallbackPreview

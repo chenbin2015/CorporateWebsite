@@ -97,17 +97,21 @@ export const componentSchemas = {
   InfoCardGrid: {
     defaults: {
       title: '信息卡片组',
+      dataSourceCode: null, // 数据源 code，如果设置了则从数据源获取数据
       columns: 3,
       cards: [],
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'dataSourceCode', label: '数据源', type: 'data-source', dataSourceType: 'teacher' },
+      { prop: 'cards', label: '卡片列表', type: 'info-cards' },
       { prop: 'columns', label: '列数', type: 'slider', min: 1, max: 6, step: 1 },
     ],
   },
   ProductList: {
     defaults: {
       title: '产品列表',
+      dataSourceCode: null, // 数据源 code，如果设置了则从数据源获取数据
       columns: 3,
       products: [
         {
@@ -117,20 +121,13 @@ export const componentSchemas = {
           price: '¥999',
           originalPrice: null,
           image: 'http://localhost:8002/p1.jpg',
-          href: '#',
-          navigation: {
-            type: 'none',
-            targetPageCode: null,
-            path: null,
-            url: '',
-            params: {},
-          },
         },
       ],
       detailPage: null,
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'dataSourceCode', label: '数据源', type: 'data-source', dataSourceType: 'product' },
       { prop: 'columns', label: '列数', type: 'slider', min: 1, max: 6, step: 1 },
       { prop: 'products', label: '产品列表', type: 'product-items' },
       { prop: 'detailPage', label: '详情页配置', type: 'detail-page' },
@@ -464,6 +461,7 @@ export const componentSchemas = {
       navBackgroundColor: '#2d3748',
       showSearch: false,
       fullWidth: true, // 默认全宽
+      defaultActiveIndex: 0, // 默认选中第一个菜单项
       menuItems: [
         { label: '关于学校', href: '/about', navigation: { type: 'none' } },
         { label: '院系设置', href: '/colleges', navigation: { type: 'none' } },
@@ -480,12 +478,14 @@ export const componentSchemas = {
       { prop: 'navBackgroundColor', label: '导航背景色', type: 'color' },
       { prop: 'showSearch', label: '显示搜索框', type: 'switch' },
       { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'defaultActiveIndex', label: '默认选中项', type: 'number', placeholder: '菜单项索引（从0开始）', min: 0, step: 1 },
       { prop: 'menuItems', label: '导航菜单', type: 'nav-items' },
     ],
   },
   NewsSection: {
     defaults: {
       title: 'Latest News',
+      dataSourceCode: null, // 数据源 code，如果设置了则从数据源获取数据
       highlight: {
         title: '默认新闻标题',
         summary: '请在 props 中传入 highlight、items 数据，或绑定远程接口结果。',
@@ -509,9 +509,62 @@ export const componentSchemas = {
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'dataSourceCode', label: '数据源', type: 'data-source', dataSourceType: 'news' },
+      { prop: 'items', label: '新闻条目', type: 'news-items' },
       { prop: 'detailPage', label: '详情页配置', type: 'detail-page' },
       { prop: 'highlight', label: '焦点新闻', type: 'news-highlight' },
+    ],
+  },
+  NewsListPage: {
+    defaults: {
+      title: '新闻列表',
+      dataSourceCode: null, // 数据源 code，如果设置了则从数据源获取数据
+      items: [
+        {
+          id: '1',
+          title: '默认新闻条目示例一',
+          date: '2025-01-01',
+          summary: '这是新闻摘要内容，用于简要描述新闻的主要内容...',
+          cover: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=600&q=80',
+        },
+        {
+          id: '2',
+          title: '默认新闻条目示例二',
+          date: '2025-01-02',
+          summary: '这是新闻摘要内容，用于简要描述新闻的主要内容...',
+          cover: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=600&q=80',
+        },
+        {
+          id: '3',
+          title: '默认新闻条目示例三',
+          date: '2025-01-03',
+          summary: '这是新闻摘要内容，用于简要描述新闻的主要内容...',
+          cover: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=600&q=80',
+        },
+      ],
+      layout: 'list', // 'list' | 'grid'
+      showImage: false,
+      showSummary: true,
+      detailPage: {
+        type: 'template',
+        templateType: 'news',
+        targetPageCode: null,
+        paramKey: 'id',
+        paramSource: 'id',
+        openInNewTab: false,
+      },
+    },
+    fields: [
+      { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'dataSourceCode', label: '数据源', type: 'data-source', dataSourceType: 'news' },
       { prop: 'items', label: '新闻条目', type: 'news-items' },
+      { prop: 'layout', label: '布局方式', type: 'select', options: [
+        { label: '列表布局', value: 'list' },
+        { label: '网格布局', value: 'grid' },
+      ]},
+      { prop: 'showImage', label: '显示图片', type: 'switch' },
+      { prop: 'showSummary', label: '显示摘要', type: 'switch' },
+      { prop: 'detailPage', label: '详情页配置', type: 'detail-page' },
     ],
   },
   EventCalendar: {
@@ -691,6 +744,16 @@ export const componentSchemas = {
     fields: [
       { prop: 'items', label: '统计数据', type: 'array' },
       { prop: 'columns', label: '列数', type: 'number' },
+    ],
+  },
+  DetailData: {
+    defaults: {
+      field: 'title',
+      fallback: '',
+    },
+    fields: [
+      { prop: 'field', label: '数据字段', type: 'text', placeholder: '如：title, content, date, author.name' },
+      { prop: 'fallback', label: '默认值', type: 'text', placeholder: '数据不存在时显示的内容' },
     ],
   },
 }

@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getPage } from '@/services/modules/project'
 import { resolveBuilderComponent } from '@/components/builder/runtime/componentRegistry'
+import { loadDataSourceData, mergeDataSourceData } from '@/utils/dataSource'
 
 const route = useRoute()
 
@@ -17,6 +18,7 @@ const isRuntime = computed(() => route.path.includes('/runtime/'))
 const pageItems = ref([])
 const pageInfo = ref(null)
 const loading = ref(true)
+const detailData = ref(null) // 详情页的动态数据
 
 // 保存原始样式
 const originalHtmlOverflow = ref('')
@@ -53,12 +55,47 @@ const restoreOverflow = () => {
   body.style.height = originalBodyHeight.value
 }
 
+// 加载详情数据（如果当前页面是详情页）
+const loadDetailData = async () => {
+  const itemId = route.query.id
+  const itemType = route.query.type || 'news'
+  
+  if (!itemId || !projectCode.value) {
+    return
+  }
+  
+  try {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    let response
+    
+    // 根据类型调用不同的 API
+    if (itemType === 'product') {
+      response = await fetch(`${apiBaseUrl}/products/${itemId}?projectCode=${projectCode.value}`)
+    } else if (itemType === 'news') {
+      response = await fetch(`${apiBaseUrl}/news/${itemId}?projectCode=${projectCode.value}`)
+    } else {
+      return
+    }
+    
+    if (response.ok) {
+      detailData.value = await response.json()
+      // 将详情数据注入到全局 context，供组件使用
+      window.__DETAIL_DATA__ = detailData.value
+    }
+  } catch (err) {
+    console.error('Failed to load detail data:', err)
+  }
+}
+
 // 加载页面数据
 const loadPage = async () => {
   if (!projectCode.value || !pageCode.value) return
 
   loading.value = true
   try {
+    // 先加载详情数据（如果是详情页）
+    await loadDetailData()
+    
     const page = await getPage(projectCode.value, pageCode.value)
     pageInfo.value = page
 
@@ -81,11 +118,35 @@ const loadPage = async () => {
     if (schemaData) {
       try {
         const parsed = JSON.parse(schemaData)
-        pageItems.value = parsed
-        // 调试：检查 fullWidth 属性
-        parsed.forEach((item) => {
+        
+        // 加载数据源数据
+        const itemsWithDataSource = await Promise.all(
+          parsed.map(async (item) => {
+            if (item.props?.dataSourceCode) {
+              const dataSourceData = await loadDataSourceData(
+                item.props.dataSourceCode,
+                item.key
+              )
+              if (dataSourceData) {
+                return {
+                  ...item,
+                  props: mergeDataSourceData(item.props, item.key, dataSourceData),
+                }
+              }
+            }
+            return item
+          })
+        )
+        
+        pageItems.value = itemsWithDataSource
+        // 调试：检查 fullWidth 属性和 detailPage 配置
+        itemsWithDataSource.forEach((item) => {
           if (item.key === 'MainHeader' || item.key === 'HeroCarousel') {
             console.log(`[PagePreview] ${item.key} fullWidth:`, item.props?.fullWidth)
+          }
+          if (item.key === 'ProductList') {
+            console.log(`[PagePreview] ProductList detailPage:`, item.props?.detailPage)
+            console.log(`[PagePreview] ProductList props:`, item.props)
           }
         })
       } catch (e) {
@@ -115,9 +176,9 @@ const isFullWidthComponent = (item) => {
   return fullWidthComponents.includes(item.key)
 }
 
-// 监听路由参数变化，重新加载页面数据
+// 监听路由参数和查询参数变化，重新加载页面数据
 watch(
-  () => [route.params.projectCode, route.params.pageCode],
+  () => [route.params.projectCode, route.params.pageCode, route.query.id, route.query.type],
   () => {
     loadPage()
   },
@@ -144,6 +205,7 @@ onBeforeUnmount(() => {
   delete window.__ADMIN_MODE__
   delete window.__PREVIEW_MODE__
   delete window.__RUNTIME_MODE__
+  delete window.__DETAIL_DATA__
   
   restoreOverflow()
 })
