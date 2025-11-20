@@ -1,7 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
+import { getProject } from '@/services/modules/project'
+import { resolveBuilderComponent } from '@/components/builder/runtime/componentRegistry'
+import { loadDataSourceData, mergeDataSourceData } from '@/utils/dataSource'
 import PageHero from '@shared/components/PageHero.vue'
 import TextImageSection from '@shared/components/TextImageSection.vue'
 
@@ -12,6 +15,52 @@ const projectCode = route.query.projectCode // 从查询参数获取 projectCode
 const news = ref(null)
 const loading = ref(true)
 const error = ref(null)
+
+// 项目模板相关
+const useProjectTemplate = ref(false)
+const templateItems = ref([])
+const projectConfig = ref(null)
+
+// 加载项目配置（检查是否有项目模板）
+const loadProjectConfig = async () => {
+  if (!projectCode) return
+  
+  try {
+    const project = await getProject(projectCode)
+    projectConfig.value = project
+    
+    // 检查是否有新闻详情页的项目模板
+    if (project.detailPageTemplates) {
+      try {
+        const templates = JSON.parse(project.detailPageTemplates)
+        const newsTemplate = templates.news
+        if (newsTemplate?.schemaData) {
+          useProjectTemplate.value = true
+          // 解析模板数据
+          templateItems.value = JSON.parse(newsTemplate.schemaData)
+          console.log('[NewsDetail] 使用项目模板:', templateItems.value)
+        }
+      } catch (e) {
+        console.warn('项目模板配置解析失败', e)
+      }
+    }
+    
+    // 加载导航配置
+    if (project.navigationConfig) {
+      try {
+        const navConfig = JSON.parse(project.navigationConfig)
+        window.__PROJECT_NAVIGATION_CONFIG__ = navConfig
+      } catch (e) {
+        console.warn('导航配置解析失败', e)
+        window.__PROJECT_NAVIGATION_CONFIG__ = null
+      }
+    } else {
+      window.__PROJECT_NAVIGATION_CONFIG__ = null
+    }
+  } catch (error) {
+    console.error('加载项目配置失败:', error)
+  }
+}
 
 // 从接口获取新闻详情
 const fetchNewsDetail = async () => {
@@ -43,6 +92,9 @@ const fetchNewsDetail = async () => {
         content: response.data.content || '<p>这是新闻详情内容。</p>',
         tags: response.data.tags || (response.data.category ? [response.data.category] : ['新闻']),
       }
+      
+      // 将详情数据注入到全局 context，供组件使用
+      window.__DETAIL_DATA__ = news.value
     } else {
       error.value = '未找到新闻详情'
     }
@@ -52,6 +104,100 @@ const fetchNewsDetail = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// 替换 props 中的占位符为实际数据
+const replacePlaceholders = (props, detailData) => {
+  if (!detailData || !props) return props
+  
+  const replaced = { ...props }
+  
+  // 遍历所有 props，查找占位符并替换
+  for (const key in replaced) {
+    const value = replaced[key]
+    if (typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')) {
+      // 提取字段名，如 {{title}} -> title
+      const fieldName = value.slice(2, -2).trim()
+      // 从详情数据中获取对应字段的值
+      replaced[key] = detailData[fieldName] || value
+    }
+  }
+  
+  return replaced
+}
+
+// 加载模板数据（如果使用项目模板）
+const loadTemplateData = async () => {
+  if (!useProjectTemplate.value || !templateItems.value.length) return
+  
+  try {
+    // 处理数据源和占位符替换
+    const itemsWithDataSource = []
+    for (const item of templateItems.value) {
+      let updatedItem = { ...item }
+      
+      // 先替换占位符（如果有详情数据）
+      if (news.value) {
+        updatedItem.props = replacePlaceholders(updatedItem.props, news.value)
+      }
+      
+      // 然后处理数据源
+      if (updatedItem.props?.dataSourceCode) {
+        const dataSourceData = await loadDataSourceData(
+          updatedItem.props.dataSourceCode,
+          updatedItem.key
+        )
+        if (dataSourceData) {
+          updatedItem.props = mergeDataSourceData(updatedItem.props, updatedItem.key, dataSourceData)
+        }
+      }
+      
+      itemsWithDataSource.push(updatedItem)
+    }
+    
+    templateItems.value = itemsWithDataSource
+    console.log('[NewsDetail] 模板数据加载完成:', templateItems.value)
+  } catch (err) {
+    console.error('加载模板数据失败:', err)
+  }
+}
+
+// 判断组件是否为全宽组件
+const isFullWidthComponent = (item) => {
+  if (item.props?.fullWidth !== undefined) {
+    return item.props.fullWidth === true
+  }
+  const fullWidthComponents = ['MainHeader', 'HeroCarousel', 'Footer']
+  return fullWidthComponents.includes(item.key)
+}
+
+// 获取组件边距样式
+const getComponentMarginStyle = (item) => {
+  const margin = item.props?.margin
+  if (!margin) return {}
+  
+  try {
+    // 支持多种格式：'10px', '10px 20px', '10px 20px 30px 40px'
+    const parts = margin.trim().split(/\s+/)
+    if (parts.length === 1) {
+      return { margin: parts[0] }
+    } else if (parts.length === 2) {
+      return { margin: `${parts[0]} ${parts[1]}` }
+    } else if (parts.length === 4) {
+      return { margin: margin }
+    } else {
+      return { margin: parts[0] }
+    }
+  } catch {
+    return {}
+  }
+}
+
+// 获取组件 props（排除 margin）
+const getComponentPropsWithoutMargin = (item) => {
+  const props = { ...item.props }
+  delete props.margin
+  return props
 }
 
 // Mock 数据 - 实际应该从 API 获取
@@ -94,41 +240,97 @@ const mockNews = {
   },
 }
 
+// 初始化
+const init = async () => {
+  loading.value = true
+  try {
+    // 先加载项目配置（检查是否有项目模板）
+    await loadProjectConfig()
+    
+    // 加载新闻详情数据
+    await fetchNewsDetail()
+    
+    // 如果使用项目模板，加载模板数据（必须在详情数据加载后）
+    if (useProjectTemplate.value && news.value) {
+      await loadTemplateData()
+    }
+  } catch (err) {
+    console.error('初始化失败:', err)
+    error.value = '加载失败，请稍后重试'
+  } finally {
+    loading.value = false
+  }
+}
+
 onMounted(() => {
-  fetchNewsDetail()
+  init()
+})
+
+onBeforeUnmount(() => {
+  delete window.__DETAIL_DATA__
+  delete window.__PROJECT_NAVIGATION_CONFIG__
 })
 </script>
 
 <template>
   <div class="news-detail-page">
-    <PageHero
-      v-if="news"
-      :title="news.title"
-      :subtitle="news.subtitle"
-      :background="news.cover"
-    />
-
-    <div v-if="loading" class="container" style="padding: 4rem; text-align: center">
-      <p>加载中...</p>
-    </div>
-
-    <div v-else-if="error" class="container" style="padding: 4rem; text-align: center">
-      <p style="color: var(--color-error)">{{ error }}</p>
-    </div>
-
-    <div v-else-if="news" class="container">
-      <article class="news-detail">
-        <div class="news-detail__meta">
-          <time class="news-detail__date">{{ news.date }}</time>
-          <span class="news-detail__author">作者：{{ news.author }}</span>
-          <div class="news-detail__tags">
-            <span v-for="tag in news.tags" :key="tag" class="news-detail__tag">{{ tag }}</span>
-          </div>
+    <!-- 使用项目模板 -->
+    <template v-if="useProjectTemplate && templateItems.length > 0">
+      <template v-for="item in templateItems" :key="item.id">
+        <!-- 全宽组件 -->
+        <div
+          v-if="isFullWidthComponent(item)"
+          class="template-component-wrapper template-component-wrapper--fullwidth"
+          :style="getComponentMarginStyle(item)"
+        >
+          <component
+            :is="resolveBuilderComponent(item.key)"
+            v-bind="getComponentPropsWithoutMargin(item)"
+            class="template-component template-component--fullwidth"
+          />
         </div>
+        <!-- 固定宽度组件 -->
+        <div v-else class="template-container template-component-wrapper" :style="getComponentMarginStyle(item)">
+          <component
+            :is="resolveBuilderComponent(item.key)"
+            v-bind="getComponentPropsWithoutMargin(item)"
+            class="template-component"
+          />
+        </div>
+      </template>
+    </template>
+    
+    <!-- 使用默认模板 -->
+    <template v-else>
+      <PageHero
+        v-if="news"
+        :title="news.title"
+        :subtitle="news.subtitle"
+        :background="news.cover"
+      />
 
-        <div class="news-detail__content" v-html="news.content"></div>
-      </article>
-    </div>
+      <div v-if="loading" class="container" style="padding: 4rem; text-align: center">
+        <p>加载中...</p>
+      </div>
+
+      <div v-else-if="error" class="container" style="padding: 4rem; text-align: center">
+        <p style="color: var(--color-error)">{{ error }}</p>
+      </div>
+
+      <div v-else-if="news" class="container">
+        <article class="news-detail">
+          <div class="news-detail__meta">
+            <time class="news-detail__date">{{ news.date }}</time>
+            <span class="news-detail__author">作者：{{ news.author }}</span>
+            <div class="news-detail__tags">
+              <span v-for="tag in news.tags" :key="tag" class="news-detail__tag">{{ tag }}</span>
+            </div>
+          </div>
+
+          <div class="news-detail__content" v-html="news.content"></div>
+        </article>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -198,6 +400,25 @@ onMounted(() => {
   height: auto;
   border-radius: var(--radius-md);
   margin: 1.5rem 0;
+}
+
+/* 项目模板样式 */
+.template-component-wrapper {
+  width: 100%;
+}
+
+.template-component-wrapper--fullwidth {
+  width: 100%;
+}
+
+.template-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.template-component {
+  width: 100%;
 }
 </style>
 

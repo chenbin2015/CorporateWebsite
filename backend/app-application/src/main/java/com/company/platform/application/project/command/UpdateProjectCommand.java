@@ -5,6 +5,7 @@ public class UpdateProjectCommand {
     private String name;
     private String description;
     private String navigationConfig;
+    private String detailPageTemplates;
 
     public Long getId() {
         return id;
@@ -36,6 +37,14 @@ public class UpdateProjectCommand {
 
     public void setNavigationConfig(String navigationConfig) {
         this.navigationConfig = navigationConfig;
+    }
+
+    public String getDetailPageTemplates() {
+        return detailPageTemplates;
+    }
+
+    public void setDetailPageTemplates(String detailPageTemplates) {
+        this.detailPageTemplates = detailPageTemplates;
     }
 }
 

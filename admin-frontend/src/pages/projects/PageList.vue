@@ -86,6 +86,7 @@ onMounted(() => {
       </div>
       <div class="header-actions">
         <el-button @click="() => router.push({ name: 'projects' })">返回项目</el-button>
+        <el-button type="info" @click="() => router.push({ name: 'projectSettings', params: { projectCode } })">项目设置</el-button>
         <el-button type="primary" @click="handleCreate">新建页面</el-button>
       </div>
     </header>

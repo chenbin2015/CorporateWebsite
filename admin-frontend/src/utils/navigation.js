@@ -30,8 +30,9 @@ export const NAVIGATION_TYPES = {
 
 // 详情页类型
 export const DETAIL_PAGE_TYPES = {
-  TEMPLATE: 'template',
-  CUSTOM: 'custom',
+  TEMPLATE: 'template', // 系统预定义模板
+  PROJECT_TEMPLATE: 'projectTemplate', // 项目自定义模板
+  CUSTOM: 'custom', // 自定义页面
 }
 
 /**
@@ -83,6 +84,9 @@ export function validateDetailPage(detailPage) {
   if (detailPage.type === DETAIL_PAGE_TYPES.TEMPLATE && !detailPage.templateType) {
     return false
   }
+  if (detailPage.type === DETAIL_PAGE_TYPES.PROJECT_TEMPLATE && !detailPage.templateType) {
+    return false
+  }
   if (detailPage.type === DETAIL_PAGE_TYPES.CUSTOM && !detailPage.path) {
     return false
   }
@@ -121,8 +125,8 @@ export function handleDetailPageNavigation(detailPage, item) {
   }
   
   let path = ''
-  if (detailPage.type === 'template') {
-    // 使用模板路径
+  if (detailPage.type === 'template' || detailPage.type === 'projectTemplate') {
+    // 使用模板路径（系统模板或项目模板）
     const templateType = detailPage.templateType || 'news'
     const basePath = templatePathMap[templateType] || `/news`
     path = `${basePath}/${paramValue}`

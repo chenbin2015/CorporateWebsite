@@ -9,6 +9,7 @@ public class Project {
     private String name;
     private String description;
     private String navigationConfig; // 全局导航配置（JSON格式）
+    private String detailPageTemplates; // 详情页模板配置（JSON格式）
     private LocalDateTime createdAt;
 
     public Long getId() {
@@ -49,6 +50,14 @@ public class Project {
 
     public void setNavigationConfig(String navigationConfig) {
         this.navigationConfig = navigationConfig;
+    }
+
+    public String getDetailPageTemplates() {
+        return detailPageTemplates;
+    }
+
+    public void setDetailPageTemplates(String detailPageTemplates) {
+        this.detailPageTemplates = detailPageTemplates;
     }
 
     public LocalDateTime getCreatedAt() {

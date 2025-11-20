@@ -89,5 +89,14 @@ export const projectRoutes = [
       hidden: true,
     },
   },
+  {
+    path: 'projects/:projectCode/detail-templates/:templateType',
+    name: 'detailTemplateEditor',
+    component: () => import('../../pages/projects/DetailTemplateEditor.vue'),
+    meta: {
+      title: '详情页模板编辑',
+      hidden: true,
+    },
+  },
 ]
 

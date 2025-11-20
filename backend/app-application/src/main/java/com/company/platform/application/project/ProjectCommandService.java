@@ -36,6 +36,9 @@ public class ProjectCommandService {
         if (command.getNavigationConfig() != null) {
             project.setNavigationConfig(command.getNavigationConfig());
         }
+        if (command.getDetailPageTemplates() != null) {
+            project.setDetailPageTemplates(command.getDetailPageTemplates());
+        }
         return projectRepository.save(project);
     }
 

@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { Calendar, User } from '@element-plus/icons-vue'
 
 const props = defineProps({
@@ -35,25 +36,47 @@ const props = defineProps({
     default: true,
   },
 })
+
+// 从全局 context 获取详情数据（作为 fallback）
+const detailData = computed(() => {
+  return window.__DETAIL_DATA__ || null
+})
+
+// 合并 props 和详情数据，props 优先
+const displayTitle = computed(() => {
+  return props.title || detailData.value?.title || detailData.value?.name || ''
+})
+
+const displayCreatedAt = computed(() => {
+  return props.createdAt || detailData.value?.date || detailData.value?.createdAt || ''
+})
+
+const displayAuthor = computed(() => {
+  return props.author || detailData.value?.author || ''
+})
+
+const displayContent = computed(() => {
+  return props.content || detailData.value?.content || ''
+})
 </script>
 
 <template>
   <section class="content-detail">
     <header v-if="showTitle || showCreatedAt || showAuthor" class="content-detail__header">
-      <h1 v-if="showTitle && props.title" class="content-detail__title">{{ props.title }}</h1>
+      <h1 v-if="showTitle && displayTitle" class="content-detail__title">{{ displayTitle }}</h1>
       <div v-if="showCreatedAt || showAuthor" class="content-detail__meta">
-        <span v-if="showCreatedAt && props.createdAt" class="content-detail__date">
+        <span v-if="showCreatedAt && displayCreatedAt" class="content-detail__date">
           <el-icon><Calendar /></el-icon>
-          {{ props.createdAt }}
+          {{ displayCreatedAt }}
         </span>
-        <span v-if="showAuthor && props.author" class="content-detail__author">
+        <span v-if="showAuthor && displayAuthor" class="content-detail__author">
           <el-icon><User /></el-icon>
-          {{ props.author }}
+          {{ displayAuthor }}
         </span>
       </div>
     </header>
-    <div v-if="showContent && props.content" class="content-detail__body" v-html="props.content"></div>
-    <div v-else-if="showContent && !props.content" class="content-detail__empty">
+    <div v-if="showContent && displayContent" class="content-detail__body" v-html="displayContent"></div>
+    <div v-else-if="showContent && !displayContent" class="content-detail__empty">
       <p>暂无内容</p>
     </div>
   </section>

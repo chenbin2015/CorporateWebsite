@@ -2,8 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Delete, ArrowUp, ArrowDown, Menu, ArrowLeft } from '@element-plus/icons-vue'
-import { getProject, updateProjectNavigation } from '@/services/modules/project'
+import { Plus, Delete, ArrowUp, ArrowDown, Menu, ArrowLeft, Edit } from '@element-plus/icons-vue'
+import { getProject, updateProjectNavigation, updateProjectDetailPageTemplates } from '@/services/modules/project'
 import { fetchProjectPages } from '@/services/modules/project'
 import PageSelector from '@/components/builder/PageSelector.vue'
 
@@ -14,11 +14,22 @@ const projectCode = ref(route.params.projectCode)
 const project = ref(null)
 const pages = ref([])
 const loading = ref(false)
+const activeTab = ref('navigation') // 'navigation' 或 'detailTemplates'
 
 // 导航配置
 const navigationConfig = ref({
   menuItems: [],
 })
+
+// 详情页模板配置
+const detailPageTemplates = ref({}) // { news: {...}, product: {...}, ... }
+const detailTemplateTypes = [
+  { key: 'news', label: '新闻详情页', icon: '📰' },
+  { key: 'product', label: '产品详情页', icon: '📦' },
+  { key: 'event', label: '活动详情页', icon: '🎉' },
+  { key: 'notice', label: '公告详情页', icon: '📢' },
+  { key: 'focus', label: '焦点详情页', icon: '⭐' },
+]
 
 // 当前编辑的菜单项
 const editingItem = ref(null)
@@ -48,6 +59,18 @@ const loadProject = async () => {
         console.warn('导航配置解析失败，使用默认值', e)
         navigationConfig.value = { menuItems: [] }
       }
+    }
+    
+    // 解析详情页模板配置
+    if (data.detailPageTemplates) {
+      try {
+        detailPageTemplates.value = JSON.parse(data.detailPageTemplates)
+      } catch (e) {
+        console.warn('详情页模板配置解析失败，使用默认值', e)
+        detailPageTemplates.value = {}
+      }
+    } else {
+      detailPageTemplates.value = {}
     }
   } catch (error) {
     ElMessage.error('加载项目信息失败: ' + error.message)
@@ -181,6 +204,60 @@ const goBack = () => {
   router.back()
 }
 
+// 编辑详情页模板
+const editDetailTemplate = (templateType) => {
+  // 跳转到详情页模板编辑器
+  router.push({
+    name: 'detailTemplateEditor',
+    params: {
+      projectCode: projectCode.value,
+      templateType: templateType,
+    },
+  })
+}
+
+// 删除详情页模板
+const deleteDetailTemplate = async (templateType) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除 ${detailTemplateTypes.find(t => t.key === templateType)?.label} 的模板吗？删除后将使用系统默认模板。`,
+      '删除确认',
+      {
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+    
+    // 删除该类型的模板
+    const newTemplates = { ...detailPageTemplates.value }
+    delete newTemplates[templateType]
+    detailPageTemplates.value = newTemplates
+    
+    // 保存到后端
+    await saveDetailPageTemplates()
+    ElMessage.success('模板删除成功')
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除模板失败: ' + error.message)
+    }
+  }
+}
+
+// 保存详情页模板配置
+const saveDetailPageTemplates = async () => {
+  try {
+    loading.value = true
+    const configJson = JSON.stringify(detailPageTemplates.value)
+    await updateProjectDetailPageTemplates(projectCode.value, configJson)
+    ElMessage.success('详情页模板配置保存成功')
+  } catch (error) {
+    ElMessage.error('保存详情页模板配置失败: ' + error.message)
+  } finally {
+    loading.value = false
+  }
+}
+
 onMounted(() => {
   loadProject()
   loadPages()
@@ -201,20 +278,35 @@ onMounted(() => {
         </el-button>
         <h2>项目设置 - {{ project?.name }}</h2>
       </div>
-      <el-button type="primary" @click="saveNavigation" :loading="loading">
-        保存配置
+      <el-button 
+        v-if="activeTab === 'navigation'"
+        type="primary" 
+        @click="saveNavigation" 
+        :loading="loading"
+      >
+        保存导航配置
+      </el-button>
+      <el-button 
+        v-else-if="activeTab === 'detailTemplates'"
+        type="primary" 
+        @click="saveDetailPageTemplates" 
+        :loading="loading"
+      >
+        保存详情页模板
       </el-button>
     </div>
 
-    <el-card class="settings-card">
-      <template #header>
-        <div class="card-header">
-          <span>全局导航配置</span>
-          <el-button type="primary" size="small" :icon="Plus" @click="addMenuItem">
-            添加菜单项
-          </el-button>
-        </div>
-      </template>
+    <el-tabs v-model="activeTab" class="settings-tabs">
+      <el-tab-pane label="全局导航配置" name="navigation">
+        <el-card class="settings-card">
+          <template #header>
+            <div class="card-header">
+              <span>全局导航配置</span>
+              <el-button type="primary" size="small" :icon="Plus" @click="addMenuItem">
+                添加菜单项
+              </el-button>
+            </div>
+          </template>
 
       <div v-if="navigationConfig.menuItems.length === 0" class="empty-state">
         <p>暂无菜单项，点击"添加菜单项"开始配置</p>
@@ -304,7 +396,68 @@ onMounted(() => {
           </div>
         </div>
       </div>
-    </el-card>
+        </el-card>
+      </el-tab-pane>
+
+      <el-tab-pane label="详情页模板管理" name="detailTemplates">
+        <el-card class="settings-card">
+          <template #header>
+            <div class="card-header">
+              <span>详情页模板管理</span>
+              <span style="font-size: 0.85rem; color: #909399; margin-left: 1rem;">
+                为每种类型的详情页创建自定义布局模板
+              </span>
+            </div>
+          </template>
+
+          <div class="detail-templates-list">
+            <div
+              v-for="type in detailTemplateTypes"
+              :key="type.key"
+              class="detail-template-item"
+            >
+              <div class="template-item-header">
+                <div class="template-item-info">
+                  <span class="template-icon">{{ type.icon }}</span>
+                  <div class="template-info">
+                    <h4>{{ type.label }}</h4>
+                    <p v-if="detailPageTemplates[type.key]?.schemaData" class="template-status">
+                      <el-tag type="success" size="small">已配置</el-tag>
+                      <span style="margin-left: 0.5rem; color: #909399; font-size: 0.85rem;">
+                        已创建自定义模板
+                      </span>
+                    </p>
+                    <p v-else class="template-status">
+                      <el-tag type="info" size="small">未配置</el-tag>
+                      <span style="margin-left: 0.5rem; color: #909399; font-size: 0.85rem;">
+                        使用系统默认模板
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div class="template-item-actions">
+                  <el-button
+                    type="primary"
+                    :icon="Edit"
+                    @click="editDetailTemplate(type.key)"
+                  >
+                    {{ detailPageTemplates[type.key]?.schemaData ? '编辑模板' : '创建模板' }}
+                  </el-button>
+                  <el-button
+                    v-if="detailPageTemplates[type.key]?.schemaData"
+                    type="danger"
+                    :icon="Delete"
+                    @click="deleteDetailTemplate(type.key)"
+                  >
+                    删除模板
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-tab-pane>
+    </el-tabs>
 
     <!-- 编辑菜单项对话框 -->
     <el-dialog
@@ -465,6 +618,65 @@ onMounted(() => {
 .child-menu-item-actions {
   display: flex;
   gap: 0.5rem;
+}
+
+/* 详情页模板管理样式 */
+.detail-templates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.detail-template-item {
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  padding: 1.5rem;
+  background: #fff;
+  transition: all 0.3s;
+}
+
+.detail-template-item:hover {
+  border-color: #409eff;
+  box-shadow: 0 2px 12px rgba(64, 158, 255, 0.1);
+}
+
+.template-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.template-item-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.template-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.template-info h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #303133;
+}
+
+.template-info p {
+  margin: 0;
+}
+
+.template-status {
+  display: flex;
+  align-items: center;
+}
+
+.template-item-actions {
+  display: flex;
+  gap: 0.75rem;
 }
 </style>
 

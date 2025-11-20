@@ -1565,7 +1565,8 @@ const getQuickLinkNavigation = (prop, index) => {
                 style="width: 100%"
                 @update:model-value="(val) => updateDetailPage(field.prop, 'type', val)"
               >
-                <el-option :label="'使用模板'" :value="DETAIL_PAGE_TYPES.TEMPLATE" />
+                <el-option :label="'使用系统模板'" :value="DETAIL_PAGE_TYPES.TEMPLATE" />
+                <el-option :label="'使用项目模板'" :value="DETAIL_PAGE_TYPES.PROJECT_TEMPLATE" />
                 <el-option :label="'自定义页面'" :value="DETAIL_PAGE_TYPES.CUSTOM" />
               </el-select>
               
@@ -1583,6 +1584,33 @@ const getQuickLinkNavigation = (prop, index) => {
                     :value="option.value"
                   />
                 </el-select>
+              </template>
+              
+              <template v-if="getDetailPage(field.prop).type === DETAIL_PAGE_TYPES.PROJECT_TEMPLATE">
+                <el-select
+                  style="margin-top: 0.8rem; width: 100%"
+                  :model-value="getDetailPage(field.prop).templateType"
+                  placeholder="选择详情页类型（项目模板）"
+                  @update:model-value="(val) => updateDetailPage(field.prop, 'templateType', val)"
+                >
+                  <el-option
+                    v-for="option in DETAIL_TEMPLATE_OPTIONS"
+                    :key="option.value"
+                    :label="option.label"
+                    :value="option.value"
+                  />
+                </el-select>
+                <el-alert
+                  type="info"
+                  :closable="false"
+                  style="margin-top: 0.8rem;"
+                >
+                  <template #title>
+                    <span style="font-size: 0.85rem;">
+                      使用项目自定义模板。可在"项目设置 > 详情页模板管理"中编辑模板。
+                    </span>
+                  </template>
+                </el-alert>
               </template>
               
               <template v-if="getDetailPage(field.prop).type === DETAIL_PAGE_TYPES.CUSTOM">
@@ -1927,7 +1955,7 @@ const getQuickLinkNavigation = (prop, index) => {
         </el-form-item>
       </el-form>
       <div class="panel-actions">
-        <el-button type="danger" size="small" :disabled="!selectedItem" @click="emit('delete')">
+        <el-button type="danger" size="small" :disabled="!selectedItem" @click="() => { console.log('[BuilderInspector] delete button clicked, selectedItem:', props.selectedItem); emit('delete', props.selectedItem?.id) }">
           <el-icon><Delete /></el-icon>
           删除组件
         </el-button>

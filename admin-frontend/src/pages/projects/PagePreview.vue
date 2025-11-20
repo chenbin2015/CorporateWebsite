@@ -90,7 +90,11 @@ const loadDetailData = async () => {
 
 // 加载项目配置（包含导航配置）
 const loadProjectConfig = async () => {
-  if (!projectCode.value) return
+  if (!projectCode.value) {
+    // 如果没有 projectCode，清理导航配置
+    window.__PROJECT_NAVIGATION_CONFIG__ = null
+    return
+  }
   
   try {
     const project = await getProject(projectCode.value)
@@ -101,12 +105,14 @@ const loadProjectConfig = async () => {
       try {
         const navConfig = JSON.parse(project.navigationConfig)
         window.__PROJECT_NAVIGATION_CONFIG__ = navConfig
+        console.log('[PagePreview] 加载项目导航配置:', projectCode.value, navConfig)
       } catch (e) {
         console.warn('导航配置解析失败', e)
         window.__PROJECT_NAVIGATION_CONFIG__ = null
       }
     } else {
       window.__PROJECT_NAVIGATION_CONFIG__ = null
+      console.log('[PagePreview] 项目没有导航配置:', projectCode.value)
     }
   } catch (error) {
     console.error('加载项目配置失败:', error)

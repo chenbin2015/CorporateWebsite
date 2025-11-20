@@ -144,7 +144,11 @@ const handleReorder = (newItems) => {
 
 // 加载项目配置（包含导航配置）
 const loadProjectConfig = async () => {
-  if (!projectCode.value) return
+  if (!projectCode.value) {
+    // 如果没有 projectCode，清理导航配置
+    window.__PROJECT_NAVIGATION_CONFIG__ = null
+    return
+  }
   
   try {
     const project = await getProject(projectCode.value)
@@ -154,12 +158,14 @@ const loadProjectConfig = async () => {
       try {
         const navConfig = JSON.parse(project.navigationConfig)
         window.__PROJECT_NAVIGATION_CONFIG__ = navConfig
+        console.log('[PageBuilder] 加载项目导航配置:', projectCode.value, navConfig)
       } catch (e) {
         console.warn('导航配置解析失败', e)
         window.__PROJECT_NAVIGATION_CONFIG__ = null
       }
     } else {
       window.__PROJECT_NAVIGATION_CONFIG__ = null
+      console.log('[PageBuilder] 项目没有导航配置:', projectCode.value)
     }
   } catch (error) {
     console.error('加载项目配置失败:', error)
@@ -343,6 +349,15 @@ const handlePreview = () => {
     window.open(previewUrl, '_blank')
   })
 }
+
+// 监听路由参数变化，重新加载页面数据（包括项目配置）
+watch(
+  () => [route.params.projectCode, route.params.pageCode],
+  () => {
+    loadPage()
+  },
+  { immediate: false }
+)
 
 // 监听 canvasItems 变化，自动保存（防抖）
 let saveTimer = null

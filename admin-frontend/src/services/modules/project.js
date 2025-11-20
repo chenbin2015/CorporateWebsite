@@ -40,3 +40,7 @@ export const getNewsDetail = (projectCode, pageCode, newsId) =>
 export const updateProjectNavigation = (projectCode, navigationConfig) =>
   request.put(`/projects/${projectCode}/navigation`, { navigationConfig })
 
+// 更新项目详情页模板配置
+export const updateProjectDetailPageTemplates = (projectCode, detailPageTemplates) =>
+  request.put(`/projects/${projectCode}/detail-page-templates`, { detailPageTemplates })
+

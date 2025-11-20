@@ -88,6 +88,29 @@ public class ProjectController {
         command.setName(project.getName());
         command.setDescription(project.getDescription());
         command.setNavigationConfig(request.getNavigationConfig());
+        command.setDetailPageTemplates(project.getDetailPageTemplates()); // 保留原有值
+
+        Project updatedProject = projectCommandService.updateProject(command);
+        return ResponseEntity.ok(updatedProject);
+    }
+
+    @PutMapping("/{id}/detail-page-templates")
+    public ResponseEntity<Project> updateDetailPageTemplates(@PathVariable("id") String id, @RequestBody UpdateDetailPageTemplatesRequest request) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        Project project;
+        try {
+            Long projectId = Long.parseLong(id);
+            project = projectQueryService.getProject(projectId);
+        } catch (NumberFormatException e) {
+            project = projectQueryService.getProjectByCode(id);
+        }
+        
+        UpdateProjectCommand command = new UpdateProjectCommand();
+        command.setId(project.getId());
+        command.setName(project.getName());
+        command.setDescription(project.getDescription());
+        command.setNavigationConfig(project.getNavigationConfig()); // 保留原有值
+        command.setDetailPageTemplates(request.getDetailPageTemplates());
 
         Project updatedProject = projectCommandService.updateProject(command);
         return ResponseEntity.ok(updatedProject);
@@ -160,7 +183,7 @@ public class ProjectController {
         }
     }
 
-    public static class UpdateNavigationRequest {
+    public     static class UpdateNavigationRequest {
         private String navigationConfig;
 
         public String getNavigationConfig() {
@@ -169,6 +192,18 @@ public class ProjectController {
 
         public void setNavigationConfig(String navigationConfig) {
             this.navigationConfig = navigationConfig;
+        }
+    }
+
+    static class UpdateDetailPageTemplatesRequest {
+        private String detailPageTemplates;
+
+        public String getDetailPageTemplates() {
+            return detailPageTemplates;
+        }
+
+        public void setDetailPageTemplates(String detailPageTemplates) {
+            this.detailPageTemplates = detailPageTemplates;
         }
     }
 }

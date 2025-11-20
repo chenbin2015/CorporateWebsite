@@ -236,7 +236,7 @@ watch(
                   size="small"
                   type="danger"
                   class="delete-btn"
-                  @click.stop="emit('delete', item.id)"
+                  @click.stop="() => { console.log('[BuilderCanvas] delete button clicked:', item.id); emit('delete', item.id) }"
                 >
                   <el-icon><Delete /></el-icon>
                 </el-button>

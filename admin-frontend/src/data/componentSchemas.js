@@ -38,6 +38,8 @@ export const componentSchemas = {
       description: '以创新驱动教学，以科研服务社会。',
       tag: '关于我们',
       actions: [],
+      fullWidth: false, // 默认非全宽
+      margin: '2.4rem auto', // 默认外边距
       navigation: {
         type: 'none',
         targetPageCode: null, // 使用 code 替代 id
@@ -50,6 +52,8 @@ export const componentSchemas = {
       { prop: 'tag', label: '角标文字', type: 'text' },
       { prop: 'title', label: '标题', type: 'text' },
       { prop: 'description', label: '描述', type: 'textarea' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 2.4rem auto 或 2.4rem 1.5rem' },
       { prop: 'navigation', label: '跳转配置', type: 'navigation' },
     ],
   },
@@ -58,6 +62,8 @@ export const componentSchemas = {
       title: '预约校园参观',
       description: '体验智慧校园解决方案与可视化搭建平台。',
       buttonText: '立即预约',
+      fullWidth: false, // 默认非全宽
+      margin: '2.4rem auto', // 默认外边距
       navigation: {
         type: 'none',
         targetPageCode: null, // 使用 code 替代 id
@@ -70,6 +76,8 @@ export const componentSchemas = {
       { prop: 'title', label: '标题', type: 'text' },
       { prop: 'description', label: '描述', type: 'textarea' },
       { prop: 'buttonText', label: '按钮文案', type: 'text' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 2.4rem auto 或 2.4rem 1.5rem' },
       { prop: 'navigation', label: '跳转配置', type: 'navigation' },
     ],
   },
@@ -80,6 +88,8 @@ export const componentSchemas = {
       description: '页面描述信息',
       background: '',
       actions: [],
+      fullWidth: false, // 默认非全宽
+      margin: '2.4rem auto', // 默认外边距
       navigation: {
         type: 'none',
         targetPageCode: null, // 使用 code 替代 id
@@ -93,6 +103,8 @@ export const componentSchemas = {
       { prop: 'subtitle', label: '副标题', type: 'text' },
       { prop: 'description', label: '描述', type: 'textarea' },
       { prop: 'background', label: '背景色/图片', type: 'text' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 2.4rem auto 或 2.4rem 1.5rem' },
       { prop: 'navigation', label: '跳转配置', type: 'navigation' },
     ],
   },
@@ -421,6 +433,8 @@ export const componentSchemas = {
       detailsColor: '#0f172a',
       detailsSize: '0.98rem',
       reverse: false,
+      fullWidth: false, // 默认非全宽
+      margin: '2.4rem auto', // 默认外边距
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
@@ -435,6 +449,8 @@ export const componentSchemas = {
       { prop: 'detailsColor', label: '详情文字颜色', type: 'color' },
       { prop: 'detailsSize', label: '详情字号', type: 'text', placeholder: '如 0.98rem / 15px' },
       { prop: 'reverse', label: '左右反转', type: 'switch' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 2.4rem auto 或 2.4rem 1.5rem' },
     ],
   },
   CardGrid: {
@@ -777,6 +793,8 @@ export const componentSchemas = {
       backgroundColor: '#1e293b',
       textColor: '#f1f5f9',
       linkColor: '#cbd5e1',
+      fullWidth: true, // 默认全宽
+      margin: '0', // 默认外边距
       links: [
         { label: '关于我们', href: '#' },
         { label: '联系我们', href: '#' },
@@ -792,6 +810,8 @@ export const componentSchemas = {
       { prop: 'backgroundColor', label: '背景颜色', type: 'color' },
       { prop: 'textColor', label: '文字颜色', type: 'color' },
       { prop: 'linkColor', label: '链接颜色', type: 'color' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 0 或 2.4rem auto 或 2.4rem 1.5rem' },
       { prop: 'links', label: '链接列表', type: 'quick-links' },
       { prop: 'contact', label: '联系信息', type: 'object' },
     ],
@@ -804,10 +824,14 @@ export const componentSchemas = {
         { label: '学科门类', value: '12' },
       ],
       columns: 3,
+      fullWidth: false, // 默认非全宽
+      margin: '2.4rem auto', // 默认外边距
     },
     fields: [
       { prop: 'items', label: '统计数据', type: 'array' },
       { prop: 'columns', label: '列数', type: 'number' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 2.4rem auto 或 2.4rem 1.5rem' },
     ],
   },
   DetailData: {
@@ -830,6 +854,8 @@ export const componentSchemas = {
       showCreatedAt: true,
       showAuthor: true,
       showContent: true,
+      fullWidth: false, // 默认非全宽
+      margin: '2.4rem auto', // 默认外边距
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
@@ -840,6 +866,8 @@ export const componentSchemas = {
       { prop: 'showCreatedAt', label: '显示创建时间', type: 'switch', activeText: '显示', inactiveText: '隐藏' },
       { prop: 'showAuthor', label: '显示创建人', type: 'switch', activeText: '显示', inactiveText: '隐藏' },
       { prop: 'showContent', label: '显示详情内容', type: 'switch', activeText: '显示', inactiveText: '隐藏' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 2.4rem auto 或 2.4rem 1.5rem' },
     ],
   },
 }

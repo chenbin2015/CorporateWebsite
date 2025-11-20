@@ -54,6 +54,7 @@ const handleDelete = async (project) => {
   }
 }
 
+
 const formatDate = (dateString) => {
   if (!dateString) return '-'
   const date = new Date(dateString)
@@ -87,12 +88,18 @@ onMounted(() => {
             <p class="project-card__meta">创建时间：{{ formatDate(project.createdAt) }}</p>
           </div>
           <div class="project-card__actions">
-            <el-button size="small" type="primary" @click="() => router.push({ name: 'pageList', params: { projectCode: project.code } })">
+            <el-button size="small" text class="action-btn action-btn--primary" @click="() => router.push({ name: 'pageList', params: { projectCode: project.code } })">
               页面管理
             </el-button>
-            <el-button size="small" @click="goToBuilder(project.code)">打开</el-button>
-            <el-button size="small" type="primary" text @click="handleEdit(project)">编辑</el-button>
-            <el-button size="small" type="danger" text @click="handleDelete(project)">删除</el-button>
+            <el-button size="small" text class="action-btn action-btn--info" @click="() => router.push({ name: 'projectSettings', params: { projectCode: project.code } })">
+              项目设置
+            </el-button>
+            <el-button size="small" text class="action-btn action-btn--warning" @click="handleEdit(project)">
+              编辑
+            </el-button>
+            <el-button size="small" text class="action-btn action-btn--danger" @click="handleDelete(project)">
+              删除
+            </el-button>
           </div>
         </article>
       </div>
@@ -182,8 +189,49 @@ onMounted(() => {
 
 .project-card__actions {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   padding-top: 1rem;
   border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.action-btn {
+  padding: 0.25rem 0.5rem;
+}
+
+.action-btn--primary {
+  color: var(--el-color-primary);
+}
+
+.action-btn--primary:hover {
+  color: var(--el-color-primary);
+  background-color: var(--el-color-primary-light-9);
+}
+
+.action-btn--info {
+  color: var(--el-color-info);
+}
+
+.action-btn--info:hover {
+  color: var(--el-color-info);
+  background-color: var(--el-color-info-light-9);
+}
+
+.action-btn--warning {
+  color: var(--el-color-warning);
+}
+
+.action-btn--warning:hover {
+  color: var(--el-color-warning);
+  background-color: var(--el-color-warning-light-9);
+}
+
+.action-btn--danger {
+  color: var(--el-color-danger);
+}
+
+.action-btn--danger:hover {
+  color: var(--el-color-danger);
+  background-color: var(--el-color-danger-light-9);
 }
 </style>

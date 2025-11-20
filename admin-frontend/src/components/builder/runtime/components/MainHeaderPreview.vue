@@ -90,7 +90,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { isDesignMode } from '@shared/utils/context'
 import { handleNavigation } from '@/utils/navigation'
 
@@ -163,6 +163,45 @@ const props = defineProps({
 const isMobileMenuOpen = ref(false)
 const hoveredIndex = ref(null)
 
+// 使用响应式的 ref 来存储导航配置，确保 Vue 能追踪变化
+const projectNavigationConfig = ref(null)
+
+// 监听 window.__PROJECT_NAVIGATION_CONFIG__ 的变化
+watch(
+  () => window.__PROJECT_NAVIGATION_CONFIG__,
+  (newConfig) => {
+    projectNavigationConfig.value = newConfig
+    console.log('[MainHeader] 导航配置更新:', newConfig)
+  },
+  { immediate: true, deep: true }
+)
+
+// 定期检查 window 对象的变化（作为备用方案）
+const checkNavigationConfig = () => {
+  const currentConfig = window.__PROJECT_NAVIGATION_CONFIG__
+  if (currentConfig !== projectNavigationConfig.value) {
+    projectNavigationConfig.value = currentConfig
+    console.log('[MainHeader] 检测到导航配置变化:', currentConfig)
+  }
+}
+
+// 使用 setInterval 定期检查（每 500ms）
+let configCheckInterval = null
+onMounted(() => {
+  // 立即检查一次
+  checkNavigationConfig()
+  // 定期检查
+  configCheckInterval = setInterval(checkNavigationConfig, 500)
+})
+
+onBeforeUnmount(() => {
+  // 清理定时器
+  if (configCheckInterval) {
+    clearInterval(configCheckInterval)
+    configCheckInterval = null
+  }
+})
+
 // 计算头部样式（背景色和透明度）
 const headerStyle = computed(() => {
   const styles = {}
@@ -194,19 +233,27 @@ const headerStyle = computed(() => {
   return styles
 })
 
-// 优先从全局项目配置读取导航数据，如果没有则使用 props
+// 优先从全局项目配置读取导航数据
+// 重要：如果项目没有配置导航（navigation_config 为空），应该显示空菜单，而不是默认菜单
 const navItems = computed(() => {
-  // 1. 优先使用全局项目配置的导航
-  if (window.__PROJECT_NAVIGATION_CONFIG__?.menuItems) {
-    return window.__PROJECT_NAVIGATION_CONFIG__.menuItems.map((item) => ({
-      label: item.label ?? '未命名',
-      href: item.href ?? '#',
-      children: item.children || [],
-      navigation: item.navigation || { type: 'none' },
-    }))
+  // 1. 如果已经加载了项目配置（projectNavigationConfig.value 不为 undefined）
+  //    则必须使用项目配置，即使为空也要显示空菜单
+  if (projectNavigationConfig.value !== undefined) {
+    // 如果项目有配置导航，使用项目的导航
+    if (projectNavigationConfig.value?.menuItems && projectNavigationConfig.value.menuItems.length > 0) {
+      return projectNavigationConfig.value.menuItems.map((item) => ({
+        label: item.label ?? '未命名',
+        href: item.href ?? '#',
+        children: item.children || [],
+        navigation: item.navigation || { type: 'none' },
+      }))
+    }
+    // 如果项目没有配置导航（null 或空数组），返回空数组
+    return []
   }
   
-  // 2. 如果没有全局配置，使用 props 中的 menuItems
+  // 2. 如果还没有加载项目配置（projectNavigationConfig.value === undefined）
+  //    在加载完成前，可以暂时使用 props 中的默认 menuItems（仅用于初始渲染）
   return (props.menuItems || []).map((item) => {
     if (typeof item === 'string') {
       return { label: item, href: '#', navigation: { type: 'none' } }
