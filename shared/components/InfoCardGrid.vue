@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   title: {
     type: String,
@@ -14,7 +16,7 @@ const props = defineProps({
   },
 })
 
-const gridTemplate = `repeat(${props.columns}, minmax(0, 1fr))`
+const gridTemplate = computed(() => `repeat(${props.columns}, minmax(0, 1fr))`)
 </script>
 
 <template>
@@ -42,6 +44,10 @@ const gridTemplate = `repeat(${props.columns}, minmax(0, 1fr))`
 </template>
 
 <style scoped>
+.info-grid__header {
+  margin-bottom: 0.5rem;
+}
+
 .info-grid__header h2 {
   margin: 0;
 }

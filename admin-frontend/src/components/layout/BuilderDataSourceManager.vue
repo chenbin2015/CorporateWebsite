@@ -171,6 +171,14 @@ const openEditItemDialog = (item, index) => {
     itemForm.value.content = data.content || ''
     itemForm.value.cover = data.cover || ''
     itemForm.value.summary = data.summary || ''
+  } else if (selectedDataSource.value.type === 'notice') {
+    itemForm.value.title = data.title || ''
+    itemForm.value.date = data.date || ''
+    itemForm.value.content = data.content || ''
+  } else if (selectedDataSource.value.type === 'notice') {
+    itemForm.value.title = data.title || ''
+    itemForm.value.date = data.date || ''
+    itemForm.value.content = data.content || ''
   } else if (selectedDataSource.value.type === 'product') {
     itemForm.value.name = data.name || ''
     itemForm.value.description = data.description || ''
@@ -222,6 +230,10 @@ const saveItem = async () => {
       data.content = itemForm.value.content
       data.cover = itemForm.value.cover
       data.summary = itemForm.value.summary
+    } else if (selectedDataSource.value.type === 'notice') {
+      data.title = itemForm.value.title
+      data.date = itemForm.value.date
+      data.content = itemForm.value.content
     } else if (selectedDataSource.value.type === 'product') {
       data.name = itemForm.value.name
       data.description = itemForm.value.description
@@ -347,9 +359,11 @@ onMounted(() => {
         >
           <div class="item-info">
             <div class="item-title">
-              {{ currentDataSourceType === 'news' ? (item.data?.title || '未命名') : (item.data?.name || '未命名') }}
+              {{ currentDataSourceType === 'news' || currentDataSourceType === 'notice' 
+                ? (item.data?.title || '未命名') 
+                : (item.data?.name || '未命名') }}
             </div>
-            <div v-if="currentDataSourceType === 'news' && item.data?.date" class="item-meta">
+            <div v-if="(currentDataSourceType === 'news' || currentDataSourceType === 'notice') && item.data?.date" class="item-meta">
               {{ item.data.date }}
             </div>
           </div>
@@ -433,6 +447,27 @@ onMounted(() => {
               type="textarea"
               :rows="3"
               placeholder="请输入新闻摘要"
+            />
+          </el-form-item>
+          <el-form-item label="内容">
+            <div class="quill-editor-wrapper">
+              <QuillEditor v-model:content="itemForm.content" contentType="html" />
+            </div>
+          </el-form-item>
+        </template>
+
+        <!-- 通知类型 -->
+        <template v-else-if="currentDataSourceType === 'notice'">
+          <el-form-item label="标题">
+            <el-input v-model="itemForm.title" placeholder="请输入标题" />
+          </el-form-item>
+          <el-form-item label="发布时间">
+            <el-date-picker
+              v-model="itemForm.date"
+              type="date"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              placeholder="选择日期"
             />
           </el-form-item>
           <el-form-item label="内容">

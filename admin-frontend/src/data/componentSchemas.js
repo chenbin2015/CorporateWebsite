@@ -13,11 +13,13 @@ export const componentSchemas = {
       ],
       interval: 5000,
       fullWidth: true, // 默认全宽
+      margin: '2.4rem auto', // 默认外边距
     },
     fields: [
       { prop: 'items', label: '轮播项', type: 'carousel-items' },
       { prop: 'interval', label: '自动播放间隔（毫秒）', type: 'number', placeholder: '5000' },
       { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 2.4rem auto 或 2.4rem 1.5rem' },
     ],
   },
   FocusGrid: {
@@ -315,6 +317,7 @@ export const componentSchemas = {
   NoticeList: {
     defaults: {
       title: '公告列表',
+      dataSourceCode: null, // 数据源 code，如果设置了则从数据源获取数据
       items: [],
       detailPage: {
         type: 'template',
@@ -327,6 +330,8 @@ export const componentSchemas = {
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'dataSourceCode', label: '数据源', type: 'data-source', dataSourceType: 'notice' },
+      { prop: 'items', label: '公告条目', type: 'notice-items' },
       { prop: 'detailPage', label: '详情页配置', type: 'detail-page' },
     ],
   },
@@ -361,6 +366,47 @@ export const componentSchemas = {
       { prop: 'bullets', label: '要点列表', type: 'bullets' },
     ],
   },
+  CarouselNewsSplit: {
+    defaults: {
+      carouselItems: [
+        {
+          title: '默认轮播标题',
+          description: '这是轮播图的默认内容',
+          cover: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1600&q=80',
+          action: '了解更多',
+          navigation: { type: 'none' },
+        },
+      ],
+      carouselInterval: 5000,
+      newsTitle: '最新动态',
+      newsItems: [
+        { title: '默认新闻条目一', date: '01-01', id: '1' },
+        { title: '默认新闻条目二', date: '01-02', id: '2' },
+        { title: '默认新闻条目三', date: '01-03', id: '3' },
+      ],
+      carouselDataSourceCode: null,
+      newsDataSourceCode: null,
+      reversed: false,
+      newsDetailPage: {
+        type: 'template',
+        templateType: 'news',
+        targetPageCode: null,
+        paramKey: 'id',
+        paramSource: 'id',
+        openInNewTab: false,
+      },
+    },
+    fields: [
+      { prop: 'carouselDataSourceCode', label: '轮播数据源', type: 'data-source', dataSourceType: 'news' },
+      { prop: 'carouselItems', label: '轮播项', type: 'carousel-items' },
+      { prop: 'carouselInterval', label: '轮播间隔（毫秒）', type: 'number', placeholder: '5000' },
+      { prop: 'newsTitle', label: '新闻标题', type: 'text' },
+      { prop: 'newsDataSourceCode', label: '新闻数据源', type: 'data-source', dataSourceType: 'news' },
+      { prop: 'newsItems', label: '新闻条目', type: 'news-items' },
+      { prop: 'newsDetailPage', label: '新闻详情页配置', type: 'detail-page' },
+      { prop: 'reversed', label: '反转布局', type: 'switch', activeText: '是', inactiveText: '否' },
+    ],
+  },
   TextImageSection: {
     defaults: {
       title: '图文模块',
@@ -379,7 +425,7 @@ export const componentSchemas = {
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
       { prop: 'subtitle', label: '子标题', type: 'text' },
-      { prop: 'details', label: '详情内容', type: 'textarea' },
+      { prop: 'details', label: '详情内容（富文本）', type: 'rich-text' },
       { prop: 'image', label: '图片 URL', type: 'text' },
       { prop: 'imageHeight', label: '图片高度（如 18rem / 320px）', type: 'text' },
       { prop: 'titleColor', label: '标题颜色', type: 'color' },
@@ -388,7 +434,7 @@ export const componentSchemas = {
       { prop: 'subtitleSize', label: '子标题字号', type: 'text', placeholder: '如 1rem / 16px' },
       { prop: 'detailsColor', label: '详情文字颜色', type: 'color' },
       { prop: 'detailsSize', label: '详情字号', type: 'text', placeholder: '如 0.98rem / 15px' },
-      { prop: 'reverse', label: '左右反转', type: 'boolean' },
+      { prop: 'reverse', label: '左右反转', type: 'switch' },
     ],
   },
   CardGrid: {
@@ -462,6 +508,9 @@ export const componentSchemas = {
       showSearch: false,
       fullWidth: true, // 默认全宽
       defaultActiveIndex: 0, // 默认选中第一个菜单项
+      fixed: false, // 是否浮动在顶部
+      backgroundOpacity: 1, // 背景透明度 0-1
+      margin: '0', // 默认外边距（全宽组件通常不需要上下边距）
       menuItems: [
         { label: '关于学校', href: '/about', navigation: { type: 'none' } },
         { label: '院系设置', href: '/colleges', navigation: { type: 'none' } },
@@ -476,9 +525,12 @@ export const componentSchemas = {
       { prop: 'title', label: '站点标题', type: 'text' },
       { prop: 'subtitle', label: '副标题', type: 'text' },
       { prop: 'navBackgroundColor', label: '导航背景色', type: 'color' },
+      { prop: 'backgroundOpacity', label: '背景透明度', type: 'slider', min: 0, max: 1, step: 0.1 },
+      { prop: 'fixed', label: '浮动在顶部', type: 'switch', activeText: '浮动', inactiveText: '普通' },
       { prop: 'showSearch', label: '显示搜索框', type: 'switch' },
       { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
       { prop: 'defaultActiveIndex', label: '默认选中项', type: 'number', placeholder: '菜单项索引（从0开始）', min: 0, step: 1 },
+      { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 0 或 2.4rem auto 或 2.4rem 1.5rem' },
       { prop: 'menuItems', label: '导航菜单', type: 'nav-items' },
     ],
   },
@@ -601,12 +653,18 @@ export const componentSchemas = {
     defaults: {
       title: '资料下载',
       items: [
-        { name: '文件名称', size: '1.2MB', href: '#' },
+        { 
+          name: '文件名称', 
+          size: '1.2MB', 
+          href: '#',
+          image: '',
+          description: '',
+        },
       ],
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
-      { prop: 'items', label: '文件列表', type: 'array' },
+      { prop: 'items', label: '文件列表', type: 'download-items' },
     ],
   },
   SocialMediaLinks: {
@@ -675,22 +733,24 @@ export const componentSchemas = {
   },
   VideoPlayer: {
     defaults: {
-      title: '',
-      src: '',
-      poster: '',
+      title: '视频标题',
+      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      poster: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=1200&q=80',
       autoplay: false,
       controls: true,
       width: '100%',
       height: 'auto',
+      fullWidth: false,
     },
     fields: [
-      { prop: 'title', label: '标题', type: 'text' },
-      { prop: 'src', label: '视频地址', type: 'text' },
-      { prop: 'poster', label: '封面图', type: 'text' },
-      { prop: 'autoplay', label: '自动播放', type: 'boolean' },
-      { prop: 'controls', label: '显示控制条', type: 'boolean' },
-      { prop: 'width', label: '宽度', type: 'text' },
-      { prop: 'height', label: '高度', type: 'text' },
+      { prop: 'title', label: '标题', type: 'text', placeholder: '视频标题（可选）' },
+      { prop: 'src', label: '视频地址', type: 'text', placeholder: '请输入视频 URL 或路径' },
+      { prop: 'poster', label: '封面图', type: 'text', placeholder: '视频封面图片 URL（可选）' },
+      { prop: 'autoplay', label: '自动播放', type: 'switch', activeText: '开启', inactiveText: '关闭' },
+      { prop: 'controls', label: '显示控制条', type: 'switch', activeText: '显示', inactiveText: '隐藏' },
+      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'width', label: '宽度', type: 'text', placeholder: '100%' },
+      { prop: 'height', label: '高度', type: 'text', placeholder: 'auto' },
     ],
   },
   MultiLevelMenu: {
@@ -714,7 +774,9 @@ export const componentSchemas = {
   Footer: {
     defaults: {
       copyright: '© 2024 版权所有',
-      fullWidth: true, // 默认全宽
+      backgroundColor: '#1e293b',
+      textColor: '#f1f5f9',
+      linkColor: '#cbd5e1',
       links: [
         { label: '关于我们', href: '#' },
         { label: '联系我们', href: '#' },
@@ -727,7 +789,9 @@ export const componentSchemas = {
     },
     fields: [
       { prop: 'copyright', label: '版权信息', type: 'text' },
-      { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
+      { prop: 'backgroundColor', label: '背景颜色', type: 'color' },
+      { prop: 'textColor', label: '文字颜色', type: 'color' },
+      { prop: 'linkColor', label: '链接颜色', type: 'color' },
       { prop: 'links', label: '链接列表', type: 'quick-links' },
       { prop: 'contact', label: '联系信息', type: 'object' },
     ],
@@ -754,6 +818,28 @@ export const componentSchemas = {
     fields: [
       { prop: 'field', label: '数据字段', type: 'text', placeholder: '如：title, content, date, author.name' },
       { prop: 'fallback', label: '默认值', type: 'text', placeholder: '数据不存在时显示的内容' },
+    ],
+  },
+  ContentDetail: {
+    defaults: {
+      title: '内容标题',
+      createdAt: '2025-01-01',
+      author: '作者名称',
+      content: '<p>这里是详情内容，支持富文本格式，可以插入图片、链接等。</p>',
+      showTitle: true,
+      showCreatedAt: true,
+      showAuthor: true,
+      showContent: true,
+    },
+    fields: [
+      { prop: 'title', label: '标题', type: 'text' },
+      { prop: 'createdAt', label: '创建时间', type: 'text' },
+      { prop: 'author', label: '创建人', type: 'text' },
+      { prop: 'content', label: '详情内容（富文本）', type: 'rich-text' },
+      { prop: 'showTitle', label: '显示标题', type: 'switch', activeText: '显示', inactiveText: '隐藏' },
+      { prop: 'showCreatedAt', label: '显示创建时间', type: 'switch', activeText: '显示', inactiveText: '隐藏' },
+      { prop: 'showAuthor', label: '显示创建人', type: 'switch', activeText: '显示', inactiveText: '隐藏' },
+      { prop: 'showContent', label: '显示详情内容', type: 'switch', activeText: '显示', inactiveText: '隐藏' },
     ],
   },
 }

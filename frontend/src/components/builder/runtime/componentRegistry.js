@@ -10,12 +10,14 @@ import InfoCardGrid from '@shared/components/InfoCardGrid.vue'
 import ProductList from '@shared/components/ProductList.vue'
 import TextImageSection from '@shared/components/TextImageSection.vue'
 import StatsHighlight from '@shared/components/StatsHighlight.vue'
+import ContentDetail from '@shared/components/ContentDetail.vue'
 
 // Sections 组件
 import SectionHero from '@shared/components/sections/SectionHero.vue'
 import CTABanner from '@shared/components/sections/CTABanner.vue'
 import BreadcrumbHeader from '@shared/components/sections/BreadcrumbHeader.vue'
 import ContentSplit from '@shared/components/sections/ContentSplit.vue'
+import CarouselNewsSplit from '@shared/components/sections/CarouselNewsSplit.vue'
 import TabsNav from '@shared/components/sections/TabsNav.vue'
 import StatisticsBar from '@shared/components/sections/StatisticsBar.vue'
 import ProgressSteps from '@shared/components/sections/ProgressSteps.vue'
@@ -82,6 +84,7 @@ export const componentRegistry = {
   ProgressSteps: ProgressSteps,
   TimelineHorizontal: TimelineHorizontal,
   ContentSplit: ContentSplit,
+  CarouselNewsSplit: CarouselNewsSplit,
   CardGrid: CardGrid,
   FocusGrid: FocusGrid,
   TextImageSection: TextImageSection,
@@ -104,6 +107,7 @@ export const componentRegistry = {
   MultiLevelMenu: MultiLevelMenu,
   Footer: Footer,
   DetailData: DetailData,
+  ContentDetail: ContentDetail,
 }
 
 export const resolveBuilderComponent = (key) => componentRegistry[key] ?? FallbackComponent

@@ -36,3 +36,7 @@ export const savePageSchema = (projectId, pageId, data) =>
 export const getNewsDetail = (projectCode, pageCode, newsId) =>
   request.get(`/projects/${projectCode}/pages/${pageCode}/news/${newsId}`)
 
+// 更新项目导航配置
+export const updateProjectNavigation = (projectCode, navigationConfig) =>
+  request.put(`/projects/${projectCode}/navigation`, { navigationConfig })
+

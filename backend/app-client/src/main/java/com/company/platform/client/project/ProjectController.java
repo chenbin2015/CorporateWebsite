@@ -66,6 +66,28 @@ public class ProjectController {
         command.setId(project.getId());
         command.setName(request.getName());
         command.setDescription(request.getDescription());
+        command.setNavigationConfig(request.getNavigationConfig());
+
+        Project updatedProject = projectCommandService.updateProject(command);
+        return ResponseEntity.ok(updatedProject);
+    }
+
+    @PutMapping("/{id}/navigation")
+    public ResponseEntity<Project> updateNavigation(@PathVariable("id") String id, @RequestBody UpdateNavigationRequest request) {
+        // 支持通过 id (Long) 或 code (String) 查询
+        Project project;
+        try {
+            Long projectId = Long.parseLong(id);
+            project = projectQueryService.getProject(projectId);
+        } catch (NumberFormatException e) {
+            project = projectQueryService.getProjectByCode(id);
+        }
+        
+        UpdateProjectCommand command = new UpdateProjectCommand();
+        command.setId(project.getId());
+        command.setName(project.getName());
+        command.setDescription(project.getDescription());
+        command.setNavigationConfig(request.getNavigationConfig());
 
         Project updatedProject = projectCommandService.updateProject(command);
         return ResponseEntity.ok(updatedProject);
@@ -111,6 +133,7 @@ public class ProjectController {
     public static class UpdateProjectRequest {
         private String name;
         private String description;
+        private String navigationConfig;
 
         public String getName() {
             return name;
@@ -126,6 +149,26 @@ public class ProjectController {
 
         public void setDescription(String description) {
             this.description = description;
+        }
+
+        public String getNavigationConfig() {
+            return navigationConfig;
+        }
+
+        public void setNavigationConfig(String navigationConfig) {
+            this.navigationConfig = navigationConfig;
+        }
+    }
+
+    public static class UpdateNavigationRequest {
+        private String navigationConfig;
+
+        public String getNavigationConfig() {
+            return navigationConfig;
+        }
+
+        public void setNavigationConfig(String navigationConfig) {
+            this.navigationConfig = navigationConfig;
         }
     }
 }

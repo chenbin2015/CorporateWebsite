@@ -33,6 +33,9 @@ public class ProjectCommandService {
                 .orElseThrow(() -> new RuntimeException("Project not found"));
         project.setName(command.getName());
         project.setDescription(command.getDescription());
+        if (command.getNavigationConfig() != null) {
+            project.setNavigationConfig(command.getNavigationConfig());
+        }
         return projectRepository.save(project);
     }
 

@@ -1,5 +1,10 @@
 <template>
-  <header class="main-header">
+  <Teleport to="body" :disabled="!shouldBeFixed">
+    <header 
+      class="main-header" 
+      :class="{ 'main-header--fixed': shouldBeFixed }"
+      :style="headerStyle"
+    >
 
     <!-- 主导航区域 -->
     <div class="main-header__main">
@@ -34,7 +39,7 @@
       </div>
 
       <!-- 导航菜单 -->
-      <nav class="main-header__nav" :class="{ 'nav--open': isMobileMenuOpen }" :style="{ background: navBackgroundColor }">
+      <nav class="main-header__nav" :class="{ 'nav--open': isMobileMenuOpen }" :style="{ background: 'transparent' }">
         <ul class="nav-list">
           <li
             v-for="(item, index) in navItems"
@@ -81,12 +86,33 @@
       </nav>
     </div>
   </header>
+  </Teleport>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { isDesignMode } from '@shared/utils/context'
 import { handleNavigation } from '@/utils/navigation'
+
+// 判断是否应该应用 fixed 定位（设计态不应用）
+const shouldBeFixed = computed(() => {
+  const fixed = props.fixed
+  const designMode = isDesignMode()
+  const result = fixed && !designMode
+  
+  // 调试：打印吸顶相关值
+  console.log('[MainHeader] 吸顶调试信息:', {
+    fixed: fixed,
+    isDesignMode: designMode,
+    shouldBeFixed: result,
+    window__BUILDER_MODE__: window.__BUILDER_MODE__,
+    window__PREVIEW_MODE__: window.__PREVIEW_MODE__,
+    window__RUNTIME_MODE__: window.__RUNTIME_MODE__,
+    pathname: window.location?.pathname,
+  })
+  
+  return result
+})
 
 const props = defineProps({
   title: {
@@ -123,13 +149,65 @@ const props = defineProps({
     type: Number,
     default: 0, // 默认选中第一个菜单项
   },
+  fixed: {
+    type: Boolean,
+    default: false, // 是否浮动在顶部
+  },
+  backgroundOpacity: {
+    type: Number,
+    default: 1, // 背景透明度，0-1之间
+    validator: (value) => value >= 0 && value <= 1,
+  },
 })
 
 const isMobileMenuOpen = ref(false)
 const hoveredIndex = ref(null)
 
-const navItems = computed(() =>
-  (props.menuItems || []).map((item) => {
+// 计算头部样式（背景色和透明度）
+const headerStyle = computed(() => {
+  const styles = {}
+  
+  // 处理背景色和透明度
+  if (props.navBackgroundColor) {
+    const color = props.navBackgroundColor
+    const opacity = props.backgroundOpacity ?? 1
+    
+    // 如果是 hex 颜色，转换为 rgba
+    if (color.startsWith('#')) {
+      const r = parseInt(color.slice(1, 3), 16)
+      const g = parseInt(color.slice(3, 5), 16)
+      const b = parseInt(color.slice(5, 7), 16)
+      styles.background = `rgba(${r}, ${g}, ${b}, ${opacity})`
+    } else if (color.startsWith('rgb')) {
+      // 如果是 rgb 颜色，转换为 rgba
+      const rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)
+      if (rgbMatch) {
+        styles.background = `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, ${opacity})`
+      } else {
+        styles.background = color
+      }
+    } else {
+      styles.background = color
+    }
+  }
+  
+  return styles
+})
+
+// 优先从全局项目配置读取导航数据，如果没有则使用 props
+const navItems = computed(() => {
+  // 1. 优先使用全局项目配置的导航
+  if (window.__PROJECT_NAVIGATION_CONFIG__?.menuItems) {
+    return window.__PROJECT_NAVIGATION_CONFIG__.menuItems.map((item) => ({
+      label: item.label ?? '未命名',
+      href: item.href ?? '#',
+      children: item.children || [],
+      navigation: item.navigation || { type: 'none' },
+    }))
+  }
+  
+  // 2. 如果没有全局配置，使用 props 中的 menuItems
+  return (props.menuItems || []).map((item) => {
     if (typeof item === 'string') {
       return { label: item, href: '#', navigation: { type: 'none' } }
     }
@@ -139,8 +217,8 @@ const navItems = computed(() =>
       children: item.children || [],
       navigation: item.navigation || { type: 'none' },
     }
-  }),
-)
+  })
+})
 
 const handleItemClick = (item, event) => {
   if (isDesignMode()) {
@@ -177,12 +255,24 @@ const handleSubItemClick = (subItem, event) => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   position: relative;
   z-index: 1000;
+  width: 100%;
+  transition: background 0.3s ease;
 }
 
+.main-header--fixed {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 1000 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
 /* 主导航区域 */
 .main-header__main {
-  background: #fff;
+  background: transparent;
 }
 
 .main-header__container {
@@ -326,7 +416,7 @@ const handleSubItemClick = (subItem, event) => {
 
 /* 导航菜单 */
 .main-header__nav {
-  background: #2d3748;
+  background: transparent;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 

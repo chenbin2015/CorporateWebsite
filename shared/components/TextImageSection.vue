@@ -68,12 +68,11 @@ const props = defineProps({
       >
         {{ props.subtitle }}
       </p>
-      <p
+      <div
         class="text-image__details"
         :style="{ color: props.detailsColor, fontSize: props.detailsSize }"
-      >
-        {{ props.details }}
-      </p>
+        v-html="props.details"
+      ></div>
     </div>
   </section>
 </template>
@@ -116,6 +115,43 @@ const props = defineProps({
   font-size: 0.98rem;
   line-height: 1.7;
   color: var(--color-text-primary);
+}
+
+.text-image__details :deep(p) {
+  margin: 0.75rem 0;
+}
+
+.text-image__details :deep(p:first-child) {
+  margin-top: 0;
+}
+
+.text-image__details :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.text-image__details :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  margin: 1rem 0;
+}
+
+.text-image__details :deep(h1),
+.text-image__details :deep(h2),
+.text-image__details :deep(h3),
+.text-image__details :deep(h4) {
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
+}
+
+.text-image__details :deep(ul),
+.text-image__details :deep(ol) {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.text-image__details :deep(li) {
+  margin: 0.25rem 0;
 }
 
 .text-image--reverse {

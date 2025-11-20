@@ -9,7 +9,7 @@ import BuilderInspector from '@/components/layout/BuilderInspector.vue'
 import BuilderLeftPanel from '@/components/layout/BuilderLeftPanel.vue'
 import { componentPalette } from '@/data/componentPalette'
 import { getComponentSchema } from '@/data/componentSchemas'
-import { getPage, saveDraft, publishPage } from '@/services/modules/project'
+import { getPage, saveDraft, publishPage, getProject } from '@/services/modules/project'
 import { loadDataSourceData, mergeDataSourceData } from '@/utils/dataSource'
 
 const route = useRoute()
@@ -89,7 +89,9 @@ const handleUpdateProps = async (updatedProps) => {
   
   console.log('[PageBuilder] handleUpdateProps after:', { 
     props: JSON.parse(JSON.stringify(canvasItems.value[index].props)),
-    cardsCount: canvasItems.value[index].props?.cards?.length || 0
+    cardsCount: canvasItems.value[index].props?.cards?.length || 0,
+    fixed: canvasItems.value[index].props?.fixed,
+    backgroundOpacity: canvasItems.value[index].props?.backgroundOpacity,
   })
   
   // 自动保存草稿
@@ -140,11 +142,39 @@ const handleReorder = (newItems) => {
   handleSaveDraft()
 }
 
+// 加载项目配置（包含导航配置）
+const loadProjectConfig = async () => {
+  if (!projectCode.value) return
+  
+  try {
+    const project = await getProject(projectCode.value)
+    
+    // 将导航配置注入到全局 context，供 MainHeader 组件使用
+    if (project.navigationConfig) {
+      try {
+        const navConfig = JSON.parse(project.navigationConfig)
+        window.__PROJECT_NAVIGATION_CONFIG__ = navConfig
+      } catch (e) {
+        console.warn('导航配置解析失败', e)
+        window.__PROJECT_NAVIGATION_CONFIG__ = null
+      }
+    } else {
+      window.__PROJECT_NAVIGATION_CONFIG__ = null
+    }
+  } catch (error) {
+    console.error('加载项目配置失败:', error)
+    window.__PROJECT_NAVIGATION_CONFIG__ = null
+  }
+}
+
 // 加载页面数据
 const loadPage = async () => {
   if (!projectCode.value || !pageCode.value) return
   
   try {
+    // 先加载项目配置（包含导航配置）
+    await loadProjectConfig()
+    
     const page = await getPage(projectCode.value, pageCode.value)
     pageInfo.value = page
     
@@ -174,7 +204,24 @@ const handleSaveDraft = async () => {
   
   saving.value = true
   try {
+    // 调试：打印保存前的数据
+    const mainHeaderItem = canvasItems.value.find(item => item.key === 'MainHeader')
+    if (mainHeaderItem) {
+      console.log('[PageBuilder] 保存前 MainHeader props:', JSON.parse(JSON.stringify(mainHeaderItem.props)))
+      console.log('[PageBuilder] 保存前 MainHeader fixed:', mainHeaderItem.props?.fixed, typeof mainHeaderItem.props?.fixed)
+      console.log('[PageBuilder] 保存前 MainHeader backgroundOpacity:', mainHeaderItem.props?.backgroundOpacity)
+    }
+    
     const schemaData = JSON.stringify(canvasItems.value)
+    
+    // 调试：检查序列化后的数据
+    const parsed = JSON.parse(schemaData)
+    const mainHeaderInSchema = parsed.find(item => item.key === 'MainHeader')
+    if (mainHeaderInSchema) {
+      console.log('[PageBuilder] 序列化后 MainHeader props:', mainHeaderInSchema.props)
+      console.log('[PageBuilder] 序列化后 MainHeader fixed:', mainHeaderInSchema.props?.fixed, typeof mainHeaderInSchema.props?.fixed)
+    }
+    
     await saveDraft(projectCode.value, pageCode.value, {
       schemaData,
     })
@@ -321,9 +368,10 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  // 清理设计态标识
+  // 清理设计态标识和项目配置
   delete window.__DESIGN_MODE__
   delete window.__BUILDER_MODE__
+  delete window.__PROJECT_NAVIGATION_CONFIG__
 })
 </script>
 
@@ -378,6 +426,7 @@ onBeforeUnmount(() => {
       <BuilderInspector
         :selected-item="selectedItem"
         :schema="selectedSchema"
+        :project-code="projectCode"
         @update-props="handleUpdateProps"
         @reset="handleResetProps"
         @delete="handleDelete"

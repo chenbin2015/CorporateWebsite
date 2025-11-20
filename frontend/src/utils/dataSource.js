@@ -38,6 +38,18 @@ export async function loadDataSourceData(dataSourceCode, componentKey) {
           ...item.data,
         })),
       }
+    } else if (componentKey === 'NoticeList') {
+      // 公告组件：将数据源项转换为 items 数组
+      return {
+        items: parsedItems.map((item, index) => ({
+          id: item.code,
+          title: item.data.title || '',
+          date: item.data.date || '',
+          content: item.data.content || '',
+          // 保留其他可能的字段
+          ...item.data,
+        })),
+      }
     } else if (componentKey === 'ProductList') {
       // 产品组件：将数据源项转换为 products 数组
       return {
@@ -80,6 +92,20 @@ export async function loadDataSourceData(dataSourceCode, componentKey) {
           }
         }),
       }
+    } else if (componentKey === 'CarouselNewsSplit') {
+      // 轮播新闻组合：需要分别处理轮播和新闻数据
+      // 这里只返回新闻数据，轮播数据需要单独处理
+      return {
+        newsItems: parsedItems.map((item, index) => ({
+          id: item.code,
+          title: item.data.title || '',
+          date: item.data.date || '',
+          content: item.data.content || '',
+          cover: item.data.cover || '',
+          summary: item.data.summary || '',
+          ...item.data,
+        })),
+      }
     }
 
     return null
@@ -107,6 +133,10 @@ export function mergeDataSourceData(props, componentKey, dataSourceData) {
     if (dataSourceData.items) {
       merged.items = dataSourceData.items
     }
+  } else if (componentKey === 'NoticeList') {
+    if (dataSourceData.items) {
+      merged.items = dataSourceData.items
+    }
   } else if (componentKey === 'ProductList') {
     if (dataSourceData.products) {
       merged.products = dataSourceData.products
@@ -114,6 +144,21 @@ export function mergeDataSourceData(props, componentKey, dataSourceData) {
   } else if (componentKey === 'InfoCardGrid') {
     if (dataSourceData.cards) {
       merged.cards = dataSourceData.cards
+    }
+  } else if (componentKey === 'CarouselNewsSplit') {
+    // 根据数据源类型判断是轮播还是新闻
+    if (dataSourceData.newsItems) {
+      merged.newsItems = dataSourceData.newsItems
+    } else if (dataSourceData.items) {
+      // 如果数据源返回的是 items，可能是轮播项
+      merged.carouselItems = dataSourceData.items.map(item => ({
+        title: item.title || '',
+        description: item.summary || '',
+        cover: item.cover || '',
+        action: '了解更多',
+        navigation: { type: 'none' },
+        ...item,
+      }))
     }
   }
 

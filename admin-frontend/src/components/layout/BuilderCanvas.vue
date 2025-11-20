@@ -211,6 +211,8 @@ watch(
                 'canvas-item--active': props.selectedId === item.id,
                 'canvas-item--dragging': draggedItemId === item.id,
                 'canvas-item--drag-over': dragOverItemId === item.id,
+                // 设计态不应用 fixed 样式，所以这里始终为 false（设计态中 MainHeader 不会真正固定）
+                'canvas-item--fixed-header': false,
               }
             ]"
             draggable="true"
@@ -295,6 +297,7 @@ watch(
 .canvas-item {
   border-radius: 1rem;
   border: 1px solid rgba(15, 23, 42, 0.08);
+  position: relative;
   padding: 1rem;
   background: #fff;
   box-shadow: 0 1rem 2rem rgba(15, 23, 42, 0.05);
@@ -355,6 +358,21 @@ watch(
   font-size: 0.8rem;
   color: var(--color-text-secondary);
   font-family: 'Fira Code', 'SFMono-Regular', Consolas, monospace;
+}
+
+/* 当 MainHeader 固定时，canvas-item 不占据空间，让其他组件顶上去 */
+.canvas-item--fixed-header {
+  height: 0 !important;
+  min-height: 0 !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
+.canvas-item--fixed-header > * {
+  position: relative;
+  z-index: 1000;
 }
 </style>
 

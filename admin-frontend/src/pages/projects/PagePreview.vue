@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getPage } from '@/services/modules/project'
+import { getPage, getProject } from '@/services/modules/project'
 import { resolveBuilderComponent } from '@/components/builder/runtime/componentRegistry'
 import { loadDataSourceData, mergeDataSourceData } from '@/utils/dataSource'
 
@@ -19,6 +19,7 @@ const pageItems = ref([])
 const pageInfo = ref(null)
 const loading = ref(true)
 const detailData = ref(null) // 详情页的动态数据
+const projectConfig = ref(null) // 项目配置（包含导航配置）
 
 // 保存原始样式
 const originalHtmlOverflow = ref('')
@@ -87,17 +88,51 @@ const loadDetailData = async () => {
   }
 }
 
+// 加载项目配置（包含导航配置）
+const loadProjectConfig = async () => {
+  if (!projectCode.value) return
+  
+  try {
+    const project = await getProject(projectCode.value)
+    projectConfig.value = project
+    
+    // 将导航配置注入到全局 context，供 MainHeader 组件使用
+    if (project.navigationConfig) {
+      try {
+        const navConfig = JSON.parse(project.navigationConfig)
+        window.__PROJECT_NAVIGATION_CONFIG__ = navConfig
+      } catch (e) {
+        console.warn('导航配置解析失败', e)
+        window.__PROJECT_NAVIGATION_CONFIG__ = null
+      }
+    } else {
+      window.__PROJECT_NAVIGATION_CONFIG__ = null
+    }
+  } catch (error) {
+    console.error('加载项目配置失败:', error)
+    window.__PROJECT_NAVIGATION_CONFIG__ = null
+  }
+}
+
 // 加载页面数据
 const loadPage = async () => {
   if (!projectCode.value || !pageCode.value) return
 
   loading.value = true
   try {
-    // 先加载详情数据（如果是详情页）
+    // 先加载项目配置（包含导航配置）
+    await loadProjectConfig()
+    
+    // 再加载详情数据（如果是详情页）
     await loadDetailData()
     
     const page = await getPage(projectCode.value, pageCode.value)
     pageInfo.value = page
+
+    // 调试：打印接口返回的原始数据
+    console.log('[PagePreview] 接口返回的完整 page 对象:', JSON.parse(JSON.stringify(page)))
+    console.log('[PagePreview] page.schemaData (预览态使用):', page.schemaData)
+    console.log('[PagePreview] page.publishedSchemaData (运行态使用):', page.publishedSchemaData)
 
     // 运行态只使用 publishedSchemaData（已发布数据），预览态使用 schemaData（草稿数据）
     let schemaData = null
@@ -105,6 +140,7 @@ const loadPage = async () => {
       // 运行态：只使用已发布的数据，如果没有发布则提示
       if (page.publishedSchemaData) {
         schemaData = page.publishedSchemaData
+        console.log('[PagePreview] 运行态：使用 publishedSchemaData')
       } else {
         pageItems.value = []
         ElMessage.warning('页面尚未发布，无法查看运行态')
@@ -113,28 +149,105 @@ const loadPage = async () => {
     } else {
       // 预览态：使用草稿数据
       schemaData = page.schemaData
+      console.log('[PagePreview] 预览态：使用 schemaData (草稿数据)')
     }
+    
+    console.log('[PagePreview] 最终使用的 schemaData:', schemaData)
 
     if (schemaData) {
       try {
         const parsed = JSON.parse(schemaData)
         
-        // 加载数据源数据
+        // 调试：打印原始解析的数据
+        const mainHeaderItem = parsed.find(item => item.key === 'MainHeader')
+        if (mainHeaderItem) {
+          console.log('[PagePreview] 从接口获取的原始 MainHeader 数据:', JSON.parse(JSON.stringify(mainHeaderItem)))
+          console.log('[PagePreview] 原始 MainHeader props.fixed:', mainHeaderItem.props?.fixed)
+        }
+        
+        // 加载数据源数据，并为旧数据补充默认值
         const itemsWithDataSource = await Promise.all(
           parsed.map(async (item) => {
+            // 为 MainHeader 补充缺失的字段（兼容旧数据）
+            if (item.key === 'MainHeader' && item.props) {
+              // 如果缺少 fixed 字段，使用默认值 false
+              if (item.props.fixed === undefined) {
+                item.props.fixed = false
+              }
+              // 如果缺少 backgroundOpacity 字段，使用默认值 1
+              if (item.props.backgroundOpacity === undefined) {
+                item.props.backgroundOpacity = 1
+              }
+              // 如果缺少 navBackgroundColor 字段，使用默认值
+              if (!item.props.navBackgroundColor) {
+                item.props.navBackgroundColor = '#2d3748'
+              }
+              // 如果缺少 showSearch 字段，使用默认值 false
+              if (item.props.showSearch === undefined) {
+                item.props.showSearch = false
+              }
+              // 如果缺少 defaultActiveIndex 字段，使用默认值 0
+              if (item.props.defaultActiveIndex === undefined) {
+                item.props.defaultActiveIndex = 0
+              }
+            }
+            
+            let updatedProps = { ...item.props }
+            
+            // 处理标准 dataSourceCode
             if (item.props?.dataSourceCode) {
               const dataSourceData = await loadDataSourceData(
                 item.props.dataSourceCode,
                 item.key
               )
               if (dataSourceData) {
-                return {
-                  ...item,
-                  props: mergeDataSourceData(item.props, item.key, dataSourceData),
+                updatedProps = mergeDataSourceData(updatedProps, item.key, dataSourceData)
+              }
+            }
+            
+            // 处理 CarouselNewsSplit 的多个数据源
+            if (item.key === 'CarouselNewsSplit') {
+              // 加载轮播数据源
+              if (item.props?.carouselDataSourceCode) {
+                const carouselData = await loadDataSourceData(
+                  item.props.carouselDataSourceCode,
+                  'HeroCarousel' // 使用 HeroCarousel 的转换逻辑
+                )
+                if (carouselData && carouselData.items) {
+                  updatedProps.carouselItems = carouselData.items.map(item => ({
+                    title: item.title || '',
+                    description: item.summary || '',
+                    cover: item.cover || '',
+                    action: '了解更多',
+                    navigation: { type: 'none' },
+                    ...item,
+                  }))
+                }
+              }
+              
+              // 加载新闻数据源
+              if (item.props?.newsDataSourceCode) {
+                console.log('[PagePreview] 加载新闻数据源:', item.props.newsDataSourceCode)
+                const newsData = await loadDataSourceData(
+                  item.props.newsDataSourceCode,
+                  'NewsSection' // 使用 NewsSection 的转换逻辑
+                )
+                console.log('[PagePreview] 新闻数据源加载结果:', newsData)
+                if (newsData && newsData.items) {
+                  updatedProps.newsItems = newsData.items
+                  console.log('[PagePreview] 设置 newsItems:', updatedProps.newsItems)
+                } else {
+                  console.warn('[PagePreview] 新闻数据源加载失败或数据格式不正确:', { newsData, hasItems: newsData?.items })
                 }
               }
             }
-            return item
+            
+            console.log('[PagePreview] CarouselNewsSplit 最终 props:', updatedProps)
+            
+            return {
+              ...item,
+              props: updatedProps,
+            }
           })
         )
         
@@ -143,6 +256,11 @@ const loadPage = async () => {
         itemsWithDataSource.forEach((item) => {
           if (item.key === 'MainHeader' || item.key === 'HeroCarousel') {
             console.log(`[PagePreview] ${item.key} fullWidth:`, item.props?.fullWidth)
+            if (item.key === 'MainHeader') {
+              console.log(`[PagePreview] MainHeader 完整 props:`, JSON.parse(JSON.stringify(item.props)))
+              console.log(`[PagePreview] MainHeader fixed:`, item.props?.fixed, typeof item.props?.fixed)
+              console.log(`[PagePreview] MainHeader backgroundOpacity:`, item.props?.backgroundOpacity)
+            }
           }
           if (item.key === 'ProductList') {
             console.log(`[PagePreview] ProductList detailPage:`, item.props?.detailPage)
@@ -176,6 +294,55 @@ const isFullWidthComponent = (item) => {
   return fullWidthComponents.includes(item.key)
 }
 
+// 计算预览内容区域的样式（如果 MainHeader 是固定的，需要添加 padding-top）
+const previewContentStyle = computed(() => {
+  const styles = {}
+  
+  // 查找 MainHeader 组件，检查是否 fixed
+  const mainHeader = pageItems.value.find(item => item.key === 'MainHeader')
+  if (mainHeader?.props?.fixed) {
+    // MainHeader 固定时，需要为内容添加顶部间距，避免被遮挡
+    // 根据 MainHeader 的实际高度动态计算（品牌区域 + 导航区域，大约 120-140px）
+    styles.paddingTop = '140px'
+  }
+  
+  return styles
+})
+
+// 获取组件的 margin 样式（从 props 中读取 margin 配置）
+const getComponentMarginStyle = (item) => {
+  const styles = {}
+  
+  // 从 props 中读取 margin 配置
+  const margin = item.props?.margin
+  if (margin) {
+    // 支持多种格式：
+    // 1. 字符串：'2.4rem 1.5rem' 或 '2.4rem' 或 '2.4rem auto'
+    // 2. 对象：{ top: '2.4rem', right: '1.5rem', bottom: '2.4rem', left: '1.5rem' }
+    if (typeof margin === 'string') {
+      styles.margin = margin
+    } else if (typeof margin === 'object') {
+      if (margin.top !== undefined) styles.marginTop = margin.top
+      if (margin.right !== undefined) styles.marginRight = margin.right
+      if (margin.bottom !== undefined) styles.marginBottom = margin.bottom
+      if (margin.left !== undefined) styles.marginLeft = margin.left
+    }
+  } else {
+    // 默认 margin（如果没有配置）：上下 2.4rem，左右 auto（居中）
+    styles.margin = '2.4rem auto'
+  }
+  
+  return styles
+}
+
+// 获取组件 props，排除 margin（避免 margin 作为 HTML 属性传递）
+const getComponentPropsWithoutMargin = (item) => {
+  const props = { ...item.props }
+  // 移除 margin，因为它已经通过 style 应用了
+  delete props.margin
+  return props
+}
+
 // 监听路由参数和查询参数变化，重新加载页面数据
 watch(
   () => [route.params.projectCode, route.params.pageCode, route.query.id, route.query.type],
@@ -206,6 +373,7 @@ onBeforeUnmount(() => {
   delete window.__PREVIEW_MODE__
   delete window.__RUNTIME_MODE__
   delete window.__DETAIL_DATA__
+  delete window.__PROJECT_NAVIGATION_CONFIG__
   
   restoreOverflow()
 })
@@ -219,20 +387,25 @@ onBeforeUnmount(() => {
     <div v-else-if="pageItems.length === 0" class="preview-empty">
       <p>页面暂无内容</p>
     </div>
-    <div v-else class="preview-content">
+    <div v-else class="preview-content" :style="previewContentStyle">
       <template v-for="item in pageItems" :key="item.id">
-        <!-- 全宽组件：直接渲染，不包裹容器 -->
-        <component
+        <!-- 全宽组件：直接渲染，不包裹容器，但应用 margin 样式 -->
+        <div
           v-if="isFullWidthComponent(item)"
-          :is="resolveBuilderComponent(item.key)"
-          v-bind="item.props"
-          class="preview-component preview-component--fullwidth"
-        />
-        <!-- 固定宽度组件：包裹在容器中 -->
-        <div v-else class="preview-container">
+          class="preview-component-wrapper preview-component-wrapper--fullwidth"
+          :style="getComponentMarginStyle(item)"
+        >
           <component
             :is="resolveBuilderComponent(item.key)"
-            v-bind="item.props"
+            v-bind="getComponentPropsWithoutMargin(item)"
+            class="preview-component preview-component--fullwidth"
+          />
+        </div>
+        <!-- 固定宽度组件：包裹在容器中 -->
+        <div v-else class="preview-container preview-component-wrapper" :style="getComponentMarginStyle(item)">
+          <component
+            :is="resolveBuilderComponent(item.key)"
+            v-bind="getComponentPropsWithoutMargin(item)"
             class="preview-component"
           />
         </div>
@@ -276,12 +449,21 @@ onBeforeUnmount(() => {
 .preview-container {
   width: 100%;
   margin: 0 auto;
-  padding: 2.4rem 1.5rem;
+  padding: 0; /* 移除自动 padding，由组件自己控制 */
   max-width: 72rem; /* 与前端 container 一致 */
 }
 
 .preview-container + .preview-container {
-  margin-top: 2.8rem; /* 容器之间的间距 */
+  margin-top: 0; /* 移除自动间距，由组件自己控制 */
+}
+
+/* 组件包装器 */
+.preview-component-wrapper {
+  width: 100%;
+}
+
+.preview-component-wrapper--fullwidth {
+  width: 100%;
 }
 
 /* 全宽组件：直接渲染，不包裹容器 */

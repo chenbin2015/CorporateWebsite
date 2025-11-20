@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   copyright: {
     type: String,
@@ -21,17 +23,65 @@ const props = defineProps({
       email: '邮箱：contact@example.com',
     }),
   },
+  backgroundColor: {
+    type: String,
+    default: '#1e293b',
+  },
+  textColor: {
+    type: String,
+    default: '#f1f5f9',
+  },
+  linkColor: {
+    type: String,
+    default: '#cbd5e1',
+  },
+})
+
+const footerStyle = computed(() => {
+  return {
+    backgroundColor: props.backgroundColor,
+    color: props.textColor,
+  }
+})
+
+const linkStyle = computed(() => {
+  return {
+    color: props.linkColor,
+  }
+})
+
+const bottomBorderStyle = computed(() => {
+  // 根据文字颜色计算边框颜色（使用透明度）
+  // 如果是 hex 颜色，转换为 rgba；如果是 rgb/rgba，直接使用
+  let borderColor = props.textColor
+  if (borderColor.startsWith('#')) {
+    // 简单的 hex 转 rgba（假设是 6 位 hex）
+    const hex = borderColor.slice(1)
+    const r = parseInt(hex.slice(0, 2), 16)
+    const g = parseInt(hex.slice(2, 4), 16)
+    const b = parseInt(hex.slice(4, 6), 16)
+    borderColor = `rgba(${r}, ${g}, ${b}, 0.1)`
+  } else if (borderColor.startsWith('rgb(')) {
+    // rgb 转 rgba
+    borderColor = borderColor.replace('rgb(', 'rgba(').replace(')', ', 0.1)')
+  } else if (!borderColor.startsWith('rgba(')) {
+    // 其他格式，使用默认值
+    borderColor = 'rgba(255, 255, 255, 0.1)'
+  }
+  return {
+    borderTopColor: borderColor,
+  }
 })
 </script>
 
 <template>
-  <footer class="site-footer">
+  <footer class="site-footer" :style="footerStyle">
     <div class="footer-content">
       <div class="footer-section">
         <h4>快速链接</h4>
         <ul class="footer-links">
           <li v-for="link in links" :key="link.label">
-            <a :href="link.href">{{ link.label }}</a>
+            <a :href="link.href" :style="linkStyle">{{ link.label }}</a>
           </li>
         </ul>
       </div>
@@ -44,7 +94,7 @@ const props = defineProps({
         </div>
       </div>
     </div>
-    <div class="footer-bottom">
+    <div class="footer-bottom" :style="bottomBorderStyle">
       <p>{{ copyright }}</p>
     </div>
   </footer>
@@ -52,8 +102,6 @@ const props = defineProps({
 
 <style scoped>
 .site-footer {
-  background: var(--color-surface-contrast, #1e293b);
-  color: var(--color-text-inverse, #f1f5f9);
   padding: 3rem 1.5rem 1.5rem;
   margin-top: 4rem;
 }
@@ -82,13 +130,12 @@ const props = defineProps({
 }
 
 .footer-links a {
-  color: var(--color-text-inverse, #cbd5e1);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .footer-links a:hover {
-  color: #fff;
+  opacity: 0.8;
 }
 
 .footer-contact {
@@ -98,7 +145,6 @@ const props = defineProps({
 
 .footer-contact p {
   margin: 0;
-  color: var(--color-text-inverse, #cbd5e1);
   font-size: 0.9rem;
 }
 
@@ -106,14 +152,14 @@ const props = defineProps({
   max-width: 1200px;
   margin: 0 auto;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid;
   text-align: center;
 }
 
 .footer-bottom p {
   margin: 0;
-  color: var(--color-text-inverse, #94a3b8);
   font-size: 0.85rem;
+  opacity: 0.7;
 }
 </style>
 

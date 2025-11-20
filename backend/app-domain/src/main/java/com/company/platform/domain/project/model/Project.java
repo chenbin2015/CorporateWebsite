@@ -8,6 +8,7 @@ public class Project {
     private String code; // UUID，全局唯一标识符
     private String name;
     private String description;
+    private String navigationConfig; // 全局导航配置（JSON格式）
     private LocalDateTime createdAt;
 
     public Long getId() {
@@ -40,6 +41,14 @@ public class Project {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getNavigationConfig() {
+        return navigationConfig;
+    }
+
+    public void setNavigationConfig(String navigationConfig) {
+        this.navigationConfig = navigationConfig;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -16,8 +16,11 @@ import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import { getDataSources } from '@/services/modules/datasource'
 import { onMounted, ref as vueRef } from 'vue'
+import { useRouter } from 'vue-router'
 import DataSourceSelector from '@/components/builder/DataSourceSelector.vue'
 import DataSourceItemSelector from '@/components/builder/DataSourceItemSelector.vue'
+
+const router = useRouter()
 
 const props = defineProps({
   selectedItem: {
@@ -28,9 +31,24 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  projectCode: {
+    type: String,
+    default: null,
+  },
 })
 
 const emit = defineEmits(['update-props', 'reset', 'delete'])
+
+const goToProjectSettings = () => {
+  if (props.projectCode) {
+    router.push({
+      name: 'projectSettings',
+      params: { projectCode: props.projectCode },
+    })
+  } else {
+    ElMessage.warning('无法获取项目代码')
+  }
+}
 
 const title = computed(() => props.selectedItem?.label ?? '未选择组件')
 
@@ -197,6 +215,30 @@ const updateNewsItem = (prop, index, key, value) => {
 }
 
 const removeNewsItem = (prop, index) => {
+  const current = getArrayProp(prop)
+  const next = current.filter((_, i) => i !== index)
+  emit('update-props', { [prop]: next })
+}
+
+// 公告条目管理
+const addNoticeItem = (prop) => {
+  const current = getArrayProp(prop)
+  const next = [...current, { title: '新公告', date: '', id: `notice-${Date.now()}` }]
+  emit('update-props', { [prop]: next })
+}
+
+const updateNoticeItem = (prop, index, key, value) => {
+  const current = getArrayProp(prop)
+  const next = current.map((item, i) => {
+    if (i === index) {
+      return { ...(item || {}), [key]: value }
+    }
+    return item
+  })
+  emit('update-props', { [prop]: next })
+}
+
+const removeNoticeItem = (prop, index) => {
   const current = getArrayProp(prop)
   const next = current.filter((_, i) => i !== index)
   emit('update-props', { [prop]: next })
@@ -512,17 +554,26 @@ const route = useRoute()
 const projectCode = computed(() => route.params.projectCode)
 
 // 处理数据源选择
-const handleDataSourceSelect = (dataSourceCode) => {
-  console.log('[BuilderInspector] data source selected:', dataSourceCode, 'component:', props.selectedItem?.key)
+const handleDataSourceSelect = (dataSourceCode, fieldProp) => {
+  console.log('[BuilderInspector] data source selected:', dataSourceCode, 'component:', props.selectedItem?.key, 'fieldProp:', fieldProp)
   if (!dataSourceCode) return
   
   try {
     currentDataSourceCode.value = dataSourceCode
-    // 根据组件类型确定 items 字段名
+    // 根据组件类型和字段名确定 items 字段名
     if (props.selectedItem?.key === 'ProductList') {
       currentItemsField.value = 'products'
     } else if (props.selectedItem?.key === 'InfoCardGrid') {
       currentItemsField.value = 'cards'
+    } else if (props.selectedItem?.key === 'CarouselNewsSplit') {
+      // 对于 CarouselNewsSplit，根据数据源字段名确定 items 字段名
+      if (fieldProp === 'newsDataSourceCode') {
+        currentItemsField.value = 'newsItems'
+      } else if (fieldProp === 'carouselDataSourceCode') {
+        currentItemsField.value = 'carouselItems'
+      } else {
+        currentItemsField.value = 'newsItems' // 默认
+      }
     } else {
       currentItemsField.value = 'items'
     }
@@ -535,12 +586,26 @@ const handleDataSourceSelect = (dataSourceCode) => {
 }
 
 // 处理从数据源添加按钮点击
-const handleAddFromDataSource = (fieldProp) => {
+const handleAddFromDataSource = (fieldProp, dataSourceProp = 'dataSourceCode') => {
   try {
-    if (props.selectedItem?.props?.dataSourceCode) {
-      currentDataSourceCode.value = props.selectedItem.props.dataSourceCode
+    // 对于 CarouselNewsSplit，根据字段名判断使用哪个数据源
+    let actualDataSourceProp = dataSourceProp
+    if (props.selectedItem?.key === 'CarouselNewsSplit') {
+      if (fieldProp === 'newsItems') {
+        actualDataSourceProp = 'newsDataSourceCode'
+      } else if (fieldProp === 'carouselItems') {
+        actualDataSourceProp = 'carouselDataSourceCode'
+      }
+    }
+    
+    const dataSourceCode = props.selectedItem?.props?.[actualDataSourceProp]
+    if (dataSourceCode) {
+      currentDataSourceCode.value = dataSourceCode
       currentItemsField.value = fieldProp
+      console.log('[BuilderInspector] handleAddFromDataSource:', { fieldProp, actualDataSourceProp, dataSourceCode, currentItemsField: currentItemsField.value })
       dataSourceItemDialogVisible.value = true
+    } else {
+      console.warn('[BuilderInspector] No data source code found:', { actualDataSourceProp, props: props.selectedItem?.props })
     }
   } catch (error) {
     console.error('[BuilderInspector] Error in handleAddFromDataSource:', error)
@@ -841,8 +906,52 @@ const getQuickLinkNavigation = (prop, index) => {
             :placeholder="field.placeholder"
             @update:model-value="(val) => handleInput(field.prop, val)"
           />
+          <div v-else-if="field.type === 'rich-text'" class="rich-text-editor-wrapper">
+            <QuillEditor
+              :model-value="selectedItem.props?.[field.prop] || ''"
+              contentType="html"
+              theme="snow"
+              :options="{
+                placeholder: field.placeholder || '请输入内容...',
+                modules: {
+                  toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    [{ color: [] }, { background: [] }],
+                    [{ align: [] }],
+                    ['link', 'image'],
+                    ['clean'],
+                  ],
+                },
+              }"
+              @update:content="(content) => handleInput(field.prop, content)"
+            />
+          </div>
           <template v-else-if="field.type === 'nav-items'">
-            <div class="nav-items-editor">
+            <!-- MainHeader 的 menuItems 字段显示为全局配置入口 -->
+            <div v-if="selectedItem?.key === 'MainHeader' && field.prop === 'menuItems'" class="global-nav-notice">
+              <el-alert
+                type="info"
+                :closable="false"
+                show-icon
+              >
+                <template #title>
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span>导航菜单为全局配置，所有页面共享</span>
+                    <el-button
+                      type="primary"
+                      size="small"
+                      @click="goToProjectSettings"
+                    >
+                      去项目设置配置
+                    </el-button>
+                  </div>
+                </template>
+              </el-alert>
+            </div>
+            <!-- 其他组件的 nav-items 字段正常编辑 -->
+            <div v-else class="nav-items-editor">
               <div
                 v-for="(item, index) in getArrayProp(field.prop)"
                 :key="index"
@@ -1198,14 +1307,15 @@ const getQuickLinkNavigation = (prop, index) => {
                 :project-code="projectCode"
                 :data-source-type="field.dataSourceType || 'news'"
                 @update:model-value="(val) => handleInput(field.prop, val)"
-                @select="handleDataSourceSelect"
+                @select="(dataSourceCode) => handleDataSourceSelect(dataSourceCode, field.prop)"
               />
             </div>
           </template>
           <template v-else-if="field.type === 'news-items'">
             <div class="nav-items-editor">
               <!-- 如果选择了数据源，显示已选择的数据项，允许删除和调整 -->
-              <template v-if="selectedItem.props?.dataSourceCode">
+              <!-- 对于 CarouselNewsSplit，检查 newsDataSourceCode；对于其他组件，检查 dataSourceCode -->
+              <template v-if="selectedItem.key === 'CarouselNewsSplit' ? selectedItem.props?.newsDataSourceCode : selectedItem.props?.dataSourceCode">
                 <div
                   v-for="(item, index) in getArrayProp(field.prop)"
                   :key="index"
@@ -1229,7 +1339,7 @@ const getQuickLinkNavigation = (prop, index) => {
                 <el-button
                   type="primary"
                   text
-                  @click="handleAddFromDataSource(field.prop)"
+                  @click="handleAddFromDataSource(field.prop, selectedItem.key === 'CarouselNewsSplit' ? 'newsDataSourceCode' : 'dataSourceCode')"
                 >
                   + 从数据源添加
                 </el-button>
@@ -1272,6 +1382,78 @@ const getQuickLinkNavigation = (prop, index) => {
                   </el-button>
                 </div>
                 <el-button type="primary" text @click="addNewsItem(field.prop)">新增新闻条目</el-button>
+              </template>
+            </div>
+          </template>
+          <template v-else-if="field.type === 'notice-items'">
+            <div class="nav-items-editor">
+              <!-- 如果选择了数据源，显示已选择的数据项，允许删除和调整 -->
+              <template v-if="selectedItem.props?.dataSourceCode">
+                <div
+                  v-for="(item, index) in getArrayProp(field.prop)"
+                  :key="index"
+                  class="nav-items-editor__row"
+                >
+                  <el-input
+                    class="nav-items-editor__input"
+                    :model-value="item?.title || '未命名公告'"
+                    placeholder="公告标题"
+                    disabled
+                    style="opacity: 0.7;"
+                  />
+                  <el-button
+                    text
+                    type="danger"
+                    @click="removeNoticeItem(field.prop, index)"
+                  >
+                    删除
+                  </el-button>
+                </div>
+                <el-button
+                  type="primary"
+                  text
+                  @click="handleAddFromDataSource(field.prop)"
+                >
+                  + 从数据源添加
+                </el-button>
+                <el-alert
+                  type="info"
+                  :closable="false"
+                  style="margin-top: 0.5rem;"
+                >
+                  <template #title>
+                    <span style="font-size: 0.85rem;">数据来自数据源，可在"数据源管理"中编辑数据内容</span>
+                  </template>
+                </el-alert>
+              </template>
+              <!-- 如果没有选择数据源，显示可编辑模式 -->
+              <template v-else>
+                <div
+                  v-for="(item, index) in getArrayProp(field.prop)"
+                  :key="index"
+                  class="nav-items-editor__row"
+                >
+                  <el-input
+                    class="nav-items-editor__input"
+                    :model-value="item?.title || '未命名公告'"
+                    placeholder="公告标题"
+                    @update:model-value="(val) => updateNoticeItem(field.prop, index, 'title', val)"
+                  />
+                  <el-input
+                    class="nav-items-editor__input"
+                    :model-value="item?.date || ''"
+                    placeholder="日期（如 01-01）"
+                    @update:model-value="(val) => updateNoticeItem(field.prop, index, 'date', val)"
+                  />
+                  <el-button
+                    text
+                    type="danger"
+                    @click="removeNoticeItem(field.prop, index)"
+                  >
+                    删除
+                  </el-button>
+                </div>
+                <el-button type="primary" text @click="addNoticeItem(field.prop)">新增公告条目</el-button>
               </template>
             </div>
           </template>
@@ -2033,6 +2215,15 @@ const getQuickLinkNavigation = (prop, index) => {
 
 .quill-editor-wrapper :deep(.ql-container) {
   min-height: 400px;
+  font-size: 14px;
+}
+
+.rich-text-editor-wrapper {
+  width: 100%;
+}
+
+.rich-text-editor-wrapper :deep(.ql-container) {
+  min-height: 300px;
   font-size: 14px;
 }
 

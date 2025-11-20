@@ -4,6 +4,7 @@ public class UpdateProjectCommand {
     private Long id;
     private String name;
     private String description;
+    private String navigationConfig;
 
     public Long getId() {
         return id;
@@ -27,6 +28,14 @@ public class UpdateProjectCommand {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getNavigationConfig() {
+        return navigationConfig;
+    }
+
+    public void setNavigationConfig(String navigationConfig) {
+        this.navigationConfig = navigationConfig;
     }
 }
 

@@ -93,6 +93,13 @@ export const componentPalette = [
         source: 'shared/components/DetailData.vue',
         icon: 'Document',
       },
+      {
+        key: 'ContentDetail',
+        label: '内容详情',
+        desc: '标题、创建时间、创建人、详情内容（富文本）',
+        source: 'shared/components/ContentDetail.vue',
+        icon: 'Document',
+      },
     ],
   },
   {
@@ -130,6 +137,14 @@ export const componentPalette = [
         source: 'frontend/src/components/sections/ContentSplit.vue',
         icon: 'SetUp',
         navigationType: 'single-button',  // 单个按钮
+      },
+      {
+        key: 'CarouselNewsSplit',
+        label: '轮播新闻组合',
+        desc: '左侧轮播图，右侧新闻列表，支持数据源',
+        source: 'shared/components/sections/CarouselNewsSplit.vue',
+        icon: 'Picture',
+        navigationType: 'mixed',  // 混合类型
       },
       {
         key: 'TextImageSection',
@@ -333,9 +348,9 @@ export const componentPalette = [
       },
       {
         key: 'VideoPlayer',
-        label: 'VideoPlayer',
-        desc: '视频播放组件',
-        source: 'frontend/src/components/sections/VideoPlayer.vue',
+        label: '视频播放器',
+        desc: '视频播放组件，支持自定义封面、自动播放等配置',
+        source: 'shared/components/sections/VideoPlayer.vue',
         icon: 'VideoPlay',
       },
     ],

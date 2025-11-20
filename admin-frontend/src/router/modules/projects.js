@@ -80,5 +80,14 @@ export const projectRoutes = [
       hidden: true,
     },
   },
+  {
+    path: 'projects/:projectCode/settings',
+    name: 'projectSettings',
+    component: () => import('../../pages/projects/ProjectSettings.vue'),
+    meta: {
+      title: '项目设置',
+      hidden: true,
+    },
+  },
 ]
 
