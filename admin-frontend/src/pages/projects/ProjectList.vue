@@ -24,15 +24,48 @@ const goToBuilder = (projectCode) => {
   // 注意：这里需要先获取默认页面的 code，暂时使用第一个页面的 code 或 'home'
   // 实际应该从项目数据中获取默认页面
   const defaultPageCode = 'home' // TODO: 从项目配置中获取默认页面 code
-  router.push({ name: 'pageBuilder', params: { projectCode, pageCode: defaultPageCode } })
+  const url = router.resolve({ name: 'pageBuilder', params: { projectCode, pageCode: defaultPageCode } })
+  window.open(url.href, '_blank')
 }
 
 const handleCreate = () => {
-  router.push({ name: 'projectCreate' })
+  const url = router.resolve({ name: 'projectCreate' })
+  window.open(url.href, '_blank')
 }
 
 const handleEdit = (project) => {
-  router.push({ name: 'projectEdit', params: { code: project.code } })
+  const url = router.resolve({ name: 'projectEdit', params: { code: project.code } })
+  window.open(url.href, '_blank')
+}
+
+const handleSettings = (projectCode) => {
+  try {
+    const url = router.resolve({ name: 'projectSettings', params: { projectCode } })
+    const newWindow = window.open(url.href, '_blank')
+    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+      // 如果弹窗被阻止，在当前页面跳转
+      router.push({ name: 'projectSettings', params: { projectCode } })
+    }
+  } catch (error) {
+    console.error('Failed to open project settings:', error)
+    // 如果出错，在当前页面跳转
+    router.push({ name: 'projectSettings', params: { projectCode } })
+  }
+}
+
+const handlePageList = (projectCode) => {
+  try {
+    const url = router.resolve({ name: 'pageList', params: { projectCode } })
+    const newWindow = window.open(url.href, '_blank')
+    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+      // 如果弹窗被阻止，在当前页面跳转
+      router.push({ name: 'pageList', params: { projectCode } })
+    }
+  } catch (error) {
+    console.error('Failed to open page list:', error)
+    // 如果出错，在当前页面跳转
+    router.push({ name: 'pageList', params: { projectCode } })
+  }
 }
 
 const handleDelete = async (project) => {
@@ -88,10 +121,10 @@ onMounted(() => {
             <p class="project-card__meta">创建时间：{{ formatDate(project.createdAt) }}</p>
           </div>
           <div class="project-card__actions">
-            <el-button size="small" text class="action-btn action-btn--primary" @click="() => router.push({ name: 'pageList', params: { projectCode: project.code } })">
+            <el-button size="small" text class="action-btn action-btn--primary" @click="handlePageList(project.code)">
               页面管理
             </el-button>
-            <el-button size="small" text class="action-btn action-btn--info" @click="() => router.push({ name: 'projectSettings', params: { projectCode: project.code } })">
+            <el-button size="small" text class="action-btn action-btn--info" @click="handleSettings(project.code)">
               项目设置
             </el-button>
             <el-button size="small" text class="action-btn action-btn--warning" @click="handleEdit(project)">

@@ -7,7 +7,8 @@ const userStore = useUserStore()
 
 const handleLogout = () => {
   userStore.logout()
-  router.push({ name: 'login' })
+  const url = router.resolve({ name: 'login' })
+  window.open(url.href, '_blank')
 }
 </script>
 

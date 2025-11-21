@@ -26,18 +26,30 @@ const loadPages = async () => {
 }
 
 const goToBuilder = (page) => {
-  router.push({
+  const url = router.resolve({
     name: 'pageBuilder',
     params: { projectCode, pageCode: page.code },
   })
+  window.open(url.href, '_blank')
+}
+
+const handlePreview = (page) => {
+  // 在新标签页打开预览
+  const previewUrl = router.resolve({
+    name: 'pagePreview',
+    params: { projectCode, pageCode: page.code },
+  })
+  window.open(previewUrl.href, '_blank')
 }
 
 const handleCreate = () => {
-  router.push({ name: 'pageCreate', params: { projectCode } })
+  const url = router.resolve({ name: 'pageCreate', params: { projectCode } })
+  window.open(url.href, '_blank')
 }
 
 const handleEdit = (page) => {
-  router.push({ name: 'pageEdit', params: { projectCode, code: page.code } })
+  const url = router.resolve({ name: 'pageEdit', params: { projectCode, code: page.code } })
+  window.open(url.href, '_blank')
 }
 
 const handleDelete = async (page) => {
@@ -85,8 +97,8 @@ onMounted(() => {
         <p>管理项目中的页面，创建和编辑页面内容。</p>
       </div>
       <div class="header-actions">
-        <el-button @click="() => router.push({ name: 'projects' })">返回项目</el-button>
-        <el-button type="info" @click="() => router.push({ name: 'projectSettings', params: { projectCode } })">项目设置</el-button>
+        <el-button @click="() => { const url = router.resolve({ name: 'projects' }); window.open(url.href, '_blank') }">返回项目</el-button>
+        <el-button type="info" @click="() => { const url = router.resolve({ name: 'projectSettings', params: { projectCode } }); window.open(url.href, '_blank') }">项目设置</el-button>
         <el-button type="primary" @click="handleCreate">新建页面</el-button>
       </div>
     </header>
@@ -111,8 +123,11 @@ onMounted(() => {
             {{ formatDate(row.updatedAt) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="360" fixed="right">
           <template #default="{ row }">
+            <el-button size="small" type="success" text @click="handlePreview(row)">
+              预览
+            </el-button>
             <el-button size="small" type="primary" text @click="goToBuilder(row)">
               编辑内容
             </el-button>

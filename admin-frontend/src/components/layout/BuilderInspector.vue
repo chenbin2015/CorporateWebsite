@@ -41,10 +41,11 @@ const emit = defineEmits(['update-props', 'reset', 'delete'])
 
 const goToProjectSettings = () => {
   if (props.projectCode) {
-    router.push({
+    const url = router.resolve({
       name: 'projectSettings',
       params: { projectCode: props.projectCode },
     })
+    window.open(url.href, '_blank')
   } else {
     ElMessage.warning('无法获取项目代码')
   }

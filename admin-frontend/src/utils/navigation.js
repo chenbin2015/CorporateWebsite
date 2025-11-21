@@ -165,21 +165,10 @@ export function handleDetailPageNavigation(detailPage, item) {
       query.type = itemType
     }
     
-    // 根据配置决定是当前页跳转还是新标签页打开
-    if (detailPage.openInNewTab) {
-      // 新标签页打开
-      const queryString = new URLSearchParams(query).toString()
-      const fullUrl = window.location.origin + path + (queryString ? `?${queryString}` : '')
-      window.open(fullUrl, '_blank')
-    } else {
-      // 当前页跳转，传递路径参数（id）和查询参数（projectCode, id, type）
-      router.push({
-        path,
-        query,
-      }).catch((err) => {
-        console.error('路由跳转失败:', err)
-      })
-    }
+    // 统一在新标签页打开
+    const queryString = new URLSearchParams(query).toString()
+    const fullUrl = window.location.origin + path + (queryString ? `?${queryString}` : '')
+    window.open(fullUrl, '_blank')
   } else {
     console.warn('详情页跳转：路径为空', { detailPage, item })
   }
@@ -239,6 +228,8 @@ export function handleNavigation(navigation, item = null) {
       path += `?${query}`
     }
 
-    router.push(path)
+    // 统一在新标签页打开
+    const fullUrl = window.location.origin + path
+    window.open(fullUrl, '_blank')
   }
 }

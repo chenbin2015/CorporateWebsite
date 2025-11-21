@@ -39,7 +39,8 @@ const sections = computed(() => {
 })
 
 const handleSelect = (index) => {
-  router.push({ name: index })
+  const url = router.resolve({ name: index })
+  window.open(url.href, '_blank')
 }
 </script>
 

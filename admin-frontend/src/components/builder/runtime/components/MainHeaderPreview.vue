@@ -91,8 +91,10 @@
 
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { isDesignMode } from '@shared/utils/context'
-import { handleNavigation } from '@/utils/navigation'
+
+const router = useRouter()
 
 // 判断是否应该应用 fixed 定位（设计态不应用）
 const shouldBeFixed = computed(() => {
@@ -267,6 +269,61 @@ const navItems = computed(() => {
   })
 })
 
+// MainHeader专用的导航处理函数（在当前页打开）
+const handleHeaderNavigation = (navigation, item = null) => {
+  if (!navigation || navigation.type === 'none') {
+    return
+  }
+
+  if (navigation.type === 'url') {
+    // 外部链接在新标签页打开
+    window.open(navigation.url, '_blank')
+    return
+  }
+
+  if (navigation.type === 'page') {
+    // 页面跳转在当前页打开
+    let path = navigation.path || ''
+
+    // 如果 path 不是 runtime 格式（不以 /projects/ 开头），尝试生成 runtime 路径
+    if (!path.startsWith('/projects/') && navigation.targetPageCode) {
+      // 从当前路由获取 projectCode
+      const currentRoute = router.currentRoute.value
+      const projectCode = currentRoute.params.projectCode
+      
+      if (projectCode) {
+        // 生成 runtime 路由格式：/projects/{projectCode}/runtime/pages/{pageCode}
+        path = `/projects/${projectCode}/runtime/pages/${navigation.targetPageCode}`
+      } else {
+        console.warn('页面跳转：无法获取 projectCode，使用原始路径', navigation)
+      }
+    }
+
+    if (!path) {
+      console.warn('页面跳转：路径为空', navigation)
+      return
+    }
+
+    // 处理路径参数（如果有 item 数据）
+    if (item && navigation.paramKey) {
+      const paramSource = navigation.paramSource || 'id'
+      const paramValue = item[paramSource] || item.id
+      if (paramValue) {
+        path = path.replace(`:${navigation.paramKey}`, paramValue)
+      }
+    }
+
+    // 处理静态参数
+    const query = {}
+    if (navigation.params && Object.keys(navigation.params).length > 0) {
+      Object.assign(query, navigation.params)
+    }
+    
+    // 在当前页打开
+    router.push({ path, query })
+  }
+}
+
 const handleItemClick = (item, event) => {
   if (isDesignMode()) {
     event.preventDefault()
@@ -277,7 +334,7 @@ const handleItemClick = (item, event) => {
   if (item.navigation && item.navigation.type !== 'none') {
     event.preventDefault()
     event.stopPropagation()
-    handleNavigation(item.navigation, item)
+    handleHeaderNavigation(item.navigation, item)
   }
 }
 
@@ -291,7 +348,7 @@ const handleSubItemClick = (subItem, event) => {
   if (subItem.navigation && subItem.navigation.type !== 'none') {
     event.preventDefault()
     event.stopPropagation()
-    handleNavigation(subItem.navigation, subItem)
+    handleHeaderNavigation(subItem.navigation, subItem)
   }
 }
 </script>

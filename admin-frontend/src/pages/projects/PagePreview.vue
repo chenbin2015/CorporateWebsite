@@ -399,6 +399,7 @@ onBeforeUnmount(() => {
         <div
           v-if="isFullWidthComponent(item)"
           class="preview-component-wrapper preview-component-wrapper--fullwidth"
+          :class="{ 'preview-footer-wrapper': item.key === 'Footer' }"
           :style="getComponentMarginStyle(item)"
         >
           <component
@@ -423,10 +424,11 @@ onBeforeUnmount(() => {
 <style scoped>
 .page-preview {
   min-height: 100vh;
-  background: #f8fafc; /* 与前端页面背景色一致 */
+  background: var(--color-surface);
   width: 100%;
   margin: 0;
   padding: 0;
+  padding-bottom: 320px; /* footer高度约300px + 20px间距 */
   overflow-x: hidden;
 }
 
@@ -455,8 +457,8 @@ onBeforeUnmount(() => {
 .preview-container {
   width: 100%;
   margin: 0 auto;
-  padding: 0; /* 移除自动 padding，由组件自己控制 */
-  max-width: 72rem; /* 与前端 container 一致 */
+  padding: 0;
+  max-width: 72rem;
 }
 
 .preview-container + .preview-container {
@@ -476,7 +478,29 @@ onBeforeUnmount(() => {
 .preview-component--fullwidth {
   width: 100%;
   margin: 0;
-  padding: 0;
+ 
+}
+
+/* Footer吸底：固定在窗口底部 */
+.preview-footer-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.preview-footer-wrapper :deep(.site-footer) {
+  margin-top: 0;
+}
+
+/* Footer 内容区域样式，与详情页保持一致 */
+.preview-component--fullwidth :deep(.footer-content),
+.preview-component--fullwidth :deep(.footer-bottom) {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* 响应式 */
@@ -488,12 +512,6 @@ onBeforeUnmount(() => {
   .preview-container + .preview-container {
     margin-top: 2rem;
   }
-}
-
-.preview-component {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
 }
 
 /* 移除预览组件在画布中的装饰样式，让预览更真实 */

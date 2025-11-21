@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 import { getProject } from '@/services/modules/project'
@@ -39,10 +39,18 @@ const loadProjectConfig = async () => {
           // 解析模板数据
           templateItems.value = JSON.parse(newsTemplate.schemaData)
           console.log('[NewsDetail] 使用项目模板:', templateItems.value)
+        } else {
+          useProjectTemplate.value = false
+          templateItems.value = []
         }
       } catch (e) {
         console.warn('项目模板配置解析失败', e)
+        useProjectTemplate.value = false
+        templateItems.value = []
       }
+    } else {
+      useProjectTemplate.value = false
+      templateItems.value = []
     }
     
     // 加载导航配置
@@ -262,8 +270,39 @@ const init = async () => {
   }
 }
 
+// 设置页面标题
+const updatePageTitle = () => {
+  if (news.value) {
+    const pageName = news.value.title || '新闻详情'
+    const projectName = projectConfig.value?.name || '企业门户'
+    document.title = `${pageName} - ${projectName}`
+  } else {
+    document.title = '新闻详情 - 企业门户'
+  }
+}
+
+// 监听news变化，更新页面标题
+watch(
+  () => news.value,
+  () => {
+    updatePageTitle()
+  },
+  { deep: true }
+)
+
+// 监听projectConfig变化，更新页面标题
+watch(
+  () => projectConfig.value,
+  () => {
+    updatePageTitle()
+  },
+  { deep: true }
+)
+
 onMounted(() => {
-  init()
+  init().then(() => {
+    updatePageTitle()
+  })
 })
 
 onBeforeUnmount(() => {
@@ -275,12 +314,13 @@ onBeforeUnmount(() => {
 <template>
   <div class="news-detail-page">
     <!-- 使用项目模板 -->
-    <template v-if="useProjectTemplate && templateItems.length > 0">
+    <div v-if="useProjectTemplate && templateItems.length > 0" class="template-content">
       <template v-for="item in templateItems" :key="item.id">
         <!-- 全宽组件 -->
         <div
           v-if="isFullWidthComponent(item)"
           class="template-component-wrapper template-component-wrapper--fullwidth"
+          :class="{ 'template-footer-wrapper': item.key === 'Footer' }"
           :style="getComponentMarginStyle(item)"
         >
           <component
@@ -298,7 +338,7 @@ onBeforeUnmount(() => {
           />
         </div>
       </template>
-    </template>
+    </div>
     
     <!-- 使用默认模板 -->
     <template v-else>
@@ -338,6 +378,17 @@ onBeforeUnmount(() => {
 .news-detail-page {
   min-height: 100vh;
   background: var(--color-surface);
+  padding-bottom: 320px; /* footer高度约300px + 20px间距 */
+}
+
+/* 使用项目模板时的内容区域样式 */
+.template-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0;
 }
 
 .news-detail {
@@ -419,6 +470,27 @@ onBeforeUnmount(() => {
 
 .template-component {
   width: 100%;
+}
+
+/* Footer吸底：固定在窗口底部 */
+.template-footer-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.template-footer-wrapper :deep(.site-footer) {
+  margin-top: 0;
+}
+
+.template-component--fullwidth :deep(.footer-content),
+.template-component--fullwidth :deep(.footer-bottom) {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 </style>
 

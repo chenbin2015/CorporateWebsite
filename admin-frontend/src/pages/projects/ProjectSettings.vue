@@ -188,14 +188,19 @@ const saveNavigation = async () => {
 }
 
 // 处理页面选择（用于菜单项导航）
-const handlePageSelect = (menuItem, selectedPage) => {
-  if (selectedPage) {
+const handlePageSelect = (menuItem, selectedValue) => {
+  if (selectedValue) {
+    // selectedValue 是 PageSelector 返回的对象：{ targetPageCode, path }
     menuItem.navigation = {
       type: 'page',
-      targetPageCode: selectedPage.code,
-      path: selectedPage.path,
+      targetPageCode: selectedValue.targetPageCode,
+      path: selectedValue.path,
     }
-    menuItem.href = selectedPage.path
+    menuItem.href = selectedValue.path
+  } else {
+    // 清空选择时，清除导航配置
+    menuItem.navigation = { type: 'none' }
+    menuItem.href = '#'
   }
 }
 
@@ -207,13 +212,14 @@ const goBack = () => {
 // 编辑详情页模板
 const editDetailTemplate = (templateType) => {
   // 跳转到详情页模板编辑器
-  router.push({
+  const url = router.resolve({
     name: 'detailTemplateEditor',
     params: {
       projectCode: projectCode.value,
       templateType: templateType,
     },
   })
+  window.open(url.href, '_blank')
 }
 
 // 删除详情页模板
@@ -322,6 +328,12 @@ onMounted(() => {
             <div class="menu-item-info">
               <el-icon class="drag-handle"><Menu /></el-icon>
               <span class="menu-label">{{ item.label }}</span>
+              <el-tag v-if="item.navigation?.type === 'page' && item.navigation?.targetPageCode" size="small" type="success">
+                页面：{{ item.navigation.targetPageCode }}
+              </el-tag>
+              <el-tag v-else-if="item.href && item.href !== '#'" size="small" type="info">
+                链接：{{ item.href }}
+              </el-tag>
               <el-tag v-if="item.children?.length > 0" size="small" type="info">
                 {{ item.children.length }} 个子菜单
               </el-tag>
@@ -374,6 +386,12 @@ onMounted(() => {
             >
               <div class="child-menu-item-info">
                 <span class="child-menu-label">{{ child.label }}</span>
+                <el-tag v-if="child.navigation?.type === 'page' && child.navigation?.targetPageCode" size="small" type="success" style="margin-left: 0.5rem">
+                  页面：{{ child.navigation.targetPageCode }}
+                </el-tag>
+                <el-tag v-else-if="child.href && child.href !== '#'" size="small" type="info" style="margin-left: 0.5rem">
+                  链接：{{ child.href }}
+                </el-tag>
               </div>
               <div class="child-menu-item-actions">
                 <el-button
@@ -467,25 +485,28 @@ onMounted(() => {
       @close="cancelEdit"
     >
       <el-form :model="editingItem" label-width="100px" v-if="editingItem">
-        <el-form-item label="菜单名称">
+        <el-form-item label="菜单名称" required>
           <el-input v-model="editingItem.label" placeholder="请输入菜单名称" />
         </el-form-item>
-        <el-form-item label="链接地址">
-          <el-input v-model="editingItem.href" placeholder="如: /about" />
-        </el-form-item>
-        <el-form-item label="目标页面">
+        <el-form-item label="访问页面" required>
           <PageSelector
             :project-code="projectCode"
             :model-value="
               editingItem.navigation?.targetPageCode
                 ? {
-                    code: editingItem.navigation.targetPageCode,
+                    targetPageCode: editingItem.navigation.targetPageCode,
                     path: editingItem.navigation.path,
                   }
                 : null
             "
             @update:model-value="handlePageSelect(editingItem, $event)"
           />
+          <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--el-text-color-secondary)">
+            <p v-if="editingItem.navigation?.path" style="margin: 0">
+              访问地址：<code>{{ editingItem.navigation.path }}</code>
+            </p>
+            <p v-else style="margin: 0">请选择一个页面作为菜单的访问地址</p>
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>

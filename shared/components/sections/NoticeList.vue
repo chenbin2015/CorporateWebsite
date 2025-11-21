@@ -40,7 +40,6 @@ const handleItemClick = (item, event) => {
   <section class="notice">
     <header>
       <h3>{{ title }}</h3>
-      <a href="#">{{ moreText }}</a>
     </header>
     <ul>
       <li v-for="item in items" :key="item.title || item.id">

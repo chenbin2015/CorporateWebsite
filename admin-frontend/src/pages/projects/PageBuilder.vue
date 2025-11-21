@@ -374,15 +374,56 @@ watch(
   { deep: true }
 )
 
+// 保存原始样式（用于恢复）
+const originalHtmlOverflow = ref('')
+const originalBodyOverflow = ref('')
+const originalHtmlHeight = ref('')
+const originalBodyHeight = ref('')
+
+// 设计态：禁用全局滚动条
+const disableGlobalScroll = () => {
+  const html = document.documentElement
+  const body = document.body
+  
+  // 保存原始值
+  originalHtmlOverflow.value = html.style.overflow || ''
+  originalBodyOverflow.value = body.style.overflow || ''
+  originalHtmlHeight.value = html.style.height || ''
+  originalBodyHeight.value = body.style.height || ''
+  
+  // 设计态禁用滚动条
+  html.style.overflow = 'hidden'
+  body.style.overflow = 'hidden'
+  html.style.height = '100%'
+  body.style.height = '100%'
+}
+
+// 恢复原始样式
+const restoreGlobalScroll = () => {
+  const html = document.documentElement
+  const body = document.body
+  
+  html.style.overflow = originalHtmlOverflow.value
+  body.style.overflow = originalBodyOverflow.value
+  html.style.height = originalHtmlHeight.value
+  body.style.height = originalBodyHeight.value
+}
+
 onMounted(() => {
   // 设置设计态标识（页面搭建器是设计态）
   window.__DESIGN_MODE__ = true
   window.__BUILDER_MODE__ = true
   
+  // 设计态禁用全局滚动条
+  disableGlobalScroll()
+  
   loadPage()
 })
 
 onBeforeUnmount(() => {
+  // 恢复全局滚动条
+  restoreGlobalScroll()
+  
   // 清理设计态标识和项目配置
   delete window.__DESIGN_MODE__
   delete window.__BUILDER_MODE__
@@ -395,9 +436,9 @@ onBeforeUnmount(() => {
     <header class="builder-header">
       <div>
         <p class="builder-breadcrumb">
-          <a @click="() => router.push({ name: 'projects' })" class="breadcrumb-link">项目</a>
+          <a @click="() => { const url = router.resolve({ name: 'projects' }); window.open(url.href, '_blank') }" class="breadcrumb-link">项目</a>
           <span> / </span>
-          <a @click="() => router.push({ name: 'pageList', params: { projectCode } })" class="breadcrumb-link">页面管理</a>
+          <a @click="() => { const url = router.resolve({ name: 'pageList', params: { projectCode } }); window.open(url.href, '_blank') }" class="breadcrumb-link">页面管理</a>
           <span> / </span>
           <span>{{ pageInfo?.name || `页面 ${pageCode}` }}</span>
         </p>

@@ -9,7 +9,8 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden;
+  /* 不在全局禁用滚动条，只在设计态（PageBuilder）中禁用 */
+  /* overflow: hidden; */
 }
 
 body {

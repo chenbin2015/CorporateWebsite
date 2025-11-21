@@ -102,11 +102,16 @@ const bottomBorderStyle = computed(() => {
 
 <style scoped>
 .site-footer {
+  width: 100%;
   padding: 3rem 1.5rem 1.5rem;
   margin-top: 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .footer-content {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
@@ -149,6 +154,7 @@ const bottomBorderStyle = computed(() => {
 }
 
 .footer-bottom {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding-top: 1.5rem;

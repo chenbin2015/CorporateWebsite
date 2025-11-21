@@ -262,12 +262,53 @@ watch(
   { immediate: false }
 )
 
+// 保存原始样式（用于恢复）
+const originalHtmlOverflow = ref('')
+const originalBodyOverflow = ref('')
+const originalHtmlHeight = ref('')
+const originalBodyHeight = ref('')
+
+// 运行态：启用全局滚动条
+const enableGlobalScroll = () => {
+  const html = document.documentElement
+  const body = document.body
+  
+  // 保存原始值
+  originalHtmlOverflow.value = html.style.overflow || ''
+  originalBodyOverflow.value = body.style.overflow || ''
+  originalHtmlHeight.value = html.style.height || ''
+  originalBodyHeight.value = body.style.height || ''
+  
+  // 运行态启用滚动条
+  html.style.overflow = 'auto'
+  body.style.overflow = 'auto'
+  html.style.height = 'auto'
+  body.style.height = 'auto'
+}
+
+// 恢复原始样式
+const restoreGlobalScroll = () => {
+  const html = document.documentElement
+  const body = document.body
+  
+  html.style.overflow = originalHtmlOverflow.value
+  body.style.overflow = originalBodyOverflow.value
+  html.style.height = originalHtmlHeight.value
+  body.style.height = originalBodyHeight.value
+}
+
 onMounted(() => {
+  // 运行态启用全局滚动条
+  enableGlobalScroll()
+  
   loadPage()
 })
 
-// 组件卸载时清理全局数据
+// 组件卸载时清理全局数据和恢复滚动条
 onBeforeUnmount(() => {
+  // 恢复全局滚动条
+  restoreGlobalScroll()
+  
   delete window.__DETAIL_DATA__
   delete window.__PROJECT_NAVIGATION_CONFIG__
 })
@@ -290,6 +331,7 @@ onBeforeUnmount(() => {
         <div
           v-if="isFullWidthComponent(item)"
           class="runtime-component-wrapper runtime-component-wrapper--fullwidth"
+          :class="{ 'runtime-footer-wrapper': item.key === 'Footer' }"
           :style="getComponentMarginStyle(item)"
         >
           <component
@@ -318,6 +360,7 @@ onBeforeUnmount(() => {
   width: 100%;
   margin: 0;
   padding: 0;
+  padding-bottom: 320px; /* footer高度约300px + 20px间距 */
 }
 
 .runtime-loading,
@@ -366,6 +409,19 @@ onBeforeUnmount(() => {
   width: 100%;
   margin: 0;
   padding: 0;
+}
+
+/* Footer吸底：固定在窗口底部 */
+.runtime-footer-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.runtime-footer-wrapper :deep(.site-footer) {
+  margin-top: 0;
 }
 
 @media (max-width: 48rem) {
