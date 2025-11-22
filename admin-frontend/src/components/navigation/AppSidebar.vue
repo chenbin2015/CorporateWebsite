@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { dashboardRoutes } from '@/router/modules/dashboard'
 import { projectRoutes } from '@/router/modules/projects'
+import { systemRoutes } from '@/router/modules/system'
 
 const route = useRoute()
 const router = useRouter()
@@ -12,6 +13,9 @@ const iconMap = {
   home: 'HomeFilled',
   folder: 'FolderOpened',
   edit: 'Edit',
+  user: 'User',
+  document: 'Document',
+  setting: 'Setting',
   default: 'Menu',
 }
 
@@ -20,6 +24,7 @@ const resolveIcon = (key) => iconMap[key] ?? iconMap.default
 const sections = computed(() => {
   const dashboard = dashboardRoutes.filter((item) => !item.meta?.hidden)
   const projects = projectRoutes.filter((item) => !item.meta?.hidden && item.name !== 'pageBuilder')
+  const system = systemRoutes.filter((item) => !item.meta?.hidden)
 
   return [
     ...dashboard.map((route) => ({
@@ -35,12 +40,20 @@ const sections = computed(() => {
         { name: 'projectCreate', label: '添加项目', icon: 'edit' },
       ],
     },
+    {
+      type: 'group',
+      label: '系统管理',
+      icon: 'setting',
+      children: [
+        { name: 'userManagement', label: '用户管理', icon: 'user' },
+        { name: 'logQuery', label: '日志查询', icon: 'document' },
+      ],
+    },
   ]
 })
 
 const handleSelect = (index) => {
-  const url = router.resolve({ name: index })
-  window.open(url.href, '_blank')
+  router.replace({ name: index })
 }
 </script>
 

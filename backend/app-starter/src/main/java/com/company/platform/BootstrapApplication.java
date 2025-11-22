@@ -9,7 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         "com.company.platform.infrastructure.user.database",
         "com.company.platform.infrastructure.project.database",
         "com.company.platform.infrastructure.page.database",
-        "com.company.platform.infrastructure.datasource.database"
+        "com.company.platform.infrastructure.datasource.database",
+        "com.company.platform.infrastructure.log.database"
 })
 public class BootstrapApplication {
 

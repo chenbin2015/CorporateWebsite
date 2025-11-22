@@ -54,7 +54,40 @@ const goToProjectSettings = () => {
 const title = computed(() => props.selectedItem?.label ?? '未选择组件')
 
 const handleInput = (prop, value) => {
-  emit('update-props', { [prop]: value })
+  // 支持嵌套属性，如 'contact.address'
+  if (prop.includes('.')) {
+    const parts = prop.split('.')
+    const rootProp = parts[0]
+    const nestedProp = parts.slice(1).join('.')
+    
+    // 获取当前对象
+    const current = props.selectedItem?.props?.[rootProp] || {}
+    // 创建新对象，更新嵌套属性
+    const updated = { ...current }
+    setNestedValue(updated, nestedProp, value)
+    emit('update-props', { [rootProp]: updated })
+  } else {
+    emit('update-props', { [prop]: value })
+  }
+}
+
+// 辅助函数：设置嵌套对象的值
+const setNestedValue = (obj, path, value) => {
+  const keys = path.split('.')
+  const lastKey = keys.pop()
+  const target = keys.reduce((o, key) => {
+    if (!o[key]) o[key] = {}
+    return o[key]
+  }, obj)
+  target[lastKey] = value
+}
+
+// 辅助函数：获取嵌套对象的值
+const getNestedValue = (obj, path) => {
+  if (!obj || !path) return ''
+  if (!path.includes('.')) return obj[path] || ''
+  const keys = path.split('.')
+  return keys.reduce((o, key) => o?.[key], obj) || ''
 }
 
 const getArrayProp = (prop) => {
@@ -885,7 +918,7 @@ const getQuickLinkNavigation = (prop, index) => {
         <el-form-item v-for="field in schema.fields" :key="field.prop" :label="field.label">
           <el-input
             v-if="field.type === 'text'"
-            :model-value="selectedItem.props?.[field.prop]"
+            :model-value="getNestedValue(selectedItem.props, field.prop)"
             :placeholder="field.placeholder"
             @update:model-value="(val) => handleInput(field.prop, val)"
           />

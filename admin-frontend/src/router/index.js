@@ -3,13 +3,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import BasicLayout from '../layouts/BasicLayout.vue'
 import { dashboardRoutes } from './modules/dashboard'
 import { projectRoutes } from './modules/projects'
+import { systemRoutes } from './modules/system'
 
 // 从项目路由中分离出预览路由和运行态路由（都不使用 BasicLayout）
 const previewRoute = projectRoutes.find(route => route.name === 'pagePreview')
 const runtimeRoute = projectRoutes.find(route => route.name === 'runtimePage')
 const otherProjectRoutes = projectRoutes.filter(route => route.name !== 'pagePreview' && route.name !== 'runtimePage')
 
-const appChildren = [...dashboardRoutes, ...otherProjectRoutes]
+const appChildren = [...dashboardRoutes, ...otherProjectRoutes, ...systemRoutes]
 
 const routes = [
   {

@@ -848,7 +848,9 @@ export const componentSchemas = {
       { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
       { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 0 或 2.4rem auto 或 2.4rem 1.5rem' },
       { prop: 'links', label: '链接列表', type: 'quick-links' },
-      { prop: 'contact', label: '联系信息', type: 'object' },
+      { prop: 'contact.address', label: '联系地址', type: 'text', placeholder: '例如: 地址：江苏省南京市' },
+      { prop: 'contact.phone', label: '联系电话', type: 'text', placeholder: '例如: 电话：025-12345678' },
+      { prop: 'contact.email', label: '联系邮箱', type: 'text', placeholder: '例如: 邮箱：contact@example.com' },
     ],
   },
   StatsHighlight: {
