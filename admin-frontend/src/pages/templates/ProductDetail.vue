@@ -333,7 +333,6 @@ watch(
 .product-detail-page {
   min-height: 100vh;
   background: var(--color-surface);
-  padding-bottom: 320px; /* footer高度约300px + 20px间距 */
 }
 
 .template-content {

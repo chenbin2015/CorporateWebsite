@@ -201,10 +201,31 @@ const getComponentMarginStyle = (item) => {
   }
 }
 
-// 获取组件 props（排除 margin）
+// 获取包裹容器样式（包括 max-width 和 padding）
+const getContainerStyle = (item) => {
+  const style = {}
+  
+  // 最大宽度
+  if (item.props?.containerMaxWidth) {
+    style.maxWidth = item.props.containerMaxWidth
+  }
+  
+  // 内边距
+  if (item.props?.containerPadding) {
+    style.padding = item.props.containerPadding
+  }
+  
+  // 合并 margin 样式
+  const marginStyle = getComponentMarginStyle(item)
+  return { ...style, ...marginStyle }
+}
+
+// 获取组件 props（排除 margin 和容器样式相关属性）
 const getComponentPropsWithoutMargin = (item) => {
   const props = { ...item.props }
   delete props.margin
+  delete props.containerMaxWidth
+  delete props.containerPadding
   return props
 }
 
@@ -330,7 +351,7 @@ onBeforeUnmount(() => {
           />
         </div>
         <!-- 固定宽度组件 -->
-        <div v-else class="template-container template-component-wrapper" :style="getComponentMarginStyle(item)">
+        <div v-else class="template-container template-component-wrapper" :style="getContainerStyle(item)">
           <component
             :is="resolveBuilderComponent(item.key)"
             v-bind="getComponentPropsWithoutMargin(item)"
@@ -378,7 +399,6 @@ onBeforeUnmount(() => {
 .news-detail-page {
   min-height: 100vh;
   background: var(--color-surface);
-  padding-bottom: 320px; /* footer高度约300px + 20px间距 */
 }
 
 /* 使用项目模板时的内容区域样式 */
@@ -463,6 +483,7 @@ onBeforeUnmount(() => {
 }
 
 .template-container {
+  /* 默认值，可通过内联样式覆盖 */
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;

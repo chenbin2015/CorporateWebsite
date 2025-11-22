@@ -3,10 +3,13 @@ com\company\platform\infrastructure\user\database\model\UserDO.class
 com\company\platform\infrastructure\datasource\database\MyBatisDataSourceRepository.class
 com\company\platform\infrastructure\datasource\database\DataSourceItemMapper.class
 com\company\platform\infrastructure\user\database\MyBatisUserRepository.class
+com\company\platform\infrastructure\log\database\MyBatisOperationLogRepository.class
 com\company\platform\infrastructure\config\MyBatisConfig.class
+com\company\platform\infrastructure\log\database\OperationLogMapper.class
 com\company\platform\infrastructure\datasource\database\DataSourceMapper.class
 com\company\platform\infrastructure\project\database\MyBatisProjectRepository.class
 com\company\platform\infrastructure\user\database\UserMapper.class
 com\company\platform\infrastructure\datasource\database\MyBatisDataSourceItemRepository.class
 com\company\platform\infrastructure\page\database\MyBatisPageRepository.class
+com\company\platform\infrastructure\log\database\model\OperationLogDO.class
 com\company\platform\infrastructure\project\database\ProjectMapper.class

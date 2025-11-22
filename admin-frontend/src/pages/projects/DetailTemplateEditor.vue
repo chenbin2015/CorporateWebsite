@@ -365,11 +365,7 @@ const handleSave = async () => {
 
 // 返回项目设置
 const goBack = () => {
-  const url = router.resolve({
-    name: 'projectSettings',
-    params: { projectCode: projectCode.value },
-  })
-  window.open(url.href, '_blank')
+  router.back()
 }
 
 onMounted(() => {

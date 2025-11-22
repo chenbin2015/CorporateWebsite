@@ -5,10 +5,13 @@ import { useUserStore } from '@/stores/user'
 const router = useRouter()
 const userStore = useUserStore()
 
+const handleProfile = () => {
+  router.push({ name: 'userProfile' })
+}
+
 const handleLogout = () => {
   userStore.logout()
-  const url = router.resolve({ name: 'login' })
-  window.open(url.href, '_blank')
+  router.replace({ name: 'login' })
 }
 </script>
 
@@ -37,7 +40,7 @@ const handleLogout = () => {
         </span>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item>个人中心</el-dropdown-item>
+            <el-dropdown-item @click="handleProfile">个人中心</el-dropdown-item>
             <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>

@@ -19,3 +19,15 @@ export const systemRoutes = [
   },
 ]
 
+export const userRoutes = [
+  {
+    path: 'user/profile',
+    name: 'userProfile',
+    component: () => import('../../pages/user/UserProfile.vue'),
+    meta: {
+      title: '个人中心',
+      icon: 'user',
+    },
+  },
+]
+

@@ -13,16 +13,21 @@ export default defineConfig({
       // 确保 @element-plus/icons-vue 从当前项目的 node_modules 解析
       '@element-plus/icons-vue': path.resolve(__dirname, 'node_modules/@element-plus/icons-vue'),
     },
-    dedupe: ['vue', '@element-plus/icons-vue'],
+    dedupe: ['vue', 'vue-router', '@element-plus/icons-vue'],
   },
   build: {
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true,
     },
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
   },
   optimizeDeps: {
-    include: ['@element-plus/icons-vue', 'element-plus'],
+    include: ['vue-router', '@element-plus/icons-vue', 'element-plus'],
   },
   server: {
     proxy: {

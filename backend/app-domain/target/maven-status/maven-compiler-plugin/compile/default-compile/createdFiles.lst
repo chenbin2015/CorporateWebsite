@@ -1,10 +1,12 @@
 com\company\platform\domain\project\model\Project.class
 com\company\platform\domain\user\model\User.class
 com\company\platform\domain\datasource\model\DataSourceItem.class
+com\company\platform\domain\log\model\OperationLog.class
 com\company\platform\domain\page\model\Page.class
 com\company\platform\domain\datasource\model\DataSource.class
 com\company\platform\domain\user\repository\UserRepository.class
 com\company\platform\domain\datasource\repository\DataSourceRepository.class
+com\company\platform\domain\log\repository\OperationLogRepository.class
 com\company\platform\domain\project\repository\ProjectRepository.class
 com\company\platform\domain\datasource\repository\DataSourceItemRepository.class
 com\company\platform\domain\page\repository\PageRepository.class

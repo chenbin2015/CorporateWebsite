@@ -28,11 +28,10 @@ const loadPages = async () => {
 }
 
 const goToBuilder = (page) => {
-  const url = router.resolve({
+  router.push({
     name: 'pageBuilder',
     params: { projectCode, pageCode: page.code },
   })
-  window.open(url.href, '_blank')
 }
 
 const handlePreview = (page) => {
@@ -45,13 +44,11 @@ const handlePreview = (page) => {
 }
 
 const handleCreate = () => {
-  const url = router.resolve({ name: 'pageCreate', params: { projectCode } })
-  window.open(url.href, '_blank')
+  router.push({ name: 'pageCreate', params: { projectCode } })
 }
 
 const handleEdit = (page) => {
-  const url = router.resolve({ name: 'pageEdit', params: { projectCode, code: page.code } })
-  window.open(url.href, '_blank')
+  router.push({ name: 'pageEdit', params: { projectCode, code: page.code } })
 }
 
 const handleDelete = async (page) => {
@@ -71,6 +68,14 @@ const handleDelete = async (page) => {
       ElMessage.error('删除页面失败')
     }
   }
+}
+
+const handleBack = () => {
+  router.push({ name: 'projects' })
+}
+
+const handleSettings = () => {
+  router.push({ name: 'projectSettings', params: { projectCode } })
 }
 
 const formatDate = (dateString) => {
@@ -121,8 +126,8 @@ onMounted(() => {
         <p>管理项目中的页面，创建和编辑页面内容。</p>
       </div>
       <div class="header-actions">
-        <el-button @click="() => { const url = router.resolve({ name: 'projects' }); window.open(url.href, '_blank') }">返回项目</el-button>
-        <el-button type="info" @click="() => { const url = router.resolve({ name: 'projectSettings', params: { projectCode } }); window.open(url.href, '_blank') }">项目设置</el-button>
+        <el-button @click="handleBack">返回项目</el-button>
+        <el-button type="info" @click="handleSettings">项目设置</el-button>
         <el-button type="primary" @click="handleCreate">新建页面</el-button>
       </div>
     </header>

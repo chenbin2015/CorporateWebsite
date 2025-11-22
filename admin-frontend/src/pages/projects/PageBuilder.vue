@@ -350,6 +350,15 @@ const handlePreview = () => {
   })
 }
 
+// 面包屑点击处理
+const handleBreadcrumbProjects = () => {
+  router.push({ name: 'projects' })
+}
+
+const handleBreadcrumbPageList = () => {
+  router.push({ name: 'pageList', params: { projectCode: projectCode.value } })
+}
+
 // 监听路由参数变化，重新加载页面数据（包括项目配置）
 watch(
   () => [route.params.projectCode, route.params.pageCode],
@@ -436,9 +445,9 @@ onBeforeUnmount(() => {
     <header class="builder-header">
       <div>
         <p class="builder-breadcrumb">
-          <a @click="() => { const url = router.resolve({ name: 'projects' }); window.open(url.href, '_blank') }" class="breadcrumb-link">项目</a>
+          <a @click.prevent="handleBreadcrumbProjects" class="breadcrumb-link">项目</a>
           <span> / </span>
-          <a @click="() => { const url = router.resolve({ name: 'pageList', params: { projectCode } }); window.open(url.href, '_blank') }" class="breadcrumb-link">页面管理</a>
+          <a @click.prevent="handleBreadcrumbPageList" class="breadcrumb-link">页面管理</a>
           <span> / </span>
           <span>{{ pageInfo?.name || `页面 ${pageCode}` }}</span>
         </p>

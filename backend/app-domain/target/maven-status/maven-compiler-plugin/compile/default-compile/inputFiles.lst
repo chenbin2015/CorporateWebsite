@@ -7,4 +7,6 @@ D:\code\company\backend\app-domain\src\main\java\com\company\platform\domain\use
 D:\code\company\backend\app-domain\src\main\java\com\company\platform\domain\datasource\model\DataSource.java
 D:\code\company\backend\app-domain\src\main\java\com\company\platform\domain\datasource\model\DataSourceItem.java
 D:\code\company\backend\app-domain\src\main\java\com\company\platform\domain\user\repository\UserRepository.java
+D:\code\company\backend\app-domain\src\main\java\com\company\platform\domain\log\model\OperationLog.java
+D:\code\company\backend\app-domain\src\main\java\com\company\platform\domain\log\repository\OperationLogRepository.java
 D:\code\company\backend\app-domain\src\main\java\com\company\platform\domain\project\model\Project.java

@@ -893,6 +893,9 @@ export const componentSchemas = {
       showContent: true,
       fullWidth: false, // 默认非全宽
       margin: '2.4rem auto', // 默认外边距
+      height: '', // 默认高度（空表示自动）
+      containerMaxWidth: '1200px', // 包裹容器最大宽度
+      containerPadding: '0 1.5rem', // 包裹容器内边距
     },
     fields: [
       { prop: 'title', label: '标题', type: 'text' },
@@ -905,6 +908,9 @@ export const componentSchemas = {
       { prop: 'showContent', label: '显示详情内容', type: 'switch', activeText: '显示', inactiveText: '隐藏' },
       { prop: 'fullWidth', label: '显示模式', type: 'switch', activeText: '全屏', inactiveText: '普通尺寸' },
       { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 2.4rem auto 或 2.4rem 1.5rem' },
+      { prop: 'height', label: '高度', type: 'text', placeholder: '例如: 500px 或 30rem（留空表示自动）' },
+      { prop: 'containerMaxWidth', label: '容器最大宽度', type: 'text', placeholder: '例如: 1200px 或 72rem（留空表示无限制）' },
+      { prop: 'containerPadding', label: '容器内边距', type: 'text', placeholder: '例如: 0 1.5rem 或 2rem（留空表示无内边距）' },
     ],
   },
 }

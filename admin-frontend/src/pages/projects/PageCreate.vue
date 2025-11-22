@@ -72,8 +72,7 @@ const handleSubmit = async () => {
         })
         ElMessage.success('创建成功')
       }
-      const url = router.resolve({ name: 'pageList', params: { projectCode } })
-      window.open(url.href, '_blank')
+      router.push({ name: 'pageList', params: { projectCode } })
     } catch (error) {
       console.error('Failed to save page:', error)
       ElMessage.error(isEdit.value ? '更新失败' : '创建失败')

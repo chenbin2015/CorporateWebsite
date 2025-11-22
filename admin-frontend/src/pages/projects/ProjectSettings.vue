@@ -212,14 +212,13 @@ const goBack = () => {
 // 编辑详情页模板
 const editDetailTemplate = (templateType) => {
   // 跳转到详情页模板编辑器
-  const url = router.resolve({
+  router.push({
     name: 'detailTemplateEditor',
     params: {
       projectCode: projectCode.value,
       templateType: templateType,
     },
   })
-  window.open(url.href, '_blank')
 }
 
 // 删除详情页模板

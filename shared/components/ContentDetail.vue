@@ -35,6 +35,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  height: {
+    type: String,
+    default: '',
+  },
 })
 
 // 从全局 context 获取详情数据（作为 fallback）
@@ -58,10 +62,19 @@ const displayAuthor = computed(() => {
 const displayContent = computed(() => {
   return props.content || detailData.value?.content || ''
 })
+
+// 计算样式
+const contentDetailStyle = computed(() => {
+  const style = {}
+  if (props.height) {
+    style.minHeight = props.height
+  }
+  return style
+})
 </script>
 
 <template>
-  <section class="content-detail">
+  <section class="content-detail" :style="contentDetailStyle">
     <header v-if="showTitle || showCreatedAt || showAuthor" class="content-detail__header">
       <h1 v-if="showTitle && displayTitle" class="content-detail__title">{{ displayTitle }}</h1>
       <div v-if="showCreatedAt || showAuthor" class="content-detail__meta">

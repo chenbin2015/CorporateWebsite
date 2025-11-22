@@ -13,6 +13,7 @@ com\company\platform\client\page\PageController$PublishPageRequest.class
 com\company\platform\client\project\ProjectController$UpdateProjectRequest.class
 com\company\platform\client\datasource\DataSourceItemController$UpdateDataSourceItemRequest.class
 com\company\platform\client\page\PageController$UpdatePageRequest.class
+com\company\platform\client\log\LogController.class
 com\company\platform\client\project\ProjectController.class
 com\company\platform\client\page\PageController$SaveDraftRequest.class
 com\company\platform\client\datasource\DataSourceController$UpdateDataSourceRequest.class

@@ -10,6 +10,8 @@ D:\code\company\backend\app-application\src\main\java\com\company\platform\appli
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\project\command\UpdateProjectCommand.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\page\command\CreatePageCommand.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\project\ProjectQueryService.java
+D:\code\company\backend\app-application\src\main\java\com\company\platform\application\log\LogQueryService.java
+D:\code\company\backend\app-application\src\main\java\com\company\platform\application\log\LogCommandService.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\page\command\PublishPageCommand.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\datasource\DataSourceItemCommandService.java
 D:\code\company\backend\app-application\src\main\java\com\company\platform\application\datasource\command\UpdateDataSourceCommand.java

@@ -1,5 +1,6 @@
 package com.company.platform.client.page;
 
+import com.company.platform.application.log.LogCommandService;
 import com.company.platform.application.page.PageCommandService;
 import com.company.platform.application.page.PageQueryService;
 import com.company.platform.application.page.command.CreatePageCommand;
@@ -9,10 +10,12 @@ import com.company.platform.application.page.command.UpdatePageCommand;
 import com.company.platform.application.project.ProjectQueryService;
 import com.company.platform.domain.page.model.Page;
 import com.company.platform.domain.project.model.Project;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -23,11 +26,38 @@ public class PageController {
     private final PageQueryService pageQueryService;
     private final PageCommandService pageCommandService;
     private final ProjectQueryService projectQueryService;
+    private final LogCommandService logCommandService;
 
-    public PageController(PageQueryService pageQueryService, PageCommandService pageCommandService, ProjectQueryService projectQueryService) {
+    public PageController(PageQueryService pageQueryService, PageCommandService pageCommandService, ProjectQueryService projectQueryService, LogCommandService logCommandService) {
         this.pageQueryService = pageQueryService;
         this.pageCommandService = pageCommandService;
         this.projectQueryService = projectQueryService;
+        this.logCommandService = logCommandService;
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        // 处理多个IP的情况，取第一个
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip != null ? ip : "unknown";
+    }
+
+    private String getOperator(Principal principal) {
+        return principal != null ? principal.getName() : "system";
     }
 
     @GetMapping
@@ -55,7 +85,11 @@ public class PageController {
     }
 
     @PostMapping
-    public ResponseEntity<Page> createPage(@PathVariable("projectId") String projectId, @RequestBody CreatePageRequest request) {
+    public ResponseEntity<Page> createPage(
+            @PathVariable("projectId") String projectId,
+            @RequestBody CreatePageRequest request,
+            Principal principal,
+            HttpServletRequest httpRequest) {
         // 支持通过 id (Long) 或 code (String) 查询
         Project project;
         try {
@@ -74,6 +108,17 @@ public class PageController {
         command.setSchemaData(request.getSchemaData() != null ? request.getSchemaData() : "[]");
 
         Page page = pageCommandService.createPage(command);
+        
+        // 记录日志
+        logCommandService.recordLog(
+                "CREATE",
+                "创建页面",
+                getOperator(principal),
+                String.format("项目: %s, 页面: %s (%s)", project.getName(), page.getName(), page.getCode()),
+                String.format("创建页面 [%s]，路径: %s", page.getName(), page.getPath()),
+                getClientIp(httpRequest)
+        );
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(page);
     }
 
@@ -81,15 +126,20 @@ public class PageController {
     public ResponseEntity<Page> saveDraft(
             @PathVariable("projectId") String projectId,
             @PathVariable("pageId") String pageId,
-            @RequestBody SaveDraftRequest request) {
+            @RequestBody SaveDraftRequest request,
+            Principal principal,
+            HttpServletRequest httpRequest) {
         // 支持通过 id (Long) 或 code (String) 查询
         Page page;
+        Project project;
         try {
             Long projectIdLong = Long.parseLong(projectId);
             Long pageIdLong = Long.parseLong(pageId);
             page = pageQueryService.getPage(projectIdLong, pageIdLong);
+            project = projectQueryService.getProject(projectIdLong);
         } catch (NumberFormatException e) {
             page = pageQueryService.getPageByCode(projectId, pageId);
+            project = projectQueryService.getProjectByCode(projectId);
         }
         
         SaveDraftCommand command = new SaveDraftCommand();
@@ -102,6 +152,17 @@ public class PageController {
         command.setSchemaData(request.getSchemaData());
 
         Page savedPage = pageCommandService.saveDraft(command);
+        
+        // 记录日志
+        logCommandService.recordLog(
+                "UPDATE",
+                "保存草稿",
+                getOperator(principal),
+                String.format("项目: %s, 页面: %s (%s)", project.getName(), savedPage.getName(), savedPage.getCode()),
+                String.format("保存页面草稿 [%s]", savedPage.getName()),
+                getClientIp(httpRequest)
+        );
+        
         return ResponseEntity.ok(savedPage);
     }
 
@@ -109,15 +170,20 @@ public class PageController {
     public ResponseEntity<Page> updatePage(
             @PathVariable("projectId") String projectId,
             @PathVariable("pageId") String pageId,
-            @RequestBody UpdatePageRequest request) {
+            @RequestBody UpdatePageRequest request,
+            Principal principal,
+            HttpServletRequest httpRequest) {
         // 支持通过 id (Long) 或 code (String) 查询
         Page page;
+        Project project;
         try {
             Long projectIdLong = Long.parseLong(projectId);
             Long pageIdLong = Long.parseLong(pageId);
             page = pageQueryService.getPage(projectIdLong, pageIdLong);
+            project = projectQueryService.getProject(projectIdLong);
         } catch (NumberFormatException e) {
             page = pageQueryService.getPageByCode(projectId, pageId);
+            project = projectQueryService.getProjectByCode(projectId);
         }
         
         UpdatePageCommand command = new UpdatePageCommand();
@@ -129,6 +195,17 @@ public class PageController {
         command.setDescription(request.getDescription());
 
         Page updatedPage = pageCommandService.updatePage(command);
+        
+        // 记录日志
+        logCommandService.recordLog(
+                "UPDATE",
+                "更新页面信息",
+                getOperator(principal),
+                String.format("项目: %s, 页面: %s (%s)", project.getName(), updatedPage.getName(), updatedPage.getCode()),
+                String.format("更新页面信息 [%s]，路径: %s", updatedPage.getName(), updatedPage.getPath()),
+                getClientIp(httpRequest)
+        );
+        
         return ResponseEntity.ok(updatedPage);
     }
 
@@ -136,15 +213,20 @@ public class PageController {
     public ResponseEntity<Page> publishPage(
             @PathVariable("projectId") String projectId,
             @PathVariable("pageId") String pageId,
-            @RequestBody(required = false) PublishPageRequest request) {
+            @RequestBody(required = false) PublishPageRequest request,
+            Principal principal,
+            HttpServletRequest httpRequest) {
         // 支持通过 id (Long) 或 code (String) 查询
         Page page;
+        Project project;
         try {
             Long projectIdLong = Long.parseLong(projectId);
             Long pageIdLong = Long.parseLong(pageId);
             page = pageQueryService.getPage(projectIdLong, pageIdLong);
+            project = projectQueryService.getProject(projectIdLong);
         } catch (NumberFormatException e) {
             page = pageQueryService.getPageByCode(projectId, pageId);
+            project = projectQueryService.getProjectByCode(projectId);
         }
         
         PublishPageCommand command = new PublishPageCommand();
@@ -155,24 +237,54 @@ public class PageController {
         }
 
         Page publishedPage = pageCommandService.publishPage(command);
+        
+        // 记录日志
+        logCommandService.recordLog(
+                "PUBLISH",
+                "发布页面",
+                getOperator(principal),
+                String.format("项目: %s, 页面: %s (%s)", project.getName(), publishedPage.getName(), publishedPage.getCode()),
+                String.format("发布页面 [%s]，版本: %d", publishedPage.getName(), publishedPage.getVersion()),
+                getClientIp(httpRequest)
+        );
+        
         return ResponseEntity.ok(publishedPage);
     }
 
     @DeleteMapping("/{pageId}")
     public ResponseEntity<Map<String, Boolean>> deletePage(
             @PathVariable("projectId") String projectId,
-            @PathVariable("pageId") String pageId) {
+            @PathVariable("pageId") String pageId,
+            Principal principal,
+            HttpServletRequest httpRequest) {
         // 支持通过 id (Long) 或 code (String) 查询
         Page page;
+        Project project;
         try {
             Long projectIdLong = Long.parseLong(projectId);
             Long pageIdLong = Long.parseLong(pageId);
             page = pageQueryService.getPage(projectIdLong, pageIdLong);
+            project = projectQueryService.getProject(projectIdLong);
         } catch (NumberFormatException e) {
             page = pageQueryService.getPageByCode(projectId, pageId);
+            project = projectQueryService.getProjectByCode(projectId);
         }
         
+        String pageName = page.getName();
+        String pageCode = page.getCode();
+        
         pageCommandService.deletePage(page.getProjectId(), page.getId());
+        
+        // 记录日志
+        logCommandService.recordLog(
+                "DELETE",
+                "删除页面",
+                getOperator(principal),
+                String.format("项目: %s, 页面: %s (%s)", project.getName(), pageName, pageCode),
+                String.format("删除页面 [%s]", pageName),
+                getClientIp(httpRequest)
+        );
+        
         return ResponseEntity.ok(Map.of("success", true));
     }
 

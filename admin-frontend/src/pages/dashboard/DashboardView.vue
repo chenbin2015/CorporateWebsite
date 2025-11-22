@@ -183,17 +183,14 @@ const formatDate = (dateString) => {
 
 // 跳转到项目
 const goToProject = (project) => {
-  const url = router.resolve({
+  router.push({
     name: 'projects',
-    params: { projectCode: project.code },
   })
-  window.open(url.href, '_blank')
 }
 
 // 创建新项目
 const handleCreateProject = () => {
-  const url = router.resolve({ name: 'projectCreate' })
-  window.open(url.href, '_blank')
+  router.push({ name: 'projectCreate' })
 }
 
 onMounted(() => {
