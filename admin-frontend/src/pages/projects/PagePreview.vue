@@ -300,6 +300,16 @@ const isFullWidthComponent = (item) => {
   return fullWidthComponents.includes(item.key)
 }
 
+// 获取 SideNav 和 ContentDetail 的索引
+const getSideNavLayoutIndices = () => {
+  const sideNavIndex = pageItems.value.findIndex(item => item.key === 'SideNav')
+  const contentDetailIndex = pageItems.value.findIndex(item => item.key === 'ContentDetail')
+  if (sideNavIndex !== -1 && contentDetailIndex !== -1 && contentDetailIndex === sideNavIndex + 1) {
+    return { sideNavIndex, contentDetailIndex }
+  }
+  return null
+}
+
 // 计算预览内容区域的样式（如果 MainHeader 是固定的，需要添加 padding-top）
 const previewContentStyle = computed(() => {
   const styles = {}
@@ -394,10 +404,33 @@ onBeforeUnmount(() => {
       <p>页面暂无内容</p>
     </div>
     <div v-else class="preview-content" :style="previewContentStyle">
-      <template v-for="item in pageItems" :key="item.id">
+      <template v-for="(item, index) in pageItems" :key="item.id">
+        <!-- SideNav 和 ContentDetail 组合：左右布局 -->
+        <template v-if="item.key === 'SideNav' && getSideNavLayoutIndices()?.sideNavIndex === index">
+          <div class="preview-side-nav-layout preview-component-wrapper" :style="getComponentMarginStyle(item)">
+            <div class="preview-side-nav-container">
+              <component
+                :is="resolveBuilderComponent(item.key)"
+                v-bind="getComponentPropsWithoutMargin(item)"
+                class="preview-component preview-component--side-nav"
+              />
+            </div>
+            <div class="preview-content-detail-container">
+              <component
+                :is="resolveBuilderComponent(pageItems[index + 1].key)"
+                v-bind="getComponentPropsWithoutMargin(pageItems[index + 1])"
+                class="preview-component preview-component--content-detail"
+              />
+            </div>
+          </div>
+        </template>
+        <!-- 跳过 ContentDetail（如果它紧跟在 SideNav 后面，已经在上面渲染了） -->
+        <template v-else-if="item.key === 'ContentDetail' && getSideNavLayoutIndices()?.contentDetailIndex === index">
+          <!-- 已经在 SideNav 布局中渲染，跳过 -->
+        </template>
         <!-- 全宽组件：直接渲染，不包裹容器，但应用 margin 样式 -->
         <div
-          v-if="isFullWidthComponent(item)"
+          v-else-if="isFullWidthComponent(item)"
           class="preview-component-wrapper preview-component-wrapper--fullwidth"
           :class="{ 'preview-footer-wrapper': item.key === 'Footer' }"
           :style="getComponentMarginStyle(item)"
@@ -428,7 +461,7 @@ onBeforeUnmount(() => {
   width: 100%;
   margin: 0;
   padding: 0;
-  padding-bottom: 320px; /* footer高度约300px + 20px间距 */
+  
   overflow-x: hidden;
 }
 
@@ -478,7 +511,52 @@ onBeforeUnmount(() => {
 .preview-component--fullwidth {
   width: 100%;
   margin: 0;
- 
+  padding: 0;
+}
+
+/* 非全宽模式下的 MainHeader、HeroCarousel、Footer 需要居中 */
+.preview-container :deep(.main-header) {
+  width: 100% !important;
+  max-width: 72rem !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  position: relative !important;
+}
+
+.preview-container :deep(.main-header--fixed) {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+}
+
+.preview-container :deep(.hero-carousel) {
+  width: 100%;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.preview-container :deep(.site-footer) {
+  width: 100%;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 非全宽模式下的 MainHeader 容器 */
+.preview-container :deep(.main-header__container),
+.preview-container :deep(.main-header__nav .nav-list) {
+  max-width: 100%;
+}
+
+/* 非全宽模式下的 HeroCarousel 内容居中 */
+.preview-container :deep(.hero-carousel__overlay) {
+  justify-content: center;
+}
+
+.preview-container :deep(.hero-carousel__content) {
+  margin: 0 auto;
 }
 
 /* Footer吸底：固定在窗口底部 */
@@ -529,6 +607,17 @@ onBeforeUnmount(() => {
   display: none !important;
 }
 
+/* 确保 MainHeader 的标题和副标题正常显示 */
+.preview-component :deep(.main-header .brand-text),
+.preview-component :deep(.main-header .brand-title),
+.preview-component :deep(.main-header .brand-subtitle) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  width: auto !important;
+}
+
 .preview-component :deep(.canvas-item .item-actions) {
   display: none !important;
 }
@@ -546,9 +635,64 @@ onBeforeUnmount(() => {
   max-width: 100%;
 }
 
+/* 确保 MainHeader 的标题和副标题正常显示（优先级最高） */
+.preview-component :deep(.main-header .brand-text),
+.preview-component :deep(.main-header .brand-title),
+.preview-component :deep(.main-header .brand-subtitle) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  width: auto !important;
+  color: #2d3748 !important;
+  font-size: inherit !important;
+}
+
 /* 确保组件内部 section 等元素有合适的样式 */
 .preview-component :deep(section) {
   width: 100%;
   margin: 0;
+}
+
+/* SideNav 和 ContentDetail 左右布局 */
+.preview-side-nav-layout {
+  display: flex;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  gap: 0;
+  align-items: flex-start;
+}
+
+.preview-side-nav-container {
+  flex-shrink: 0;
+}
+
+.preview-content-detail-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.preview-component--side-nav {
+  width: auto;
+  height: 100%;
+}
+
+.preview-component--content-detail {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .preview-side-nav-layout {
+    flex-direction: column;
+  }
+  
+  .preview-side-nav-container {
+    width: 100%;
+  }
+  
+  .preview-content-detail-container {
+    width: 100%;
+  }
 }
 </style>

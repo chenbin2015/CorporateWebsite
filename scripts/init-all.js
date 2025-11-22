@@ -3,20 +3,151 @@
  * 一次性完成：数据库表结构初始化 + 项目创建 + 页面创建 + 数据源初始化
  * 
  * 使用方法：
- *   node scripts/init-all.js
+ *   node scripts/init-all.js [--env=prod|local]
  * 
- * 环境变量（可选）：
- *   DB_HOST=localhost
- *   DB_PORT=3306
+ * 参数说明：
+ *   --env=prod   : 使用生产环境配置（默认）
+ *   --env=local  : 使用本地环境配置
+ * 
+ * 环境变量（可选，会覆盖配置中的默认值）：
+ *   DB_HOST=127.0.0.1 (或 localhost，建议使用 127.0.0.1 避免 IPv6 问题)
+ *   DB_PORT=8024
  *   DB_USER=root
  *   DB_PASSWORD=root123456
  *   DB_NAME=corporate_platform
- *   API_BASE_URL=http://localhost:8080/api
+ *   API_BASE_URL=http://localhost:8082/api
  */
 
 const mysql = require('mysql2/promise')
 const fs = require('fs')
 const path = require('path')
+
+// 解析命令行参数
+function parseArgs() {
+  const args = process.argv.slice(2)
+  const envArg = args.find(arg => arg.startsWith('--env='))
+  if (envArg) {
+    return envArg.split('=')[1] || 'prod'
+  }
+  return 'prod' // 默认使用生产环境
+}
+
+// 获取环境参数
+const ENV = parseArgs()
+
+/**
+ * 生成菜单结构（直接写死在脚本中）
+ */
+function generateMenuItems() {
+  const menuItems = [
+    {
+      label: '首页',
+      href: '/',
+      navigation: { type: 'none' },
+      children: [],
+    },
+    {
+      label: '中心概况',
+      href: '/center-overview',
+      navigation: { type: 'none' },
+      children: [],
+    },
+    {
+      label: '实验教学',
+      href: '/experimental-teaching',
+      navigation: { type: 'none' },
+      children: [
+        {
+          label: '课程体系',
+          href: '/experimental-teaching/course-system',
+          navigation: { type: 'none' },
+        },
+        {
+          label: '实验课程',
+          href: '/experimental-teaching/experimental-courses',
+          navigation: { type: 'none' },
+        },
+      ],
+    },
+    {
+      label: '实验资源',
+      href: '/experimental-resources',
+      navigation: { type: 'none' },
+      children: [
+        {
+          label: '实验仪器',
+          href: '/experimental-resources/instruments',
+          navigation: { type: 'none' },
+        },
+        {
+          label: '实验空间',
+          href: '/experimental-resources/spaces',
+          navigation: { type: 'none' },
+        },
+        {
+          label: '开放共享',
+          href: '/experimental-resources/open-sharing',
+          navigation: { type: 'none' },
+        },
+      ],
+    },
+    {
+      label: '建设成效',
+      href: '/construction-results',
+      navigation: { type: 'none' },
+      children: [
+        {
+          label: '实验教学改革',
+          href: '/construction-results/teaching-reform',
+          navigation: { type: 'none' },
+          highlight: true, // 特殊标记
+        },
+        {
+          label: '科研创新成果',
+          href: '/construction-results/research-achievements',
+          navigation: { type: 'none' },
+        },
+        {
+          label: '实验环境与能力',
+          href: '/construction-results/environment-capability',
+          navigation: { type: 'none' },
+        },
+      ],
+    },
+    {
+      label: '安全管理',
+      href: '/safety-management',
+      navigation: { type: 'none' },
+      children: [
+        {
+          label: '安全教育',
+          href: '/safety-management/education',
+          navigation: { type: 'none' },
+        },
+        {
+          label: '安全准入',
+          href: '/safety-management/access',
+          navigation: { type: 'none' },
+        },
+        {
+          label: '管理制度',
+          href: '/safety-management/regulations',
+          navigation: { type: 'none' },
+        },
+      ],
+    },
+    {
+      label: '科普教育',
+      href: '/science-education',
+      navigation: { type: 'none' },
+      children: [],
+    },
+  ]
+  
+  console.log(`  生成菜单: 共 ${menuItems.length} 个一级菜单`)
+  
+  return menuItems
+}
 
 // 带超时的 fetch 封装
 async function fetchWithTimeout(url, options = {}, timeout = 5000) {
@@ -56,10 +187,21 @@ async function fetchWithTimeout(url, options = {}, timeout = 5000) {
   }
 }
 
-// 数据库配置
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
+// 数据库配置 - 生产环境
+const dbConfigProd = {
+  host: process.env.DB_HOST || '127.0.0.1', // 使用 127.0.0.1 而不是 localhost，避免 IPv6 问题
+  port: parseInt(process.env.DB_PORT || '8024'),
+  user: process.env.DB_USER || 'constweak',
+  password: process.env.DB_PASSWORD || 'k9#Qz$mR!pX2@L8',
+  database: process.env.DB_NAME || 'corporate_platform',
+  multipleStatements: true,
+  charset: 'utf8mb4',
+}
+
+// 数据库配置 - 本地环境
+const dbConfigLocal = {
+  host: process.env.DB_HOST || '127.0.0.1', // 使用 127.0.0.1 而不是 localhost，避免 IPv6 问题
+  port: parseInt(process.env.DB_PORT || '3306'),
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'root123456',
   database: process.env.DB_NAME || 'tet',
@@ -67,8 +209,12 @@ const dbConfig = {
   charset: 'utf8mb4',
 }
 
-// API 配置
-const API_BASE_URL = process.env.API_BASE_URL || process.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
+// 根据环境参数选择数据库配置
+const dbConfig = ENV === 'local' ? dbConfigLocal : dbConfigProd
+
+// API 配置（根据环境选择）
+const API_BASE_URL = process.env.API_BASE_URL || process.env.VITE_API_BASE_URL || 
+  (ENV === 'local' ? 'http://localhost:8082/api' : 'http://localhost:8082/api')
 
 // ============================================
 // 第一部分：数据库初始化
@@ -102,6 +248,50 @@ async function initDatabase() {
 // ============================================
 // 第二部分：API 操作（项目、页面、数据源）
 // ============================================
+
+/**
+ * 创建 admin 用户（如果不存在）
+ */
+async function ensureAdminUser() {
+  console.log('👤 检查 admin 用户...\n')
+  
+  try {
+    // 尝试注册 admin 用户
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: 'admin',
+        password: 'admin123',
+      }),
+    }, 10000)
+
+    if (response.ok) {
+      console.log('✓ admin 用户创建成功（用户名: admin, 密码: admin123）\n')
+      return true
+    } else {
+      const errorText = await response.text()
+      // 如果用户已存在，忽略错误
+      if (response.status === 400 && errorText.includes('already exists')) {
+        console.log('ℹ admin 用户已存在，跳过创建\n')
+        return true
+      }
+      // 其他错误则抛出
+      throw new Error(`创建 admin 用户失败: ${response.statusText} - ${errorText}`)
+    }
+  } catch (error) {
+    // 如果是因为用户已存在，忽略错误
+    if (error.message.includes('already exists')) {
+      console.log('ℹ admin 用户已存在，跳过创建\n')
+      return true
+    }
+    console.error('✗ 创建 admin 用户失败:', error.message)
+    // 不抛出错误，允许继续执行（用户可能已经存在）
+    return false
+  }
+}
 
 /**
  * 创建项目
@@ -245,7 +435,9 @@ function initDetailPageTemplates() {
           props: {
             title: '企业门户',
             subtitle: '智慧校园 · 数字化管理平台',
-            navBackgroundColor: '#2d3748',
+            navBackgroundColor: '#1e3a5f', // 深蓝灰色背景，现代专业
+            titleColor: '#ffffff', // 纯白色标题，清晰醒目
+            subtitleColor: '#cbd5e1', // 浅蓝灰色副标题，优雅柔和
             showSearch: false,
             fullWidth: true,
             fixed: true,
@@ -283,7 +475,9 @@ function initDetailPageTemplates() {
           props: {
             title: '企业门户',
             subtitle: '智慧校园 · 数字化管理平台',
-            navBackgroundColor: '#2d3748',
+            navBackgroundColor: '#1e3a5f', // 深蓝灰色背景，现代专业
+            titleColor: '#ffffff', // 纯白色标题，清晰醒目
+            subtitleColor: '#cbd5e1', // 浅蓝灰色副标题，优雅柔和
             showSearch: false,
             fullWidth: true,
             fixed: true,
@@ -319,7 +513,9 @@ function initDetailPageTemplates() {
           props: {
             title: '企业门户',
             subtitle: '智慧校园 · 数字化管理平台',
-            navBackgroundColor: '#2d3748',
+            navBackgroundColor: '#1e3a5f', // 深蓝灰色背景，现代专业
+            titleColor: '#ffffff', // 纯白色标题，清晰醒目
+            subtitleColor: '#cbd5e1', // 浅蓝灰色副标题，优雅柔和
             showSearch: false,
             fullWidth: true,
             fixed: true,
@@ -556,7 +752,7 @@ function convertDataSourceItemsToComponentItems(items, componentKey) {
 }
 
 /**
- * 根据页面路径匹配导航菜单项索引
+ * 根据页面路径匹配导航菜单项索引（支持嵌套菜单）
  * @param {string} pagePath - 页面路径
  * @param {Array} navigationMenuItems - 导航菜单项数组
  * @returns {number} - 匹配的菜单项索引，如果没有匹配则返回 -1
@@ -566,34 +762,33 @@ function findMatchingMenuItemIndex(pagePath, navigationMenuItems) {
     return -1
   }
 
-  // 定义页面路径到菜单项的映射
-  const pathToLabelMap = {
-    '/': '首页',
-    '/news': '新闻动态',
-    '/products': '产品展示',
-    '/notices': '通知公告',
+  // 递归查找匹配的菜单项
+  function findIndexRecursive(items, path, parentIndex = -1) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      
+      // 检查当前菜单项的路径是否匹配
+      if (item.href === path) {
+        // 如果是一级菜单，返回索引
+        if (parentIndex === -1) {
+          return i
+        }
+        // 如果是二级菜单，返回父菜单的索引（因为 MainHeader 的 defaultActiveIndex 指向一级菜单）
+        return parentIndex
+      }
+      
+      // 如果有子菜单，递归查找
+      if (item.children && item.children.length > 0) {
+        const childIndex = findIndexRecursive(item.children, path, i)
+        if (childIndex !== -1) {
+          return childIndex
+        }
+      }
+    }
+    return -1
   }
 
-  // 先尝试通过路径匹配标签
-  const label = pathToLabelMap[pagePath]
-  if (label) {
-    const index = navigationMenuItems.findIndex(item => item.label === label)
-    if (index !== -1) {
-      return index
-    }
-  }
-
-  // 如果通过标签匹配失败，尝试通过路径匹配
-  const index = navigationMenuItems.findIndex(item => {
-    if (item.navigation && item.navigation.type === 'page') {
-      // 检查路径是否匹配（支持完整路径或路径的一部分）
-      const navPath = item.navigation.path || item.href || ''
-      return navPath.includes(pagePath) || pagePath.includes(navPath)
-    }
-    return item.href === pagePath
-  })
-
-  return index
+  return findIndexRecursive(navigationMenuItems, pagePath)
 }
 
 /**
@@ -626,6 +821,236 @@ function updateMainHeaderActiveIndex(schemaDataJson, pagePath, navigationMenuIte
 }
 
 /**
+ * 生成默认页面模板（MainHeader + PageHero + [SideNav] + ContentDetail + Footer）
+ * @param {string} pageName - 页面名称
+ * @param {string} pagePath - 页面路径
+ * @param {Object} menuInfo - 菜单信息 { parentMenu, children }
+ */
+function generateDefaultPageSchema(pageName, pagePath, menuInfo = null) {
+  const components = [
+    {
+      id: 'MainHeader-1',
+      key: 'MainHeader',
+      label: 'MainHeader',
+      props: {
+        title: '企业门户',
+        subtitle: '智慧校园 · 数字化管理平台',
+        navBackgroundColor: '#1e3a5f',
+        titleColor: '#ffffff',
+        subtitleColor: '#cbd5e1',
+        showSearch: false,
+        fullWidth: true,
+        fixed: true,
+        backgroundOpacity: 1,
+        margin: '0',
+      },
+    },
+    {
+      id: 'PageHero-1',
+      key: 'PageHero',
+      label: 'PageHero',
+      props: {
+        title: pageName,
+        subtitle: '',
+        description: `欢迎访问${pageName}页面`,
+        background: '',
+        fullWidth: false,
+        margin: '2.4rem auto',
+      },
+    },
+  ]
+
+  // 如果有二级菜单，添加 SideNav 组件
+  if (menuInfo && menuInfo.parentMenu && menuInfo.children && menuInfo.children.length > 0) {
+    components.push({
+      id: 'SideNav-1',
+      key: 'SideNav',
+      label: 'SideNav',
+      props: {
+        parentMenu: menuInfo.parentMenu,
+        children: menuInfo.children,
+        activePath: pagePath,
+        width: '240px',
+        backgroundColor: '#f8fafc',
+        textColor: '#334155',
+        activeBackgroundColor: '#2563eb',
+        activeTextColor: '#ffffff',
+      },
+    })
+  }
+
+  components.push({
+    id: 'ContentDetail-1',
+    key: 'ContentDetail',
+    label: 'ContentDetail',
+    props: {
+      title: pageName,
+      createdAt: '',
+      author: '',
+      content: `<p>这是${pageName}页面的内容，您可以在此编辑和更新页面信息。</p><p>页面路径：${pagePath}</p>`,
+      showTitle: true,
+      showCreatedAt: false,
+      showAuthor: false,
+      showContent: true,
+      fullWidth: false,
+      margin: '2.4rem auto',
+    },
+  })
+
+  components.push(getDefaultFooterConfig())
+
+  return JSON.stringify(components)
+}
+
+/**
+ * 根据菜单结构生成所有页面配置
+ */
+function generatePagesFromMenu(menuItems, dataSources) {
+  const pages = []
+  const newsDataSourceCode = dataSources.news?.code || null
+  const productDataSourceCode = dataSources.product?.code || null
+  const noticeDataSourceCode = dataSources.notice?.code || null
+
+  // 首页使用特殊模板
+  const homePage = {
+    name: '首页',
+    path: '/',
+    title: '首页 - 智慧校园',
+    description: '智慧校园首页，展示核心服务和信息',
+    schemaData: JSON.stringify([
+      {
+        id: 'MainHeader-1',
+        key: 'MainHeader',
+        label: 'MainHeader',
+        props: {
+          title: '企业门户',
+          subtitle: '智慧校园 · 数字化管理平台',
+          navBackgroundColor: '#1e3a5f',
+          titleColor: '#ffffff',
+          subtitleColor: '#cbd5e1',
+          showSearch: false,
+          fullWidth: true,
+          fixed: true,
+          backgroundOpacity: 1,
+          margin: '0',
+        },
+      },
+      {
+        id: 'HeroCarousel-1',
+        key: 'HeroCarousel',
+        label: 'HeroCarousel',
+        props: {
+          headline: '智慧校园，连结未来',
+          subline: '构建国际化、数字化、可持续的校园体验',
+          accent: '#2563eb',
+          fullWidth: true,
+          margin: '0',
+        },
+      },
+      {
+        id: 'StatsHighlight-1',
+        key: 'StatsHighlight',
+        label: 'StatsHighlight',
+        props: {
+          items: [
+            { label: '在校学生', value: '37000+' },
+            { label: '教职工', value: '3200+' },
+            { label: '学科门类', value: '11' },
+            { label: '国家重点学科', value: '12' },
+          ],
+          columns: 4,
+          fullWidth: false,
+          margin: '2.4rem auto',
+        },
+      },
+      {
+        id: 'NewsSection-1',
+        key: 'NewsSection',
+        label: 'NewsSection',
+        props: {
+          title: '新闻动态',
+          moreText: '更多',
+          dataSourceCode: newsDataSourceCode,
+          items: [],
+          detailPage: {
+            type: 'projectTemplate',
+            templateType: 'news',
+            openInNewTab: false,
+          },
+          fullWidth: false,
+          margin: '2.4rem auto',
+        },
+      },
+      {
+        id: 'ProductList-1',
+        key: 'ProductList',
+        label: 'ProductList',
+        props: {
+          title: '产品展示',
+          columns: 3,
+          dataSourceCode: productDataSourceCode,
+          products: [],
+          detailPage: {
+            type: 'projectTemplate',
+            templateType: 'product',
+            openInNewTab: false,
+          },
+          fullWidth: false,
+          margin: '2.4rem auto',
+        },
+      },
+      getDefaultFooterConfig(),
+    ]),
+  }
+  pages.push(homePage)
+
+  // 遍历菜单项，为每个一级和二级菜单创建页面
+  for (const menuItem of menuItems) {
+    // 跳过首页（已创建）
+    if (menuItem.label === '首页') {
+      continue
+    }
+
+    // 创建一级菜单页面
+    // 如果有一级菜单有子菜单，一级菜单页面也显示侧边栏（显示主菜单和所有子菜单）
+    const level1PageMenuInfo = menuItem.children && menuItem.children.length > 0
+      ? { parentMenu: menuItem, children: menuItem.children }
+      : null
+    
+    const level1Page = {
+      name: menuItem.label,
+      path: menuItem.href,
+      title: `${menuItem.label} - 智慧校园`,
+      description: `${menuItem.label}页面`,
+      schemaData: generateDefaultPageSchema(menuItem.label, menuItem.href, level1PageMenuInfo),
+    }
+    pages.push(level1Page)
+
+    // 创建二级菜单页面
+    // 二级菜单页面显示侧边栏（显示主菜单和所有子菜单）
+    if (menuItem.children && menuItem.children.length > 0) {
+      for (const childItem of menuItem.children) {
+        const level2PageMenuInfo = {
+          parentMenu: menuItem,
+          children: menuItem.children,
+        }
+        
+        const level2Page = {
+          name: childItem.label,
+          path: childItem.href,
+          title: `${childItem.label} - ${menuItem.label} - 智慧校园`,
+          description: `${childItem.label}页面`,
+          schemaData: generateDefaultPageSchema(childItem.label, childItem.href, level2PageMenuInfo),
+        }
+        pages.push(level2Page)
+      }
+    }
+  }
+
+  return pages
+}
+
+/**
  * 初始化页面
  */
 async function initPages(projectCode, dataSources) {
@@ -644,267 +1069,20 @@ async function initPages(projectCode, dataSources) {
   })
   console.log('')
 
-  const pages = [
-    {
-      name: '首页',
-      path: '/',
-      title: '首页 - 智慧校园',
-      description: '智慧校园首页，展示核心服务和信息',
-      schemaData: JSON.stringify([
-        {
-          id: 'MainHeader-1',
-          key: 'MainHeader',
-          label: 'MainHeader',
-          props: {
-            title: '企业门户',
-            subtitle: '智慧校园 · 数字化管理平台',
-            navBackgroundColor: '#2d3748',
-            showSearch: false,
-            fullWidth: true,
-            fixed: true,
-            backgroundOpacity: 1,
-            margin: '0',
-          },
-        },
-        {
-          id: 'HeroCarousel-1',
-          key: 'HeroCarousel',
-          label: 'HeroCarousel',
-          props: {
-            headline: '智慧校园，连结未来',
-            subline: '构建国际化、数字化、可持续的校园体验',
-            accent: '#2563eb',
-            fullWidth: true,
-            margin: '0',
-          },
-        },
-        {
-          id: 'StatsHighlight-1',
-          key: 'StatsHighlight',
-          label: 'StatsHighlight',
-          props: {
-            items: [
-              { label: '在校学生', value: '37000+' },
-              { label: '教职工', value: '3200+' },
-              { label: '学科门类', value: '11' },
-              { label: '国家重点学科', value: '12' },
-            ],
-            columns: 4,
-            fullWidth: false,
-            margin: '2.4rem auto',
-          },
-        },
-        {
-          id: 'NewsSection-1',
-          key: 'NewsSection',
-          label: 'NewsSection',
-          props: {
-            title: '新闻动态',
-            moreText: '更多',
-            dataSourceCode: newsDataSourceCode,
-            items: [],
-            detailPage: {
-              type: 'projectTemplate',
-              templateType: 'news',
-              openInNewTab: false,
-            },
-            fullWidth: false,
-            margin: '2.4rem auto',
-          },
-        },
-        {
-          id: 'ProductList-1',
-          key: 'ProductList',
-          label: 'ProductList',
-          props: {
-            title: '产品展示',
-            columns: 3,
-            dataSourceCode: productDataSourceCode,
-            products: [],
-            detailPage: {
-              type: 'projectTemplate',
-              templateType: 'product',
-              openInNewTab: false,
-            },
-            fullWidth: false,
-            margin: '2.4rem auto',
-          },
-        },
-        getDefaultFooterConfig(),
-      ]),
-    },
-    {
-      name: '新闻列表',
-      path: '/news',
-      title: '新闻列表 - 智慧校园',
-      description: '新闻动态列表页面',
-      schemaData: JSON.stringify([
-        {
-          id: 'MainHeader-1',
-          key: 'MainHeader',
-          label: 'MainHeader',
-          props: {
-            title: '企业门户',
-            subtitle: '智慧校园 · 数字化管理平台',
-            navBackgroundColor: '#2d3748',
-            showSearch: false,
-            fullWidth: true,
-            fixed: true,
-            backgroundOpacity: 1,
-            margin: '0',
-          },
-        },
-        {
-          id: 'PageHero-1',
-          key: 'PageHero',
-          label: 'PageHero',
-          props: {
-            title: '新闻动态',
-            subtitle: 'News',
-            description: '了解最新的校园新闻和动态',
-            background: '',
-            fullWidth: false,
-            margin: '2.4rem auto',
-          },
-        },
-        {
-          id: 'NewsListPage-1',
-          key: 'NewsListPage',
-          label: 'NewsListPage',
-          props: {
-            title: '新闻列表',
-            dataSourceCode: newsDataSourceCode,
-            items: [],
-            detailPage: {
-              type: 'projectTemplate',
-              templateType: 'news',
-              openInNewTab: false,
-            },
-            fullWidth: false,
-            margin: '2.4rem auto',
-          },
-        },
-        getDefaultFooterConfig(),
-      ]),
-    },
-    {
-      name: '产品列表',
-      path: '/products',
-      title: '产品列表 - 智慧校园',
-      description: '产品展示列表页面',
-      schemaData: JSON.stringify([
-        {
-          id: 'MainHeader-1',
-          key: 'MainHeader',
-          label: 'MainHeader',
-          props: {
-            title: '企业门户',
-            subtitle: '智慧校园 · 数字化管理平台',
-            navBackgroundColor: '#2d3748',
-            showSearch: false,
-            fullWidth: true,
-            fixed: true,
-            backgroundOpacity: 1,
-            margin: '0',
-          },
-        },
-        {
-          id: 'PageHero-1',
-          key: 'PageHero',
-          label: 'PageHero',
-          props: {
-            title: '产品展示',
-            subtitle: 'Products',
-            description: '了解我们的产品和服务',
-            background: '',
-            fullWidth: false,
-            margin: '2.4rem auto',
-          },
-        },
-        {
-          id: 'ProductList-1',
-          key: 'ProductList',
-          label: 'ProductList',
-          props: {
-            title: '产品列表',
-            columns: 3,
-            dataSourceCode: productDataSourceCode,
-            products: [],
-            detailPage: {
-              type: 'projectTemplate',
-              templateType: 'product',
-              openInNewTab: false,
-            },
-            fullWidth: false,
-            margin: '2.4rem auto',
-          },
-        },
-        getDefaultFooterConfig(),
-      ]),
-    },
-    {
-      name: '公告列表',
-      path: '/notices',
-      title: '公告列表 - 智慧校园',
-      description: '通知公告列表页面',
-      schemaData: JSON.stringify([
-        {
-          id: 'MainHeader-1',
-          key: 'MainHeader',
-          label: 'MainHeader',
-          props: {
-            title: '企业门户',
-            subtitle: '智慧校园 · 数字化管理平台',
-            navBackgroundColor: '#2d3748',
-            showSearch: false,
-            fullWidth: true,
-            fixed: true,
-            backgroundOpacity: 1,
-            margin: '0',
-          },
-        },
-        {
-          id: 'PageHero-1',
-          key: 'PageHero',
-          label: 'PageHero',
-          props: {
-            title: '通知公告',
-            subtitle: 'Notices',
-            description: '查看最新的通知和公告',
-            background: '',
-            fullWidth: false,
-            margin: '2.4rem auto',
-          },
-        },
-        {
-          id: 'NoticeList-1',
-          key: 'NoticeList',
-          label: 'NoticeList',
-          props: {
-            title: '公告列表',
-            dataSourceCode: noticeDataSourceCode,
-            items: [],
-            detailPage: {
-              type: 'projectTemplate',
-              templateType: 'notice',
-              openInNewTab: false,
-            },
-            fullWidth: false,
-            margin: '2.4rem auto',
-          },
-        },
-        getDefaultFooterConfig(),
-      ]),
-    },
-  ]
+  // 生成菜单结构
+  const menuItems = generateMenuItems()
+  
+  // 根据菜单生成所有页面
+  const pages = generatePagesFromMenu(menuItems, dataSources)
+  
+  console.log(`  将创建 ${pages.length} 个页面：`)
+  for (const page of pages) {
+    console.log(`    - ${page.name} (${page.path})`)
+  }
+  console.log('')
 
-  // 先定义导航配置结构（用于计算菜单项索引）
-  const navigationMenuItemsTemplate = [
-    { label: '首页', href: '/' },
-    { label: '新闻动态', href: '/news' },
-    { label: '产品展示', href: '/products' },
-    { label: '通知公告', href: '/notices' },
-  ]
+  // 使用菜单结构作为导航配置模板（用于计算菜单项索引）
+  const navigationMenuItemsTemplate = menuItems
 
   // 第一步：创建所有页面（先不发布）
   const createdPages = []
@@ -1277,6 +1455,12 @@ async function main() {
   console.log('🚀 开始一键初始化项目...\n')
   console.log('=' .repeat(60))
   console.log('')
+  console.log('📋 当前配置：')
+  console.log(`   环境: ${ENV === 'local' ? '本地环境' : '生产环境'}`)
+  console.log(`   数据库: ${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`)
+  console.log(`   用户: ${dbConfig.user}`)
+  console.log(`   API: ${API_BASE_URL}`)
+  console.log('')
 
   try {
     // 第一步：初始化数据库
@@ -1292,17 +1476,20 @@ async function main() {
       console.log('✓ 后端服务连接正常\n')
     } catch (error) {
       console.error('✗ 后端服务检查失败:', error.message)
-      console.error('  请确保后端服务正在运行: http://localhost:8080')
+      console.error('  请确保后端服务正在运行: http://localhost:8082')
       console.error('  然后重新执行此脚本\n')
       // 给一些时间让未完成的请求清理完成
       await new Promise(resolve => setTimeout(resolve, 100))
       process.exit(1)
     }
 
-    // 第二步：创建项目
+    // 第二步：确保 admin 用户存在（通过 API 注册，确保密码正确）
+    await ensureAdminUser()
+
+    // 第三步：创建项目
     const project = await createProject()
 
-    // 第三步：初始化数据源（先初始化数据源，因为页面需要使用数据源）
+    // 第四步：初始化数据源（先初始化数据源，因为页面需要使用数据源）
     console.log('📦 第三步：初始化数据源...\n')
     const newsDataSource = await initNewsDataSource(project.code)
     const productDataSource = await initProductDataSource(project.code)
@@ -1325,63 +1512,92 @@ async function main() {
     }
     console.log('')
 
-    // 第四步：创建页面（传入数据源信息）
+    // 第五步：创建页面（传入数据源信息）
     const createdPages = await initPages(project.code, dataSources)
 
-    // 第五步：初始化导航配置
-    console.log('🔗 第五步：初始化导航配置...\n')
+    // 第六步：初始化导航配置
+    console.log('🔗 第六步：初始化导航配置...\n')
     
-    // 找到各个页面的 code
-    const homePage = createdPages.find(p => p.name === '首页')
-    const newsPage = createdPages.find(p => p.name === '新闻列表')
-    const productPage = createdPages.find(p => p.name === '产品列表')
-    const noticePage = createdPages.find(p => p.name === '公告列表')
-
-    const navigationConfig = {
-      menuItems: [
-        {
-          label: '首页',
-          href: '/',
-          navigation: homePage ? {
-            type: 'page',
-            targetPageCode: homePage.code,
-            path: `/projects/${project.code}/runtime/pages/${homePage.code}`,
-          } : { type: 'none' },
-        },
-        {
-          label: '新闻动态',
-          href: '/news',
-          navigation: newsPage ? {
-            type: 'page',
-            targetPageCode: newsPage.code,
-            path: `/projects/${project.code}/runtime/pages/${newsPage.code}`,
-          } : { type: 'none' },
-        },
-        {
-          label: '产品展示',
-          href: '/products',
-          navigation: productPage ? {
-            type: 'page',
-            targetPageCode: productPage.code,
-            path: `/projects/${project.code}/runtime/pages/${productPage.code}`,
-          } : { type: 'none' },
-        },
-        {
-          label: '通知公告',
-          href: '/notices',
-          navigation: noticePage ? {
-            type: 'page',
-            targetPageCode: noticePage.code,
-            path: `/projects/${project.code}/runtime/pages/${noticePage.code}`,
-          } : { type: 'none' },
-        },
-      ],
+    // 生成菜单结构
+    const menuItems = generateMenuItems()
+    
+    if (!menuItems || menuItems.length === 0) {
+      console.error('✗ 菜单生成失败，导航配置为空')
+      throw new Error('菜单生成失败')
     }
+    
+    // 为菜单项关联页面（如果页面存在）
+    function findPageByName(name) {
+      return createdPages.find(p => p.name === name)
+    }
+    
+    function attachPageNavigation(menuItem, pageName) {
+      const page = findPageByName(pageName)
+      if (page) {
+        menuItem.navigation = {
+          type: 'page',
+          targetPageCode: page.code,
+          path: `/projects/${project.code}/runtime/pages/${page.code}`,
+        }
+      }
+    }
+    
+    // 为所有菜单项关联页面
+    console.log('  关联菜单项到页面：')
+    for (const menuItem of menuItems) {
+      // 一级菜单关联页面
+      const page1 = findPageByName(menuItem.label)
+      if (page1) {
+        attachPageNavigation(menuItem, menuItem.label)
+        console.log(`    ✓ ${menuItem.label} -> ${page1.name} (${page1.path})`)
+      } else {
+        console.log(`    ⚠️  ${menuItem.label} -> 未找到对应页面`)
+      }
+      
+      // 二级菜单关联页面
+      if (menuItem.children && menuItem.children.length > 0) {
+        for (const childItem of menuItem.children) {
+          const page2 = findPageByName(childItem.label)
+          if (page2) {
+            attachPageNavigation(childItem, childItem.label)
+            console.log(`      ✓ ${childItem.label} -> ${page2.name} (${page2.path})`)
+          } else {
+            console.log(`      ⚠️  ${childItem.label} -> 未找到对应页面`)
+          }
+        }
+      }
+    }
+    console.log('')
+    
+    console.log('  菜单结构：')
+    for (const item of menuItems) {
+      const navInfo = item.navigation?.type === 'page' 
+        ? ` -> 页面: ${item.navigation.targetPageCode}` 
+        : ' -> 未关联'
+      console.log(`    - ${item.label} (${item.children ? item.children.length : 0} 个子菜单)${navInfo}`)
+      if (item.children && item.children.length > 0) {
+        for (const child of item.children) {
+          const prefix = child.highlight ? '    ==' : '    --'
+          const childNavInfo = child.navigation?.type === 'page' 
+            ? ` -> 页面: ${child.navigation.targetPageCode}` 
+            : ' -> 未关联'
+          console.log(`${prefix} ${child.label}${childNavInfo}`)
+        }
+      }
+    }
+    console.log('')
+    
+    const navigationConfig = {
+      menuItems: menuItems,
+    }
+    
+    console.log('  导航配置 JSON:', JSON.stringify(navigationConfig, null, 2))
+    console.log('')
 
     await updateProjectNavigation(project.code, navigationConfig)
     console.log('✓ 导航配置初始化完成\n')
 
-    // 第六步：初始化详情页模板
+    // 第七步：初始化详情页模板
     console.log('📋 第六步：初始化详情页模板...\n')
     const detailPageTemplates = initDetailPageTemplates()
     await updateProjectDetailPageTemplates(project.code, detailPageTemplates)
@@ -1392,7 +1608,7 @@ async function main() {
     console.log('✅ 一键初始化完成！\n')
     console.log('📊 初始化结果：')
     console.log(`  - 项目：${project.name} (Code: ${project.code})`)
-    console.log(`  - 页面：${createdPages.length} 个（首页、新闻列表、产品列表、公告列表）`)
+    console.log(`  - 页面：${createdPages.length} 个（根据导航菜单自动生成）`)
     console.log(`  - 数据源：4 个（新闻、产品、公告、教师）`)
     console.log(`  - 新闻数据：6 条`)
     console.log(`  - 产品数据：6 个`)
@@ -1404,6 +1620,7 @@ async function main() {
     console.log('🌐 访问地址：')
     console.log(`  - 项目管理: http://localhost:5173/projects`)
     console.log(`  - 页面编辑: http://localhost:5173/projects/${project.code}/design/pages`)
+    const homePage = createdPages.find(p => p.name === '首页')
     if (homePage) {
       console.log(`  - 首页预览: http://localhost:5173/projects/${project.code}/preview/pages/${homePage.code}`)
     }

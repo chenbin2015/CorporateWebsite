@@ -74,6 +74,14 @@ export const componentPalette = [
         navigationType: 'nav-items',  // 导航项
       },
       {
+        key: 'SideNav',
+        label: 'SideNav',
+        desc: '左侧导航菜单（显示主菜单和子菜单）',
+        source: 'shared/components/SideNav.vue',
+        icon: 'Menu',
+        navigationType: 'nav-items',  // 导航项
+      },
+      {
         key: 'SearchBox',
         label: 'SearchBox',
         desc: '搜索框组件',

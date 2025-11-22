@@ -11,12 +11,18 @@
       <div class="main-header__container">
         <!-- Logo 和品牌 -->
         <div class="main-header__brand">
-          <div class="brand-logo">
-            <div class="logo-icon"></div>
+          <div class="brand-logo" :style="logoStyle">
+            <img 
+              v-if="logoUrl" 
+              :src="logoUrl" 
+              :alt="title || 'Logo'" 
+              class="logo-image"
+            />
+            <div v-else class="logo-icon" :style="logoIconStyle"></div>
           </div>
           <div class="brand-text">
-            <h1 class="brand-title">{{ title }}</h1>
-            <p class="brand-subtitle">{{ subtitle }}</p>
+            <h1 class="brand-title" :style="{ color: titleColor || '#ffffff' }">{{ title || '企业门户' }}</h1>
+            <p class="brand-subtitle" :style="{ color: subtitleColor || '#cbd5e1' }">{{ subtitle || '智慧校园 · 数字化管理平台' }}</p>
           </div>
         </div>
 
@@ -131,7 +137,7 @@ const props = defineProps({
   },
   navBackgroundColor: {
     type: String,
-    default: '#2d3748',
+    default: '#1e3a5f', // 深蓝灰色背景，现代专业
   },
   // 首选数组对象形式：[{ label, href, children, navigation }]
   // 兼容老的字符串数组：['关于学校', ...]
@@ -160,6 +166,37 @@ const props = defineProps({
     default: 1, // 背景透明度，0-1之间
     validator: (value) => value >= 0 && value <= 1,
   },
+  titleColor: {
+    type: String,
+    default: '#ffffff', // 纯白色标题，清晰醒目
+  },
+  subtitleColor: {
+    type: String,
+    default: '#cbd5e1', // 浅蓝灰色副标题，优雅柔和
+  },
+  logoUrl: {
+    type: String,
+    default: '', // Logo 图片 URL，如果为空则显示默认图标
+  },
+  logoWidth: {
+    type: [String, Number],
+    default: 60, // Logo 宽度（px）
+  },
+  logoHeight: {
+    type: [String, Number],
+    default: 60, // Logo 高度（px）
+  },
+})
+
+// 调试：打印 props
+console.log('[MainHeader] Props:', {
+  title: props.title,
+  subtitle: props.subtitle,
+  titleColor: props.titleColor,
+  subtitleColor: props.subtitleColor,
+  logoUrl: props.logoUrl,
+  showSearch: props.showSearch,
+  navBackgroundColor: props.navBackgroundColor,
 })
 
 const isMobileMenuOpen = ref(false)
@@ -233,6 +270,28 @@ const headerStyle = computed(() => {
   }
   
   return styles
+})
+
+// 计算 Logo 容器样式
+const logoStyle = computed(() => {
+  const width = typeof props.logoWidth === 'number' ? `${props.logoWidth}px` : props.logoWidth
+  const height = typeof props.logoHeight === 'number' ? `${props.logoHeight}px` : props.logoHeight
+  return {
+    width: width || '60px',
+    height: height || '60px',
+  }
+})
+
+// 计算 Logo 图标样式（默认图标的大小，相对于容器）
+const logoIconStyle = computed(() => {
+  const containerWidth = typeof props.logoWidth === 'number' ? props.logoWidth : parseInt(props.logoWidth) || 60
+  const containerHeight = typeof props.logoHeight === 'number' ? props.logoHeight : parseInt(props.logoHeight) || 60
+  // 图标大小为容器的 2/3（与原来的 40px/60px 比例一致）
+  const iconSize = Math.min(containerWidth, containerHeight) * 0.67
+  return {
+    width: `${iconSize}px`,
+    height: `${iconSize}px`,
+  }
 })
 
 // 优先从全局项目配置读取导航数据
@@ -398,19 +457,18 @@ const handleSubItemClick = (subItem, event) => {
 }
 
 .brand-logo {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+  /* 尺寸通过内联样式设置 */
+  background: transparent;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(45, 55, 72, 0.2);
+  box-shadow: none;
+  flex-shrink: 0;
 }
 
 .logo-icon {
-  width: 40px;
-  height: 40px;
+  /* 尺寸通过内联样式设置 */
   background: #fff;
   border-radius: 4px;
   position: relative;
@@ -422,31 +480,51 @@ const handleSubItemClick = (subItem, event) => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 24px;
-  height: 24px;
+  /* 内部图标大小为父容器的 60% */
+  width: 60%;
+  height: 60%;
   background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
   border-radius: 2px;
 }
 
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
 .brand-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.25rem !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .brand-title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #2d3748;
-  line-height: 1.2;
+  margin: 0 !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  width: auto !important;
+  /* 颜色通过内联样式设置，这里不设置默认颜色 */
 }
 
 .brand-subtitle {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #64748b;
-  line-height: 1.2;
+  margin: 0 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.2 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  width: auto !important;
+  /* 颜色通过内联样式设置，这里不设置默认颜色 */
 }
 
 /* 搜索框 */

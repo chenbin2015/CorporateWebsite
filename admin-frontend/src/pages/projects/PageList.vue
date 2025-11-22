@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search } from '@element-plus/icons-vue'
 import { fetchProjectPages, deletePage } from '@/services/modules/project'
 
 const router = useRouter()
@@ -10,6 +11,7 @@ const projectCode = route.params.projectCode
 
 const pages = ref([])
 const loading = ref(false)
+const searchQuery = ref('')
 
 const loadPages = async () => {
   if (!projectCode) return
@@ -84,6 +86,28 @@ const getStatusBadge = (status) => {
   return { type: 'info', text: '草稿' }
 }
 
+// 过滤页面列表（根据搜索关键词）
+const filteredPages = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return pages.value
+  }
+  
+  const query = searchQuery.value.toLowerCase().trim()
+  return pages.value.filter((page) => {
+    const name = (page.name || '').toLowerCase()
+    const path = (page.path || '').toLowerCase()
+    const title = (page.title || '').toLowerCase()
+    const description = (page.description || '').toLowerCase()
+    
+    return (
+      name.includes(query) ||
+      path.includes(query) ||
+      title.includes(query) ||
+      description.includes(query)
+    )
+  })
+})
+
 onMounted(() => {
   loadPages()
 })
@@ -104,10 +128,28 @@ onMounted(() => {
     </header>
 
     <el-card v-loading="loading" class="page-list__card">
+      <!-- 搜索框 -->
+      <div class="page-list__search">
+        <el-input
+          v-model="searchQuery"
+          placeholder="搜索页面名称、路径、标题..."
+          clearable
+          :prefix-icon="Search"
+          style="max-width: 400px;"
+        />
+        <span v-if="searchQuery" class="search-result-count">
+          找到 {{ filteredPages.length }} 个结果
+        </span>
+      </div>
+
       <div v-if="pages.length === 0 && !loading" class="empty-state">
         <p>暂无页面，点击"新建页面"开始创建</p>
       </div>
-      <el-table v-else :data="pages" style="width: 100%">
+      <div v-else-if="filteredPages.length === 0 && searchQuery" class="empty-state">
+        <p>未找到匹配的页面</p>
+      </div>
+      <el-table v-else :data="filteredPages" style="width: 100%">
+        <el-table-column type="index" label="序号" width="80" :index="(index) => index + 1" />
         <el-table-column prop="name" label="页面名称" width="200" />
         <el-table-column prop="path" label="路径" width="200" />
         <el-table-column prop="title" label="标题" />
@@ -171,6 +213,20 @@ onMounted(() => {
 
 .page-list__card {
   min-height: 400px;
+}
+
+.page-list__search {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.search-result-count {
+  color: var(--el-text-color-secondary);
+  font-size: 0.875rem;
 }
 
 .empty-state {

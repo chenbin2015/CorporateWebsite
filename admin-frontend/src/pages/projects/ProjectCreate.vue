@@ -97,16 +97,22 @@ onMounted(() => {
         </div>
       </template>
 
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="6rem" class="create-form">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="8rem" class="create-form">
         <el-form-item label="项目名称" prop="name">
-          <el-input v-model="form.name" placeholder="输入项目名称" />
+          <el-input 
+            v-model="form.name" 
+            placeholder="输入项目名称" 
+            size="large"
+            style="max-width: 900px;"
+          />
         </el-form-item>
         <el-form-item label="项目描述">
           <el-input
             v-model="form.description"
             type="textarea"
-            :rows="4"
+            :rows="6"
             placeholder="介绍项目背景和目标"
+            style="max-width: 900px;"
           />
         </el-form-item>
       </el-form>
@@ -116,12 +122,22 @@ onMounted(() => {
 
 <style scoped>
 .project-form {
-  max-width: 800px;
+  max-width: 1600px;
+  min-width: 1000px;
   margin: 0 auto;
+  padding: 2rem;
 }
 
 .form-card {
-  min-height: 400px;
+  min-height: 500px;
+}
+
+.form-card :deep(.el-card__body) {
+  padding: 2rem;
+}
+
+.form-card :deep(.el-card__header) {
+  padding: 1.5rem 2rem;
 }
 
 .card-header {
@@ -140,15 +156,59 @@ onMounted(() => {
 
 .card-header h2 {
   margin: 0.5rem 0 0;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
 }
 
 .header-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .create-form {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
+}
+
+.create-form :deep(.el-form-item) {
+  margin-bottom: 2rem;
+}
+
+.create-form :deep(.el-form-item__label) {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+  padding-bottom: 0.5rem;
+}
+
+.create-form :deep(.el-input__wrapper) {
+  padding: 0.75rem 1rem;
+}
+
+.create-form :deep(.el-textarea__inner) {
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .project-form {
+    padding: 1rem;
+  }
+
+  .form-card :deep(.el-card__body) {
+    padding: 1.5rem;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .create-form :deep(.el-input),
+  .create-form :deep(.el-textarea) {
+    max-width: 100% !important;
+  }
 }
 </style>

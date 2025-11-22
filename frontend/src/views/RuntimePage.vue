@@ -204,6 +204,23 @@ const isFullWidthComponent = (item) => {
   return fullWidthComponents.includes(item.key)
 }
 
+// 检查是否有 SideNav 和 ContentDetail 的组合（需要左右布局）
+const hasSideNavLayout = computed(() => {
+  const sideNavIndex = pageItems.value.findIndex(item => item.key === 'SideNav')
+  const contentDetailIndex = pageItems.value.findIndex(item => item.key === 'ContentDetail')
+  return sideNavIndex !== -1 && contentDetailIndex !== -1 && contentDetailIndex === sideNavIndex + 1
+})
+
+// 获取 SideNav 和 ContentDetail 的索引
+const getSideNavLayoutIndices = () => {
+  const sideNavIndex = pageItems.value.findIndex(item => item.key === 'SideNav')
+  const contentDetailIndex = pageItems.value.findIndex(item => item.key === 'ContentDetail')
+  if (sideNavIndex !== -1 && contentDetailIndex !== -1 && contentDetailIndex === sideNavIndex + 1) {
+    return { sideNavIndex, contentDetailIndex }
+  }
+  return null
+}
+
 // 计算运行时内容区域的样式（如果 MainHeader 是固定的，需要添加 padding-top）
 const runtimeContentStyle = computed(() => {
   const styles = {}
@@ -326,10 +343,33 @@ onBeforeUnmount(() => {
       <p>页面暂无内容</p>
     </div>
     <div v-else class="runtime-content" :style="runtimeContentStyle">
-      <template v-for="item in pageItems" :key="item.id">
+      <template v-for="(item, index) in pageItems" :key="item.id">
+        <!-- SideNav 和 ContentDetail 组合：左右布局 -->
+        <template v-if="item.key === 'SideNav' && getSideNavLayoutIndices()?.sideNavIndex === index">
+          <div class="runtime-side-nav-layout runtime-component-wrapper" :style="getComponentMarginStyle(item)">
+            <div class="runtime-side-nav-container">
+              <component
+                :is="resolveBuilderComponent(item.key)"
+                v-bind="getComponentPropsWithoutMargin(item)"
+                class="runtime-component runtime-component--side-nav"
+              />
+            </div>
+            <div class="runtime-content-detail-container">
+              <component
+                :is="resolveBuilderComponent(pageItems[index + 1].key)"
+                v-bind="getComponentPropsWithoutMargin(pageItems[index + 1])"
+                class="runtime-component runtime-component--content-detail"
+              />
+            </div>
+          </div>
+        </template>
+        <!-- 跳过 ContentDetail（如果它紧跟在 SideNav 后面，已经在上面渲染了） -->
+        <template v-else-if="item.key === 'ContentDetail' && getSideNavLayoutIndices()?.contentDetailIndex === index">
+          <!-- 已经在 SideNav 布局中渲染，跳过 -->
+        </template>
         <!-- 全宽组件：直接渲染，不包裹容器，但应用 margin 样式 -->
         <div
-          v-if="isFullWidthComponent(item)"
+          v-else-if="isFullWidthComponent(item)"
           class="runtime-component-wrapper runtime-component-wrapper--fullwidth"
           :class="{ 'runtime-footer-wrapper': item.key === 'Footer' }"
           :style="getComponentMarginStyle(item)"
@@ -411,6 +451,51 @@ onBeforeUnmount(() => {
   padding: 0;
 }
 
+/* 非全宽模式下的 MainHeader、HeroCarousel、Footer 需要居中 */
+.runtime-container :deep(.main-header) {
+  width: 100% !important;
+  max-width: 72rem !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  position: relative !important;
+}
+
+.runtime-container :deep(.main-header--fixed) {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+}
+
+.runtime-container :deep(.hero-carousel) {
+  width: 100%;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.runtime-container :deep(.site-footer) {
+  width: 100%;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 非全宽模式下的 MainHeader 容器 */
+.runtime-container :deep(.main-header__container),
+.runtime-container :deep(.main-header__nav .nav-list) {
+  max-width: 100%;
+}
+
+/* 非全宽模式下的 HeroCarousel 内容居中 */
+.runtime-container :deep(.hero-carousel__overlay) {
+  justify-content: center;
+}
+
+.runtime-container :deep(.hero-carousel__content) {
+  margin: 0 auto;
+}
+
 /* Footer吸底：固定在窗口底部 */
 .runtime-footer-wrapper {
   position: fixed;
@@ -422,6 +507,15 @@ onBeforeUnmount(() => {
 
 .runtime-footer-wrapper :deep(.site-footer) {
   margin-top: 0;
+}
+
+/* Footer 内容区域样式，与详情页保持一致 */
+.runtime-component--fullwidth :deep(.footer-content),
+.runtime-component--fullwidth :deep(.footer-bottom) {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (max-width: 48rem) {
@@ -438,6 +532,48 @@ onBeforeUnmount(() => {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+}
+
+/* SideNav 和 ContentDetail 左右布局 */
+.runtime-side-nav-layout {
+  display: flex;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  gap: 0;
+  align-items: flex-start;
+}
+
+.runtime-side-nav-container {
+  flex-shrink: 0;
+}
+
+.runtime-content-detail-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.runtime-component--side-nav {
+  width: auto;
+  height: 100%;
+}
+
+.runtime-component--content-detail {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .runtime-side-nav-layout {
+    flex-direction: column;
+  }
+  
+  .runtime-side-nav-container {
+    width: 100%;
+  }
+  
+  .runtime-content-detail-container {
+    width: 100%;
+  }
 }
 </style>
 

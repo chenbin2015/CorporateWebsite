@@ -79,3 +79,6 @@ playwright-report/
 # 部署配置文件（包含敏感信息）
 deploy-config.bat
 deploy-config.sh
+backend/deploy-backend.sh
+backend/corporate-platform-backend.service
+admin-frontend/deploy.sh

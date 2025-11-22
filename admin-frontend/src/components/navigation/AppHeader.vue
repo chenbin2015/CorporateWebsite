@@ -48,11 +48,11 @@ const handleLogout = () => {
 
 <style scoped>
 .app-header {
-  height: var(--header-height);
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.5rem;
+  padding: 20px 1.5rem;
   border-bottom: 0.1rem solid var(--color-border);
   background: rgba(248, 250, 252, 0.92);
   backdrop-filter: blur(6px);

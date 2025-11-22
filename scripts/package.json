@@ -1,5 +1,14 @@
 {
+  "name": "init-all-scripts",
+  "version": "1.0.0",
+  "description": "一键初始化项目脚本",
+  "scripts": {
+    "init": "node init-all.js",
+    "init:prod": "node init-all.js --env=prod",
+    "init:local": "node init-all.js --env=local"
+  },
   "dependencies": {
-    "mysql2": "^3.15.3"
+    "mysql2": "^3.15.3",
+    "bcryptjs": "^2.4.3"
   }
 }

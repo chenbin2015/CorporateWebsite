@@ -45,6 +45,7 @@ import MediaLinks from '@shared/components/sections/MediaLinks.vue'
 import VideoPlayer from '@shared/components/sections/VideoPlayer.vue'
 import EventCalendar from '@shared/components/sections/EventCalendar.vue'
 import MultiLevelMenu from '@shared/components/MultiLevelMenu.vue'
+import SideNav from '@shared/components/SideNav.vue'
 import Footer from '@shared/components/Footer.vue'
 import DetailData from '@shared/components/DetailData.vue'
 
@@ -99,6 +100,7 @@ export const componentRegistry = {
   VideoPlayer: VideoPlayer,
   EventCalendar: EventCalendar,
   MultiLevelMenu: MultiLevelMenu,
+  SideNav: SideNav,
   Footer: Footer,
   DetailData: DetailData,
   ContentDetail: ContentDetail,

@@ -520,7 +520,12 @@ export const componentSchemas = {
     defaults: {
       title: '企业门户',
       subtitle: '智慧校园 · 数字化管理平台',
-      navBackgroundColor: '#2d3748',
+      navBackgroundColor: '#1e3a5f', // 深蓝灰色背景，现代专业
+      titleColor: '#ffffff', // 纯白色标题，清晰醒目
+      subtitleColor: '#cbd5e1', // 浅蓝灰色副标题，优雅柔和
+      logoUrl: '', // Logo 图片 URL，如果为空则显示默认图标
+      logoWidth: 60, // Logo 宽度（px）
+      logoHeight: 60, // Logo 高度（px）
       showSearch: false,
       fullWidth: true, // 默认全宽
       defaultActiveIndex: 0, // 默认选中第一个菜单项
@@ -540,6 +545,11 @@ export const componentSchemas = {
     fields: [
       { prop: 'title', label: '站点标题', type: 'text' },
       { prop: 'subtitle', label: '副标题', type: 'text' },
+      { prop: 'logoUrl', label: 'Logo 图片', type: 'text', placeholder: '请输入 Logo 图片 URL（留空则显示默认图标）' },
+      { prop: 'logoWidth', label: 'Logo 宽度', type: 'text', placeholder: '例如: 60 或 60px' },
+      { prop: 'logoHeight', label: 'Logo 高度', type: 'text', placeholder: '例如: 60 或 60px' },
+      { prop: 'titleColor', label: '标题颜色', type: 'color' },
+      { prop: 'subtitleColor', label: '副标题颜色', type: 'color' },
       { prop: 'navBackgroundColor', label: '导航背景色', type: 'color' },
       { prop: 'backgroundOpacity', label: '背景透明度', type: 'slider', min: 0, max: 1, step: 0.1 },
       { prop: 'fixed', label: '浮动在顶部', type: 'switch', activeText: '浮动', inactiveText: '普通' },
@@ -548,6 +558,31 @@ export const componentSchemas = {
       { prop: 'defaultActiveIndex', label: '默认选中项', type: 'number', placeholder: '菜单项索引（从0开始）', min: 0, step: 1 },
       { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 0 或 2.4rem auto 或 2.4rem 1.5rem' },
       { prop: 'menuItems', label: '导航菜单', type: 'nav-items' },
+    ],
+  },
+  SideNav: {
+    defaults: {
+      parentMenu: {
+        label: '主菜单',
+        href: '/',
+        navigation: { type: 'none' },
+      },
+      children: [],
+      activePath: '',
+      width: '240px',
+      backgroundColor: '#f8fafc',
+      textColor: '#334155',
+      activeBackgroundColor: '#2563eb',
+      activeTextColor: '#ffffff',
+    },
+    fields: [
+      { prop: 'parentMenu', label: '主菜单项', type: 'object' },
+      { prop: 'children', label: '子菜单列表', type: 'array' },
+      { prop: 'width', label: '宽度', type: 'text', placeholder: '例如: 240px 或 20rem' },
+      { prop: 'backgroundColor', label: '背景色', type: 'color' },
+      { prop: 'textColor', label: '文字颜色', type: 'color' },
+      { prop: 'activeBackgroundColor', label: '激活项背景色', type: 'color' },
+      { prop: 'activeTextColor', label: '激活项文字颜色', type: 'color' },
     ],
   },
   NewsSection: {
