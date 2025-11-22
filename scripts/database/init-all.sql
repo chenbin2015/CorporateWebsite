@@ -202,16 +202,35 @@ CREATE TABLE IF NOT EXISTS data_source_items (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据源项表';
 
 -- ============================================
--- 第六部分：初始化数据
+-- 第六部分：创建操作日志表
+-- ============================================
+
+-- 创建操作日志表
+CREATE TABLE IF NOT EXISTS operation_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    operation_type VARCHAR(50) NOT NULL COMMENT '操作类型：project, page, datasource, user, system',
+    operation VARCHAR(100) NOT NULL COMMENT '操作名称，如：创建项目、保存草稿',
+    operator VARCHAR(100) NOT NULL COMMENT '操作人',
+    target VARCHAR(500) COMMENT '操作目标，如：项目：企业官网',
+    details TEXT COMMENT '操作详情',
+    ip VARCHAR(50) COMMENT 'IP地址',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_operation_type (operation_type),
+    INDEX idx_operator (operator),
+    INDEX idx_create_time (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作日志表';
+
+-- ============================================
+-- 第七部分：初始化数据
 -- ============================================
 
 -- 初始化用户数据（如果不存在）
--- 默认密码：admin123（BCrypt 加密，rounds=10）
--- 如果密码验证失败，请运行: cd scripts && npm install bcryptjs && node fix-admin-password.js
--- 生成新的哈希值后，更新下面的 SQL 语句
-INSERT IGNORE INTO users (username, password, role, created_at) VALUES
-('admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ADMIN', NOW());
--- 注意：上面的哈希值是一个示例，如果验证失败，请运行 fix-admin-password.js 生成正确的哈希
+-- 注意：admin 用户将通过 init-all.js 脚本通过 API 统一创建（密码：admin123）
+-- 这样可以确保密码使用正确的 BCrypt 编码，避免密码验证失败
+-- 如果需要在 SQL 中直接创建，请运行: cd scripts && npm install bcryptjs && node fix-admin-password.js
+-- 生成正确的哈希值后，取消下面的注释并更新哈希值
+-- INSERT IGNORE INTO users (username, password, role, created_at) VALUES
+-- ('admin', '$2a$10$生成的哈希值', 'ADMIN', NOW());
 
 -- 注意：项目和数据将通过 init-all.js 脚本通过 API 统一创建，不在这里初始化
 

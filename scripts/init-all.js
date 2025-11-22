@@ -415,8 +415,8 @@ function getDefaultFooterConfig() {
       backgroundColor: '#1e293b',
       textColor: '#f1f5f9',
       linkColor: '#cbd5e1',
-      fullWidth: true,
-      margin: '0',
+      fullWidth: false,
+      margin: '2.4rem auto',
     },
   }
 }
