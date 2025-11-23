@@ -43,6 +43,7 @@ import NotificationBanner from '@shared/components/sections/NotificationBanner.v
 import TagCloud from '@shared/components/sections/TagCloud.vue'
 import MediaLinks from '@shared/components/sections/MediaLinks.vue'
 import VideoPlayer from '@shared/components/sections/VideoPlayer.vue'
+import VideoBanner from '@shared/components/sections/VideoBanner.vue'
 import EventCalendar from '@shared/components/sections/EventCalendar.vue'
 import MultiLevelMenu from '@shared/components/MultiLevelMenu.vue'
 import SideNav from '@shared/components/SideNav.vue'
@@ -98,6 +99,7 @@ export const componentRegistry = {
   TagCloud: TagCloud,
   MediaLinks: MediaLinks,
   VideoPlayer: VideoPlayer,
+  VideoBanner: VideoBanner,
   EventCalendar: EventCalendar,
   MultiLevelMenu: MultiLevelMenu,
   SideNav: SideNav,

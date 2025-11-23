@@ -1986,6 +1986,20 @@ const getQuickLinkNavigation = (prop, index) => {
             :inactive-text="field.inactiveText || ''"
             @update:model-value="(val) => handleInput(field.prop, val)"
           />
+          <el-select
+            v-else-if="field.type === 'select'"
+            :model-value="getNestedValue(selectedItem.props, field.prop)"
+            :placeholder="field.placeholder || '请选择'"
+            style="width: 100%"
+            @update:model-value="(val) => handleInput(field.prop, val)"
+          >
+            <el-option
+              v-for="option in field.options || []"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
         </el-form-item>
       </el-form>
       <div class="panel-actions">

@@ -361,6 +361,13 @@ export const componentPalette = [
         source: 'shared/components/sections/VideoPlayer.vue',
         icon: 'VideoPlay',
       },
+      {
+        key: 'VideoBanner',
+        label: '视频横幅',
+        desc: '视频横幅组件，支持自定义宽高、自动播放、循环播放等配置',
+        source: 'shared/components/sections/VideoBanner.vue',
+        icon: 'VideoPlay',
+      },
     ],
   },
   {

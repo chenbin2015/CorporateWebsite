@@ -804,6 +804,36 @@ export const componentSchemas = {
       { prop: 'height', label: '高度', type: 'text', placeholder: 'auto' },
     ],
   },
+  VideoBanner: {
+    defaults: {
+      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      poster: '',
+      autoplay: true,
+      loop: true,
+      muted: true,
+      controls: false,
+      width: '100%',
+      height: '600px',
+      objectFit: 'cover',
+      margin: '0', // 默认外边距
+    },
+    fields: [
+      { prop: 'src', label: '视频地址', type: 'text', placeholder: '请输入视频 URL 或路径' },
+      { prop: 'poster', label: '封面图', type: 'text', placeholder: '视频封面图片 URL（可选）' },
+      { prop: 'autoplay', label: '自动播放', type: 'switch', activeText: '开启', inactiveText: '关闭' },
+      { prop: 'loop', label: '循环播放', type: 'switch', activeText: '开启', inactiveText: '关闭' },
+      { prop: 'muted', label: '静音', type: 'switch', activeText: '开启', inactiveText: '关闭' },
+      { prop: 'controls', label: '显示控制条', type: 'switch', activeText: '显示', inactiveText: '隐藏' },
+      { prop: 'width', label: '宽度', type: 'text', placeholder: '例如: 100% 或 1200px' },
+      { prop: 'height', label: '高度', type: 'text', placeholder: '例如: 600px 或 30rem（留空表示自动）' },
+      { prop: 'objectFit', label: '填充方式', type: 'select', options: [
+        { label: '覆盖', value: 'cover' },
+        { label: '包含', value: 'contain' },
+        { label: '填充', value: 'fill' },
+      ]},
+      { prop: 'margin', label: '外边距', type: 'text', placeholder: '例如: 0 或 2.4rem auto 或 2.4rem 1.5rem' },
+    ],
+  },
   MultiLevelMenu: {
     defaults: {
       items: [

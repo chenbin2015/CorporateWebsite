@@ -175,7 +175,7 @@ const isFullWidthComponent = (item) => {
   if (item.props?.fullWidth !== undefined) {
     return item.props.fullWidth === true
   }
-  const fullWidthComponents = ['MainHeader', 'HeroCarousel', 'Footer']
+  const fullWidthComponents = ['MainHeader', 'HeroCarousel', 'Footer', 'VideoBanner']
   return fullWidthComponents.includes(item.key)
 }
 
@@ -480,6 +480,11 @@ onBeforeUnmount(() => {
 
 .template-component-wrapper--fullwidth {
   width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .template-container {

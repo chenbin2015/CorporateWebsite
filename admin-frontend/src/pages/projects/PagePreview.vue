@@ -295,19 +295,25 @@ const isFullWidthComponent = (item) => {
   if (item.props?.fullWidth !== undefined) {
     return item.props.fullWidth === true
   }
-  // 2. 如果没有配置，使用默认规则：MainHeader、HeroCarousel、Footer 默认为全宽
-  const fullWidthComponents = ['MainHeader', 'HeroCarousel', 'Footer']
+  // 2. 如果没有配置，使用默认规则：MainHeader、HeroCarousel、Footer、VideoBanner 默认为全宽
+  const fullWidthComponents = ['MainHeader', 'HeroCarousel', 'Footer', 'VideoBanner']
   return fullWidthComponents.includes(item.key)
 }
 
-// 获取 SideNav 和 ContentDetail 的索引
+// 获取 SideNav 和紧跟在它后面的组件的索引（用于左右布局）
 const getSideNavLayoutIndices = () => {
   const sideNavIndex = pageItems.value.findIndex(item => item.key === 'SideNav')
-  const contentDetailIndex = pageItems.value.findIndex(item => item.key === 'ContentDetail')
-  if (sideNavIndex !== -1 && contentDetailIndex !== -1 && contentDetailIndex === sideNavIndex + 1) {
-    return { sideNavIndex, contentDetailIndex }
-  }
-  return null
+  if (sideNavIndex === -1) return null
+  
+  // 检查 SideNav 后面是否有组件
+  const nextIndex = sideNavIndex + 1
+  if (nextIndex >= pageItems.value.length) return null
+  
+  const nextItem = pageItems.value[nextIndex]
+  // 排除全宽组件（全宽组件不应该和 SideNav 并排显示）
+  if (isFullWidthComponent(nextItem)) return null
+  
+  return { sideNavIndex, nextIndex }
 }
 
 // 计算预览内容区域的样式（如果 MainHeader 是固定的，需要添加 padding-top）
@@ -405,7 +411,7 @@ onBeforeUnmount(() => {
     </div>
     <div v-else class="preview-content" :style="previewContentStyle">
       <template v-for="(item, index) in pageItems" :key="item.id">
-        <!-- SideNav 和 ContentDetail 组合：左右布局 -->
+        <!-- SideNav 和紧跟在它后面的组件组合：左右布局 -->
         <template v-if="item.key === 'SideNav' && getSideNavLayoutIndices()?.sideNavIndex === index">
           <div class="preview-side-nav-layout preview-component-wrapper" :style="getComponentMarginStyle(item)">
             <div class="preview-side-nav-container">
@@ -424,8 +430,8 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </template>
-        <!-- 跳过 ContentDetail（如果它紧跟在 SideNav 后面，已经在上面渲染了） -->
-        <template v-else-if="item.key === 'ContentDetail' && getSideNavLayoutIndices()?.contentDetailIndex === index">
+        <!-- 跳过紧跟在 SideNav 后面的组件（如果它已经在上面渲染了） -->
+        <template v-else-if="getSideNavLayoutIndices()?.nextIndex === index">
           <!-- 已经在 SideNav 布局中渲染，跳过 -->
         </template>
         <!-- 全宽组件：直接渲染，不包裹容器，但应用 margin 样式 -->
@@ -505,6 +511,11 @@ onBeforeUnmount(() => {
 
 .preview-component-wrapper--fullwidth {
   width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* 全宽组件：直接渲染，不包裹容器 */
@@ -660,7 +671,7 @@ onBeforeUnmount(() => {
   width: 100%;
   max-width: 72rem;
   margin: 0 auto;
-  gap: 0;
+  gap: 2rem;
   align-items: flex-start;
 }
 
